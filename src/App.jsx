@@ -40,9 +40,9 @@ const translations = {
         subtitle: 'UniDistance Switzerland · 152/180 ECTS · 5.66/6',
         courses: [
           'Curriculum: 152 ECTS completed with average 5.66/6',
-          'Economics & Policy — Macroeconomics, Microeconomics, Public Economics, Industrial Organization (all 6.0/6)',
-          'Finance & Control — Money & Finance, Management Control, Corporate Finance, International Finance, International Trade (5.75–6.0/6)',
-          'Quantitative Methods — Econometrics, Statistics, Mathematics for Economists (5.5–5.75/6)',
+          'Economics & Policy — Macroeconomics, Microeconomics, Public Economics, Industrial Organization',
+          'Finance & Control — Money & Finance, Management Control, Corporate Finance, International Finance, International Trade',
+          'Quantitative Methods — Econometrics, Statistics, Mathematics for Economists',
           'Business Foundations — Financial Accounting, Business Management, Entrepreneurship, Business Law'
         ],
         thesisTitle: 'Bachelor Thesis',
@@ -231,9 +231,9 @@ const translations = {
         subtitle: 'UniDistance Suisse · 152/180 ECTS · 5.66/6',
         courses: [
           'Programme complet : 152 ECTS acquis, moyenne 5.66/6',
-          'Économie & Politique — Macroéconomie, Microéconomie, Économie publique, Organisation industrielle (toutes 6.0/6)',
-          'Finance & Contrôle — Monnaie et finance, Contrôle de gestion, Finance d\'entreprise, Finance internationale, Commerce international (5.75–6.0/6)',
-          'Méthodes quantitatives — Économétrie, Statistiques, Mathématiques pour économistes (5.5–5.75/6)',
+          'Économie & Politique — Macroéconomie, Microéconomie, Économie publique, Organisation industrielle',
+          'Finance & Contrôle — Monnaie et finance, Contrôle de gestion, Finance d\'entreprise, Finance internationale, Commerce international',
+          'Méthodes quantitatives — Économétrie, Statistiques, Mathématiques pour économistes',
           'Fondements business — Comptabilité financière, Gestion des entreprises, Entrepreneuriat, Droit de l\'entreprise'
         ],
         thesisTitle: 'Mémoire de Bachelor',
@@ -422,9 +422,9 @@ const translations = {
         subtitle: '瑞士远程大学 · 152/180 ECTS · 5.66/6',
         courses: [
           '完整课程：已完成152 ECTS，平均成绩5.66/6',
-          '经济学与政策 — 宏观经济学、微观经济学、公共经济学、产业组织（均为6.0/6）',
-          '财务与管理 — 货币与金融、管理控制、企业财务、国际金融、国际贸易（5.75–6.0/6）',
-          '定量方法 — 计量经济学、统计学、经济学家数学（5.5–5.75/6）',
+          '经济学与政策 — 宏观经济学、微观经济学、公共经济学、产业组织',
+          '财务与管理 — 货币与金融、管理控制、企业财务、国际金融、国际贸易',
+          '定量方法 — 计量经济学、统计学、经济学家数学',
           '商业基础 — 财务会计、企业管理、创业学、商业法'
         ],
         thesisTitle: '学士论文',
