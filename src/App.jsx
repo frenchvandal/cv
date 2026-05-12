@@ -38,7 +38,13 @@ const translations = {
         title: 'Bachelor in Economics and Management',
         date: '2023 – Present',
         subtitle: 'UniDistance Switzerland · 152/180 ECTS · 5.66/6',
-        courses: 'Macroeconomics, Money and Finance, Econometrics, Business Management, Accounting',
+        courses: [
+          'Curriculum: 152 ECTS completed with average 5.66/6',
+          'Economics & Policy — Macroeconomics, Microeconomics, Public Economics, Industrial Organization (all 6.0/6)',
+          'Finance & Control — Money & Finance, Management Control, Corporate Finance, International Finance, International Trade (5.75–6.0/6)',
+          'Quantitative Methods — Econometrics, Statistics, Mathematics for Economists (5.5–5.75/6)',
+          'Business Foundations — Financial Accounting, Business Management, Entrepreneurship, Business Law'
+        ],
         thesisTitle: 'Bachelor Thesis',
         thesis: 'Global Determinants of Real Estate Prices: A Multi-Country Panel Analysis',
         thesisSubject: 'Impact of financial cycles on real estate markets — transmission of international financial shocks',
@@ -223,7 +229,13 @@ const translations = {
         title: 'Bachelor en Économie et Management',
         date: '2023 – Présent',
         subtitle: 'UniDistance Suisse · 152/180 ECTS · 5.66/6',
-        courses: 'Macroéconomie, Monnaie et Finance, Économétrie, Gestion d\'entreprise, Comptabilité',
+        courses: [
+          'Programme complet : 152 ECTS acquis, moyenne 5.66/6',
+          'Économie & Politique — Macroéconomie, Microéconomie, Économie publique, Organisation industrielle (toutes 6.0/6)',
+          'Finance & Contrôle — Monnaie et finance, Contrôle de gestion, Finance d\'entreprise, Finance internationale, Commerce international (5.75–6.0/6)',
+          'Méthodes quantitatives — Économétrie, Statistiques, Mathématiques pour économistes (5.5–5.75/6)',
+          'Fondements business — Comptabilité financière, Gestion des entreprises, Entrepreneuriat, Droit de l\'entreprise'
+        ],
         thesisTitle: 'Mémoire de Bachelor',
         thesis: 'Déterminants globaux des prix immobiliers : Une analyse de panel multi-pays',
         thesisSubject: "Impact des cycles financiers sur les marchés immobiliers — transmission des chocs financiers internationaux",
@@ -408,7 +420,13 @@ const translations = {
         title: '经济学与管理学士',
         date: '2023 – 在读',
         subtitle: '瑞士远程大学 · 152/180 ECTS · 5.66/6',
-        courses: '宏观经济学、货币与金融、计量经济学、企业管理、会计学',
+        courses: [
+          '完整课程：已完成152 ECTS，平均成绩5.66/6',
+          '经济学与政策 — 宏观经济学、微观经济学、公共经济学、产业组织（均为6.0/6）',
+          '财务与管理 — 货币与金融、管理控制、企业财务、国际金融、国际贸易（5.75–6.0/6）',
+          '定量方法 — 计量经济学、统计学、经济学家数学（5.5–5.75/6）',
+          '商业基础 — 财务会计、企业管理、创业学、商业法'
+        ],
         thesisTitle: '学士论文',
         thesis: '房地产价格的全球决定因素：多国面板分析',
         thesisSubject: "金融周期对房地产市场的影响——国际金融冲击的传导机制",
@@ -692,7 +710,9 @@ function App() {
                 </div>
                 <p className="timeline-subtitle">{t.education.bachelor.subtitle}</p>
                 <ul className="timeline-list">
-                  <li>{t.education.bachelor.courses}</li>
+                  {t.education.bachelor.courses.map((course, i) => (
+                    <li key={i}>{course}</li>
+                  ))}
                 </ul>
                 <div className="thesis-box">
                   <span className="thesis-label">{t.education.bachelor.thesisTitle}</span>
