@@ -62,8 +62,8 @@ const translations = {
         date: '2025 – Present',
         subtitle: 'Sichuan University · Chengdu, China · Full Mandarin Immersion',
         csc: 'CSC Scholarship recipient — competitive Chinese government grant (CSC/ bilateral program)',
-        gpa: 'Grade 4.0/4.0',
-        gpaDesc: 'on all semester assessments',
+        gpa: 'GPA 4.0/4.0',
+        gpaDesc: 'on all first-semester courses',
         immersion: 'Complete immersion: coursework, daily life, and interactions 100% in Mandarin',
         adaptability: 'Developed strong cross-cultural adaptability through direct integration into Chinese academic and social environments'
       },
@@ -253,8 +253,8 @@ const translations = {
         date: '2025 – Présent',
         subtitle: 'Université du Sichuan · Chengdu, Chine · Immersion complète en mandarin',
         csc: 'Boursier CSC — bourse gouvernementale chinoise compétitive (programme CSC/bilatéral)',
-        gpa: 'Note 4.0/4.0',
-        gpaDesc: 'à tous les semestres',
+        gpa: 'GPA 4.0/4.0',
+        gpaDesc: 'à tous les cours du premier semestre',
         immersion: 'Immersion totale : cours, vie quotidienne et interactions 100% en mandarin',
         adaptability: "Développement d'une forte capacité d'adaptation interculturelle par intégration directe dans les environnements académiques et sociaux chinois"
       },
@@ -444,8 +444,8 @@ const translations = {
         date: '2025 – 在读',
         subtitle: '四川大学 · 中国成都 · 全中文沉浸式学习',
         csc: 'CSC奖学金获得者 — 中国政府竞争性奖学金项目',
-        gpa: '成绩 4.0/4.0',
-        gpaDesc: '所有学期评估',
+        gpa: 'GPA 4.0/4.0',
+        gpaDesc: '第一学期所有课程',
         immersion: '完全沉浸式学习：课程、日常生活和社交互动100%使用中文',
         adaptability: '通过直接融入中国学术和社交环境，培养了强大的跨文化适应能力'
       },
