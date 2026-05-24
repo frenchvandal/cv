@@ -693,6 +693,67 @@ function App() {
         </div>
       </section>
 
+      {/* Experience */}
+      <section id="experience" className="section section-white">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-tag">{t.experience.tag}</span>
+            <h2 className="section-title">{t.experience.title}</h2>
+          </div>
+          <div className="experience-card">
+            <div className="exp-header">
+              <div>
+                <h3>{t.experience.chuv.title}</h3>
+                <p className="exp-company">{t.experience.chuv.company}</p>
+              </div>
+              <span className="exp-date">{t.experience.chuv.date}</span>
+            </div>
+            <ul className="exp-list">
+              {t.experience.chuv.items.map((item, idx) => (
+                <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
+              ))}
+            </ul>
+          </div>
+          
+          <div className="exp-divider">{t.experience.studentJobsTitle}</div>
+          
+          <div className="student-jobs">
+            <div className="student-job">
+              <div className="student-job-header">
+                <div>
+                  <h4>{t.experience.galexis.title}</h4>
+                  <p>{t.experience.galexis.company}</p>
+                </div>
+                <span className="student-job-date">{t.experience.galexis.date}</span>
+              </div>
+              <p>{t.experience.galexis.desc}</p>
+            </div>
+            
+            <div className="student-job">
+              <div className="student-job-header">
+                <div>
+                  <h4>{t.experience.uber.title}</h4>
+                  <p>{t.experience.uber.company}</p>
+                </div>
+                <span className="student-job-date">{t.experience.uber.date}</span>
+              </div>
+              <p>{t.experience.uber.desc}</p>
+            </div>
+            
+            <div className="student-job">
+              <div className="student-job-header">
+                <div>
+                  <h4>{t.experience.gfk.title}</h4>
+                  <p>{t.experience.gfk.company}</p>
+                </div>
+                <span className="student-job-date">{t.experience.gfk.date}</span>
+              </div>
+              <p>{t.experience.gfk.desc}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Education */}
       <section id="education" className="section section-gray">
         <div className="container">
@@ -778,67 +839,6 @@ function App() {
                 <p className="timeline-subtitle">{t.education.epfl.subtitle}</p>
                 <p className="timeline-desc">{t.education.epfl.desc}</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Experience */}
-      <section id="experience" className="section section-white">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-tag">{t.experience.tag}</span>
-            <h2 className="section-title">{t.experience.title}</h2>
-          </div>
-          <div className="experience-card">
-            <div className="exp-header">
-              <div>
-                <h3>{t.experience.chuv.title}</h3>
-                <p className="exp-company">{t.experience.chuv.company}</p>
-              </div>
-              <span className="exp-date">{t.experience.chuv.date}</span>
-            </div>
-            <ul className="exp-list">
-              {t.experience.chuv.items.map((item, idx) => (
-                <li key={idx} dangerouslySetInnerHTML={{ __html: item }} />
-              ))}
-            </ul>
-          </div>
-          
-          <div className="exp-divider">{t.experience.studentJobsTitle}</div>
-          
-          <div className="student-jobs">
-            <div className="student-job">
-              <div className="student-job-header">
-                <div>
-                  <h4>{t.experience.galexis.title}</h4>
-                  <p>{t.experience.galexis.company}</p>
-                </div>
-                <span className="student-job-date">{t.experience.galexis.date}</span>
-              </div>
-              <p>{t.experience.galexis.desc}</p>
-            </div>
-            
-            <div className="student-job">
-              <div className="student-job-header">
-                <div>
-                  <h4>{t.experience.uber.title}</h4>
-                  <p>{t.experience.uber.company}</p>
-                </div>
-                <span className="student-job-date">{t.experience.uber.date}</span>
-              </div>
-              <p>{t.experience.uber.desc}</p>
-            </div>
-            
-            <div className="student-job">
-              <div className="student-job-header">
-                <div>
-                  <h4>{t.experience.gfk.title}</h4>
-                  <p>{t.experience.gfk.company}</p>
-                </div>
-                <span className="student-job-date">{t.experience.gfk.date}</span>
-              </div>
-              <p>{t.experience.gfk.desc}</p>
             </div>
           </div>
         </div>
