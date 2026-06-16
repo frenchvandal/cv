@@ -22,7 +22,7 @@ const translations = {
       tag: 'About Me',
       title: 'Bridging Technology & Economics',
       p1: "Economics student with solid professional experience in information technology, currently completing my bachelor's degree while engaged in an intensive language program abroad alongside my studies.",
-      p2: 'I aim to pivot my career toward economic and financial analysis, leveraging both my technical skills and academic training. My background combines 8 years of IT infrastructure experience with rigorous quantitative training in econometrics, macroeconomics, and financial modeling.',
+      p2: 'I aim for roles in IT support or economic and financial analysis where my IT + economics dual background is actively leveraged as a differentiating asset. My background combines 8 years of IT infrastructure experience with rigorous quantitative training in econometrics, macroeconomics, and financial modeling.',
       p3: 'Currently in Chengdu, China, completing an intensive Mandarin program as a CSC Scholarship recipient. Based in Lausanne, Switzerland.',
       stats: {
         years: 'Years IT Experience',
@@ -189,7 +189,7 @@ const translations = {
     contact: {
       tag: 'Get in Touch',
       title: "Let's Connect",
-      intro: "I'm currently looking for opportunities at the intersection of economics and technology — data-driven roles where I can leverage both my IT experience and economic training. Open to internships and entry-level positions starting August 2026.",
+      intro: "I'm looking for roles in IT support or economic and financial analysis where my IT + economics dual background is valued. Open to internships and entry-level positions starting August 2026.",
       footer: '© 2026 Jorge Paula Pinheiro · Built with React'
     }
   },
@@ -213,7 +213,7 @@ const translations = {
       tag: 'À propos',
       title: 'Allier Technologie & Économie',
       p1: "Étudiant en économie avec une solide expérience professionnelle en informatique, actuellement en fin de bachelor tout en suivant un programme intensif de langue à l'étranger en parallèle de mes études.",
-      p2: "Je vise à réorienter ma carrière vers l'analyse économique et financière, en m'appuyant à la fois sur mes compétences techniques et ma formation académique. Mon parcours combine 8 ans d'expérience en infrastructure IT avec une formation quantitative rigoureuse en économétrie, macroéconomie et modélisation financière.",
+      p2: "Je vise des postes en support informatique ou en analyse économique et financière où mon double bagage IT + économie est exploité comme un atout différenciant. Mon parcours combine 8 ans d'expérience en infrastructure IT avec une formation quantitative rigoureuse en économétrie, macroéconomie et modélisation financière.",
       p3: "Actuellement à Chengdu, Chine, en tant que boursier CSC suivant un programme intensif de mandarin. Basé à Lausanne, Suisse.",
       stats: {
         years: "Années d'exp. IT",
@@ -380,7 +380,7 @@ const translations = {
     contact: {
       tag: 'Me Contacter',
       title: 'Restons en Contact',
-      intro: "Je recherche activement des opportunités à l'intersection de l'économie et de la technologie — des rôles orientés data où je peux valoriser mon expérience IT et ma formation économique. Ouvert aux stages et postes junior à partir d'août 2026.",
+      intro: "Je recherche des postes en support informatique ou en analyse économique et financière où mon double bagage IT + économie est un atout. Ouvert aux stages et postes junior à partir d'août 2026.",
       footer: '© 2026 Jorge Paula Pinheiro · Construit avec React'
     }
   },
@@ -404,7 +404,7 @@ const translations = {
       tag: '关于我',
       title: '技术与经济学的交汇',
       p1: "我是一名拥有扎实信息技术专业背景的经济学学生，目前正在通过瑞士远程大学完成学士学位，同时在中国成都参加密集型中文课程。",
-      p2: "我的目标是转向经济与金融领域，充分发挥我的技术能力和学术训练。我的背景融合了8年IT基础设施经验，以及计量经济学、宏观经济学和金融建模方面的严谨定量培训。",
+      p2: "我的目标是从事IT技术支持或经济金融分析类岗位，充分发挥IT+经济双背景的独特优势。我的背景融合了8年IT基础设施经验，以及计量经济学、宏观经济学和金融建模方面的严谨定量培训。",
       p3: "目前在中国成都，作为CSC奖学金获得者完成密集型中文课程。常驻瑞士洛桑。",
       stats: {
         years: '年IT经验',
@@ -571,7 +571,7 @@ const translations = {
     contact: {
       tag: '联系我',
       title: '保持联系',
-      intro: "我正在积极寻找经济学与技术交叉领域的机会——能够发挥我的IT经验和经济学训练的数据驱动型岗位。欢迎2026年8月开始的实习和初级职位机会。",
+      intro: "我正在寻找IT技术支持或经济金融分析类岗位，希望充分发挥IT+经济双背景的优势。欢迎2026年8月开始的实习和初级职位机会。",
       footer: '© 2026 Jorge Paula Pinheiro · 使用React构建'
     }
   }
@@ -606,8 +606,8 @@ function App() {
           <div className="nav-logo">J. PAULA PINHEIRO</div>
           <ul className="nav-links">
             <li onClick={() => scrollTo('about')}>{t.nav.about}</li>
-            <li onClick={() => scrollTo('education')}>{t.nav.education}</li>
             <li onClick={() => scrollTo('experience')}>{t.nav.experience}</li>
+            <li onClick={() => scrollTo('education')}>{t.nav.education}</li>
             <li onClick={() => scrollTo('skills')}>{t.nav.skills}</li>
             <li onClick={() => scrollTo('hobbies')}>{t.nav.hobbies}</li>
             <li onClick={() => scrollTo('contact')}>{t.nav.contact}</li>
