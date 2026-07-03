@@ -11,8 +11,6 @@
     "fmt:check": "deno fmt --check"
   },
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
     "lib": [
       "deno.window",
       "dom",
