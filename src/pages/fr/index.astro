@@ -1,0 +1,12 @@
+---
+import Cv from '../../components/Cv.astro';
+import { translations } from '../../data/translations.ts';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const lang = 'fr' as const;
+const { meta } = translations[lang];
+---
+
+<BaseLayout lang={lang} title={meta.title} description={meta.description}>
+  <Cv lang={lang} />
+</BaseLayout>
