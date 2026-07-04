@@ -87,9 +87,9 @@ function about(t: Translation): string {
     <section class="section" aria-labelledby="about">
       <div>${sectionTitle(t, 'about', 0)}</div>
       <div class="section__body animate">
-        <p>${escapeHtml(t.about.p1)}</p>
-        <p>${escapeHtml(t.about.p2)}</p>
-        <p>${escapeHtml(t.about.p3)}</p>
+        <p class="kp">${escapeHtml(t.about.p1)}</p>
+        <p class="kp">${escapeHtml(t.about.p2)}</p>
+        <p class="kp">${escapeHtml(t.about.p3)}</p>
         <div class="stats animate">
           <div class="stat" data-count="8">
             <div class="stat__label">${escapeHtml(t.about.stats.years)}</div>

@@ -1,85 +1,59 @@
-# Jorge Paula Pinheiro — Portfolio
+# Jorge Paula Pinheiro — CV
 
-A measurement-driven, trilingual portfolio website. The layout geometry is computed from the actual text content using [pretext](https://github.com/chenglou/pretext), so the typography drives the grid rather than the other way around.
+A trilingual (EN / FR / ZH) portfolio, pre-rendered to static HTML and progressively
+enhanced with pretext-driven typography. No framework.
 
-## 🚀 Features
+## Stack
 
-- **Measurement-driven layout**: Column widths, hero scale, and section title sizes are derived from pretext measurements of the real content.
-- **Trilingual**: Full content in English, French, and Simplified Chinese with a single click.
-- **Original design**: No design-system dependencies — custom CSS, custom components, and a typographic grid.
-- **Dark / light theme**: Toggle between themes; preference is persisted in `localStorage`.
-- **Responsive**: Adapts from wide desktop to mobile with a single-column layout.
-- **Fast**: Built with Vite and served as a static site.
-- **Auto-deploy**: GitHub Actions deploys to GitHub Pages on every push to `main`.
+- **[Bun](https://bun.com)** — package manager, dev server and bundler (no Vite/Webpack).
+- **TypeScript** (vanilla, no UI framework). The UI is plain string templates in
+  [src/render.ts](src/render.ts), rendered into `#app`.
+- **[@chenglou/pretext](https://github.com/chenglou/pretext)** — text measurement/layout
+  (canvas, no DOM reflow), driving the measurement features below.
+- **[hyphen](https://www.npmjs.com/package/hyphen)** — Liang syllable hyphenation patterns.
 
-## 🛠 Tech Stack
+## Features
 
-- [Vite](https://vitejs.dev/) 6
-- [Bun](https://bun.sh/) 1.3+
-- [TypeScript](https://www.typescriptlang.org/) 6
-- [pretext](https://github.com/chenglou/pretext) 0.0.8 — text measurement & layout
-- [Noto Sans](https://fonts.google.com/noto) & Noto Sans SC via Google Fonts
-- GitHub Actions for CI/CD
+- **SSG pre-render** — [scripts/build.ts](scripts/build.ts) emits `index.html`, `fr.html`
+  and `zh.html` with the content already in the HTML (SEO, link previews, works with JS
+  off). The client hydrates and swaps language instantly — no reload — syncing the URL via
+  `history`.
+- **Measurement-driven layout** ([src/measure.ts](src/measure.ts)) — pretext fits the hero
+  name to the viewport width and sizes the section titles to their column (uniform, no
+  ellipsis truncation) across all three languages. A dev-only console audit flags any title
+  that would overflow.
+- **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the About
+  paragraphs are re-typeset with TeX-style optimal line breaking and syllable hyphenation,
+  over pretext-measured boxes/glue (Latin languages; Chinese wraps natively).
+- **Self-hosted fonts** — Noto Sans + Noto Sans SC, subset to the glyphs actually used and
+  imported so Bun emits them as external hashed files; `unicode-range` keeps the Chinese
+  subset lazy. No web-font CDN, no runtime network dependency.
+- **Light / dark theme**, reveal-on-scroll, animated stats.
 
-## 📦 Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) 1.0.0 or later
-
-### Installation
+## Commands
 
 ```bash
-# Clone the repository
-git clone https://github.com/jorgepaulapinheiro/CV.git
-cd CV
-
-# Install dependencies
-bun install
-
-# Start development server
-bun run dev
-
-# Build for production
-bun run build
+bun install            # install dependencies
+bun run dev            # dev server with HMR → http://localhost:3000/
+bun run build          # type-check + pre-render the 3 pages into dist/
+bun run check          # tsc --noEmit (the type gate)
+bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
 ```
 
-## 🏗 Project Structure
+## Deploy
 
-```
-src/
-  data/
-    translations.ts   # Trilingual content source of truth
-  lib/
-    pretext.ts        # pretext wrappers and font helpers
-    layout.ts         # Measurement-driven layout engine
-    render.ts         # Template-based renderer
-  styles/
-    global.css        # Custom design tokens & layout
-  types/
-    vite.d.ts         # Vite ambient types
-  main.ts             # App bootstrap, theme & language state
-index.html            # App shell with font preconnect
-vite.config.ts        # Vite config (base: /cv/)
-```
+`bun run build` produces a self-contained `dist/` with **relative asset paths**, so it
+uploads to any static host or cloud-storage bucket — at any path — with no configuration
+(and works on GitHub Pages too). Set `SITE_URL=https://example.com` before building to emit
+absolute canonical / `hreflang` URLs.
 
-## 🚀 Deployment
+The included GitHub Actions workflow builds with Bun and publishes `dist/` to Pages.
 
-The site is automatically deployed to GitHub Pages when you push to the `main` branch.
+## Editing content
 
-To enable this:
-1. Go to your repository settings on GitHub.
-2. Navigate to the **Pages** section.
-3. Set **Source** to "GitHub Actions".
-4. The workflow will handle the rest.
+All copy lives in [src/translations.ts](src/translations.ts), typed so the three languages
+stay in structural sync. See [AGENTS.md](AGENTS.md) for the code conventions.
 
-## 📝 Content Updates
-
-To update your portfolio:
-1. Edit `src/data/translations.ts`.
-2. Commit and push to `main`.
-3. GitHub Actions will automatically rebuild and deploy.
-
-## 📄 License
+## License
 
 © 2026 Jorge Paula Pinheiro. All rights reserved.

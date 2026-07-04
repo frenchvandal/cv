@@ -82,9 +82,10 @@ Current config is already `strict` with `noUnusedLocals`, `noUnusedParameters`,
   ```
   Let a formatter own formatting; end the ESLint config with `eslint-config-prettier`
   to disable conflicting rules. Never run the formatter *through* ESLint.
-- **No dead tooling.** This repo deliberately has one dev dependency (`typescript`)
-  and one runtime dependency (`@chenglou/pretext`). Don't add build tools that Bun
-  already covers (bundling, CSS, TS, dev server).
+- **No dead tooling.** Dependencies are deliberately minimal: one dev dependency
+  (`typescript`) and two runtime ones — `@chenglou/pretext` (measurement) and
+  `hyphen` (Liang hyphenation patterns). Don't add build tools that Bun already
+  covers (bundling, CSS, TS, dev server).
 
 ## 6. pretext / measurement conventions (project-specific)
 
@@ -100,3 +101,8 @@ Current config is already `strict` with `noUnusedLocals`, `noUnusedParameters`,
   The subset files are vendored — regenerate only when the glyph set changes.
 - **Keep a safety margin** (`MEASURE_SAFETY`) on every fit so rounding never causes
   overflow/clipping.
+- **Knuth–Plass.** [src/linebreak.ts](src/linebreak.ts) runs optimal (TeX-style)
+  line breaking over pretext-measured boxes/glue, with `hyphen` supplying syllable
+  break points, to justify the About paragraphs. Glue uses `shrink: 0` because CSS
+  `text-align: justify` can only stretch spaces, never shrink them — keep that
+  invariant, and keep the small target-width margin, or lines will wrap.

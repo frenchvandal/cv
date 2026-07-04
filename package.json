@@ -13,7 +13,8 @@
     "fonts:update": "bun scripts/update-fonts.ts"
   },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.8"
+    "@chenglou/pretext": "^0.0.8",
+    "hyphen": "^1.14.1"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

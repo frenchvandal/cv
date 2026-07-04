@@ -9,6 +9,7 @@ import {
   fitSectionTitles,
   whenFontsReady,
 } from './measure';
+import { breakIntoLines } from './linebreak';
 
 const STORAGE_THEME_KEY = 'cv-theme';
 const root = document.documentElement;
@@ -82,6 +83,40 @@ function applyMeasuredLayout(): void {
       label: sectionTitleLabel,
     });
   }
+}
+
+function escapeLine(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Re-typeset the About paragraphs with Knuth–Plass optimal line breaking and
+ * syllable hyphenation (Latin languages only; Chinese wraps natively). A pure
+ * progressive enhancement over the plain, pre-rendered paragraph.
+ */
+function enhanceAbout(): void {
+  if (!app || currentLang === 'zh') return;
+
+  app.querySelectorAll<HTMLParagraphElement>('p.kp').forEach((p) => {
+    const text = p.dataset.text ?? p.textContent ?? '';
+    if (!text.trim()) return;
+    p.dataset.text = text; // keep the source text for re-runs (resize)
+
+    const style = getComputedStyle(p);
+    const font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    const width = p.clientWidth -
+      (parseFloat(style.paddingLeft) || 0) -
+      (parseFloat(style.paddingRight) || 0);
+
+    // Small safety margin: keep KP lines just inside the box so canvas-vs-DOM
+    // rounding never makes the browser wrap a line that justify then can't fill.
+    const lines = breakIntoLines(text, font, width - 6, currentLang);
+    if (!lines) {
+      p.textContent = text;
+      return;
+    }
+    p.innerHTML = lines.map((line) => `<span class="kp-line">${escapeLine(line)}</span>`).join('');
+  });
 }
 
 /** Dev-only, pretext-powered QA: warn if any section title must shrink to fit in EN/FR/ZH. */
@@ -196,7 +231,10 @@ function render(transition: boolean): void {
       app.classList.remove('is-transitioning');
       observeSections();
       animateStats();
-      whenFontsReady(applyMeasuredLayout);
+      whenFontsReady(() => {
+        applyMeasuredLayout();
+        enhanceAbout();
+      });
     });
   };
 
@@ -227,7 +265,14 @@ function init(): void {
   render(false);
 
   globalThis.addEventListener('popstate', onPopState);
-  globalThis.addEventListener('resize', debounce(applyMeasuredLayout, 150), { passive: true });
+  globalThis.addEventListener(
+    'resize',
+    debounce(() => {
+      applyMeasuredLayout();
+      enhanceAbout();
+    }, 150),
+    { passive: true },
+  );
   whenFontsReady(auditTitles);
 }
 

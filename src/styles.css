@@ -417,6 +417,16 @@ body {
   margin-top: var(--space-md);
 }
 
+/* Knuth–Plass justified lines (one span per computed line; last line stays ragged). */
+.kp-line {
+  display: block;
+  text-align: justify;
+  text-align-last: justify;
+}
+.kp-line:last-child {
+  text-align-last: left;
+}
+
 .card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
