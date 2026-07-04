@@ -1,4 +1,4 @@
-/* Portfolio styles. Fonts: self-hosted Noto Sans + Noto Sans SC (subset), declared in
+/* Portfolio styles. Fonts: self-hosted Noto Sans + Noto Sans SC/TC (subset), declared in
    src/fonts.ts (imported so Bun emits them as separate files instead of inlining). A named
    font keeps pretext measurement accurate; see src/measure.ts. */
 
@@ -35,6 +35,14 @@
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* The Traditional Chinese page uses Noto Sans TC: codepoints shared with Simplified
+   must render with Taiwan glyph conventions, not the PRC forms of the SC family.
+   Naming only one CJK family per page also keeps the other subset undownloaded. */
+:root[data-lang='zh-hant'] {
+  --font: 'Noto Sans', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
 :root[data-theme='light'] {

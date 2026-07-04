@@ -14,20 +14,20 @@ enhanced with pretext-driven typography. No framework.
 
 ## Features
 
-- **SSG pre-render** — [scripts/build.ts](scripts/build.ts) emits `index.html`, `fr.html`
-  and `zh.html` with the content already in the HTML (SEO, link previews, works with JS
+- **SSG pre-render** — [scripts/build.ts](scripts/build.ts) emits `index.html`, `fr.html`,
+  `zh.html` and `zh-hant.html` with the content already in the HTML (SEO, link previews, works with JS
   off). The client hydrates and swaps language instantly — no reload — syncing the URL via
   `history`.
 - **Measurement-driven layout** ([src/measure.ts](src/measure.ts)) — pretext fits the hero
   name to the viewport width and sizes the section titles to their column (uniform, no
-  ellipsis truncation) across all three languages. A dev-only console audit flags any title
+  ellipsis truncation) across all four languages. A dev-only console audit flags any title
   that would overflow.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the About
   paragraphs are re-typeset with TeX-style optimal line breaking and syllable hyphenation,
   over pretext-measured boxes/glue (Latin languages; Chinese wraps natively).
-- **Self-hosted fonts** — Noto Sans + Noto Sans SC, subset to the glyphs actually used and
-  imported so Bun emits them as external hashed files; `unicode-range` keeps the Chinese
-  subset lazy. No web-font CDN, no runtime network dependency.
+- **Self-hosted fonts** — Noto Sans + Noto Sans SC/TC, subset per language to the glyphs
+  actually used and imported so Bun emits them as external hashed files; `unicode-range`
+  and per-page font stacks keep each Chinese subset lazy. No web-font CDN, no runtime network dependency.
 - **Light / dark theme**, reveal-on-scroll, animated stats.
 
 ## Commands
@@ -51,7 +51,7 @@ The included GitHub Actions workflow builds with Bun and publishes `dist/` to Pa
 
 ## Editing content
 
-All copy lives in [src/translations.ts](src/translations.ts), typed so the three languages
+All copy lives in [src/translations.ts](src/translations.ts), typed so the four languages
 stay in structural sync. See [AGENTS.md](AGENTS.md) for the code conventions.
 
 ## License

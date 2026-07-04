@@ -27,7 +27,7 @@ bundler-agnostic:
 - **No `enum`.** Use a frozen object + a derived union — the pattern already used
   by `LANGS`/`Lang` in [src/translations.ts](src/translations.ts):
   ```ts
-  export const LANGS = ['en', 'fr', 'zh'] as const;
+  export const LANGS = ['en', 'fr', 'zh', 'zh-hant'] as const;
   export type Lang = (typeof LANGS)[number];
   ```
 - **No `namespace`**, no `import =` aliases, no class **parameter properties**
@@ -93,7 +93,7 @@ Current config is already `strict` with `noUnusedLocals`, `noUnusedParameters`,
   cache it (see `widthPerPxCache` in `measure.ts`). On resize/language change, only
   re-run the cheap width/layout math, never re-prepare identical text.
 - **Named font required.** pretext is inaccurate with `system-ui`, so the site
-  self-hosts **Noto Sans / Noto Sans SC** ([src/fonts.ts](src/fonts.ts)) and every
+  self-hosts **Noto Sans / Noto Sans SC / Noto Sans TC** ([src/fonts.ts](src/fonts.ts)) and every
   measurement waits for `document.fonts.ready`.
 - **Fonts are imported, not CSS-`url()`'d.** Bun inlines CSS-referenced fonts as
   base64; importing the `.woff2` (file loader) emits a separate hashed asset and

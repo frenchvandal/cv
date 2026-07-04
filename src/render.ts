@@ -6,7 +6,7 @@
  *     language page at build time (SEO, link previews, no-JS content).
  */
 
-import { translations, type Lang, type Translation } from './translations';
+import { LANG_LABEL, LANGS, translations, type Lang, type Translation } from './translations';
 
 export type Theme = 'light' | 'dark';
 
@@ -33,11 +33,7 @@ export function langUrl(lang: Lang): string {
 
 function controls(t: Translation, lang: Lang, theme: Theme): string {
   const isLight = theme === 'light';
-  const languages = [
-    { code: 'en', label: 'EN' },
-    { code: 'fr', label: 'FR' },
-    { code: 'zh', label: 'ZH' },
-  ] as const;
+  const languages = LANGS.map((code) => ({ code, label: LANG_LABEL[code] }));
 
   return `
     <div class="controls" role="toolbar" aria-label="${escapeHtml(t.ui.primaryNav)}">

@@ -27,8 +27,11 @@ function isLang(value: string | undefined): value is Lang {
 function pageLang(): Lang {
   if (isLang(root.dataset.lang)) return root.dataset.lang;
   const path = location.pathname;
-  if (/(?:^|\/)zh(?:\.html)?\/?$/.test(path)) return 'zh';
-  if (/(?:^|\/)fr(?:\.html)?\/?$/.test(path)) return 'fr';
+  // Longest slug first so `zh-hant.html` is never claimed by the shorter `zh`.
+  const bySpecificity = [...LANGS].sort((a, b) => b.length - a.length);
+  for (const lang of bySpecificity) {
+    if (new RegExp(`(?:^|/)${lang}(?:\\.html)?/?$`).test(path)) return lang;
+  }
   return 'en';
 }
 
@@ -95,7 +98,7 @@ function escapeLine(text: string): string {
  * progressive enhancement over the plain, pre-rendered paragraph.
  */
 function enhanceAbout(): void {
-  if (!app || currentLang === 'zh') return;
+  if (!app || currentLang.startsWith('zh')) return;
 
   app.querySelectorAll<HTMLParagraphElement>('p.kp').forEach((p) => {
     const text = p.dataset.text ?? p.textContent ?? '';
@@ -119,7 +122,7 @@ function enhanceAbout(): void {
   });
 }
 
-/** Dev-only, pretext-powered QA: warn if any section title must shrink to fit in EN/FR/ZH. */
+/** Dev-only, pretext-powered QA: warn if any section title must shrink to fit in any language. */
 function auditTitles(): void {
   const host = location.hostname;
   if (host !== 'localhost' && host !== '127.0.0.1') return;
@@ -138,7 +141,7 @@ function auditTitles(): void {
     console.table(tight);
     console.groupEnd();
   } else {
-    console.info('[measure] all section titles fit at max size across EN/FR/ZH');
+    console.info('[measure] all section titles fit at max size across all languages');
   }
 }
 

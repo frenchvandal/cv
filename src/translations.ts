@@ -1,13 +1,17 @@
 /**
- * Portfolio content, fully typed and available in three languages.
+ * Portfolio content, fully typed and available in four languages.
  *
  * The English object `en` is the source of truth: its inferred type becomes
- * {@link Translation}, so `fr` and `zh` must expose the exact same shape — a
- * missing or misnamed key is a compile-time error. This guarantees parity
- * across languages without hand-writing a large interface.
+ * {@link Translation}, so `fr`, `zh` and `zhHant` must expose the exact same
+ * shape — a missing or misnamed key is a compile-time error. This guarantees
+ * parity across languages without hand-writing a large interface.
+ *
+ * `zh` (Simplified) and `zh-hant` (Traditional) are independent translations,
+ * not script conversions of each other: vocabulary differs between the two
+ * (软件/軟體, 网络/網路, 宏观/總體…), so each is written for its audience.
  */
 
-export const LANGS = ["en", "fr", "zh"] as const;
+export const LANGS = ["en", "fr", "zh", "zh-hant"] as const;
 export type Lang = (typeof LANGS)[number];
 
 /** BCP-47 tags used for the `<html lang>` attribute and `hreflang` links. */
@@ -15,13 +19,15 @@ export const HTML_LANG: Record<Lang, string> = {
   en: "en",
   fr: "fr",
   zh: "zh-Hans",
+  "zh-hant": "zh-Hant",
 };
 
 /** Human-readable endonyms for the language switcher. */
 export const LANG_LABEL: Record<Lang, string> = {
   en: "EN",
   fr: "FR",
-  zh: "中文",
+  zh: "简",
+  "zh-hant": "繁",
 };
 
 /** Language-invariant profile constants (proper nouns, URLs, contact). */
@@ -912,4 +918,252 @@ const zh: Translation = {
   },
 };
 
-export const translations: Record<Lang, Translation> = { en, fr, zh };
+const zhHant: Translation = {
+  meta: {
+    title: "Jorge Paula Pinheiro — 作品集",
+    description:
+      "Jorge Paula Pinheiro — 擁有8年IT背景的經濟學學生，正轉向經濟與金融分析。常駐瑞士洛桑，目前為成都的CSC獎學金學者。",
+  },
+  nav: {
+    about: "關於我",
+    experience: "經歷",
+    education: "學歷",
+    skills: "技能",
+    hobbies: "興趣",
+    contact: "聯絡",
+  },
+  hero: {
+    greeting: "你好，我是",
+    title: "經濟學 · 資料 · IT — 2026年8月可到職",
+    location: "📍 目前在中國成都 · 常駐瑞士洛桑 · 🎓 經濟學學士",
+    ctaPrimary: "聯絡我",
+    ctaSecondary: "瞭解更多",
+    scrollHint: "向下捲動檢視內容",
+  },
+  about: {
+    tag: "關於我",
+    title: "技術與經濟學的交會",
+    p1:
+      "我是一名擁有紮實資訊科技專業背景的經濟學學生，目前正透過瑞士遠距大學完成學士學位，同時在中國成都參加密集中文課程。",
+    p2:
+      "我的目標是從事IT技術支援或經濟金融分析類職位，充分發揮IT+經濟雙背景的獨特優勢。我的背景結合了8年IT基礎架構經驗，以及計量經濟學、總體經濟學與金融建模方面的嚴謹量化訓練。",
+    p3: "目前在中國成都，作為CSC獎學金得主修讀密集中文課程。常駐瑞士洛桑。",
+    stats: {
+      years: "年IT經驗",
+      gpa: "成績 / 6",
+      languages: "語言",
+      ects: "已修學分",
+    },
+  },
+  experience: {
+    tag: "工作經歷",
+    title: "職涯歷程",
+    chuv: {
+      title: "IT技術員",
+      company: "CHUV — 洛桑大學中心醫院",
+      date: "2017 – 2025",
+      items: [
+        "透過SCCM管理IT設備群（10,000+台）：安裝、維護與軟硬體故障排除",
+        "透過AirWatch / Workspace ONE設定與部署iPhone",
+        "透過Agile Provisioning設定Cisco電話",
+        "處理醫療設備與非標準系統的維護作業",
+        "負責服務台支援並協助使用者：診斷與排除事件",
+        "印表機與網路周邊設備故障排除",
+        "為團隊撰寫並標準化技術作業程序",
+        "在壓力下依優先順序與截止期限有條理地工作",
+      ],
+    },
+    studentJobsTitle: "學生兼職",
+    galexis: {
+      title: "倉儲人員",
+      company: "Galexis SA · 瑞士沃州埃屈布朗",
+      date: "2014 – 2017",
+      desc: "半工半讀。提供物流支援並參與藥品經銷業務。",
+    },
+    uber: {
+      title: "Uber Pop司機",
+      company: "Uber · 自由接案",
+      date: "2016 – 2017",
+      desc: "半工半讀。",
+    },
+    gfk: {
+      title: "客服中心接線員",
+      company: "GFK · 洛桑",
+      date: "2011 – 2012",
+      desc: "學生兼職。",
+    },
+  },
+  education: {
+    tag: "學歷背景",
+    title: "學術經歷",
+    bachelor: {
+      title: "經濟與管理學士",
+      date: "2023 – 就讀中",
+      subtitle: "瑞士遠距大學 · 152/180 ECTS · 5.66/6",
+      courses: [
+        "完整課程：已修畢152 ECTS，平均成績5.66/6",
+        "經濟學與政策 — 總體經濟學、個體經濟學、公共經濟學、產業組織",
+        "財務與管理 — 貨幣與金融、管理控制、公司理財、國際金融、國際貿易",
+        "量化方法 — 計量經濟學、統計學、經濟學家數學",
+        "商業基礎 — 財務會計、企業管理、創業學、商事法",
+      ],
+      thesisTitle: "學士論文",
+      thesis: "房地產價格的全球決定因素：多國面板資料分析",
+      thesisSubject: "金融循環對房地產市場的影響——國際金融衝擊的傳導機制",
+      methodology: "研究方法",
+      methodologyValue: "多元線性迴歸（OLS）+ 面板資料線性投影",
+      dataSources: "資料來源",
+      dataSourcesValue:
+        "國際貨幣基金組織（IMF）、國際清算銀行（BIS）——國際總體經濟資料集",
+      tools: "工具",
+      toolsValue: "R語言（tidyverse：dplyr, tidyr）",
+      focus: "研究重點",
+      focusValue: "總體審慎措施與資本管制對國際金融衝擊的穩定效果",
+    },
+    china: {
+      title: "中文課程 — CSC獎學金得主",
+      date: "2025 – 就讀中",
+      subtitle: "四川大學 · 中國成都 · 全中文沉浸式學習",
+      csc: "CSC獎學金得主 — 中國政府競爭性獎學金計畫",
+      intensive: "密集語言課程（每週25+小時）",
+      gpa: "GPA 4.0/4.0",
+      gpaDesc: "第一學期所有課程",
+      immersion: "完全沉浸式學習：課程、日常生活與社交互動100%使用中文",
+      adaptability:
+        "透過直接融入中國學術與社交環境，培養出強大的跨文化適應能力",
+    },
+    cfc: {
+      title: "資訊科學CFC證書",
+      date: "2015 – 2017",
+      subtitle: "CPNV · 5.3/6",
+      desc:
+        "全面的通才訓練：開發（C#、JavaScript、PHP）、資料庫（SQL）、網路、系統（Windows/Linux）、技術支援",
+    },
+    epfl: {
+      title: "洛桑聯邦理工學院（EPFL）",
+      date: "2011 – 2015",
+      subtitle: "微技術 · 預科 4.41/6 · 學士未完成",
+      desc:
+        "工程基礎訓練：程式設計（C）、數學、物理、統計學——在職涯轉換前打下紮實的分析基礎",
+    },
+  },
+  skills: {
+    tag: "技能",
+    title: "專業能力",
+    data: {
+      title: "📊 資料與分析",
+      tags: [
+        "R語言",
+        "SQL",
+        "Excel",
+        "Python",
+        "線性迴歸",
+        "面板資料分析",
+        "OLS",
+        "統計建模",
+      ],
+    },
+    econometrics: {
+      title: "📈 計量經濟學",
+      tags: ["多元分析", "時間序列", "固定效果模型", "穩健性分析"],
+    },
+    it: {
+      title: "🖥️ IT基礎架構",
+      tags: [
+        "資產管理（10K+設備）",
+        "大規模部署",
+        "系統管理",
+        "事件管理",
+        "二線技術支援",
+      ],
+    },
+    finance: {
+      title: "💰 金融",
+      tags: ["財務分析", "DCF模型", "可比公司分析"],
+    },
+    economics: {
+      title: "📉 經濟學",
+      tags: ["總體經濟學", "計量經濟學", "國際金融"],
+    },
+    accounting: {
+      title: "📋 會計",
+      tags: ["財務會計", "管理控制"],
+    },
+    programming: {
+      title: "💻 程式設計",
+      tags: ["PowerShell", "C#", "PHP", "JavaScript"],
+    },
+    soft: {
+      title: "🤝 軟實力",
+      tags: [
+        "嚴謹細心",
+        "使用者支援",
+        "保密意識",
+        "文件撰寫",
+        "綜合分析",
+        "跨文化適應",
+        "國際移動力",
+        "團隊合作",
+      ],
+    },
+    languages: {
+      title: "🌍 語言",
+      french: { name: "法語", level: "母語" },
+      portuguese: { name: "葡萄牙語", level: "母語" },
+      english: { name: "英語", level: "流利（IELTS 8/9）" },
+      chinese: { name: "中文", level: "中級" },
+    },
+  },
+  hobbies: {
+    tag: "工作之餘",
+    title: "興趣與嗜好",
+    music: {
+      title: "音樂製作",
+      desc:
+        "賽博金屬/工業金屬藝術家 — 3張自製專輯，獨立作曲與錄音，偶有2-3次合作",
+      link: "在Spotify上收聽",
+    },
+    gaming: {
+      title: "電玩遊戲",
+      desc: "熱愛探索虛擬世界與互動敘事的玩家",
+    },
+    travel: {
+      title: "旅行",
+      desc: "探索新的文化與目的地。近期聚焦亞太地區",
+    },
+    cycling: {
+      title: "單車",
+      desc: "享受戶外騎乘的樂趣",
+    },
+    language: {
+      title: "語言學習",
+      desc: "目前正沉浸式學習中文",
+    },
+  },
+  contact: {
+    tag: "聯絡我",
+    title: "保持聯絡",
+    intro:
+      "我正在尋找IT技術支援或經濟金融分析類職位，希望充分發揮IT+經濟雙背景的優勢。歡迎2026年8月起的實習與初階職位機會。",
+    emailLabel: "電子郵件",
+    locationLabel: "所在地",
+    footer: "© 2026 Jorge Paula Pinheiro · 以 Vite、Bun 與 pretext 打造",
+  },
+  ui: {
+    skipLink: "跳至內容",
+    primaryNav: "章節",
+    languageNav: "語言",
+    theme: {
+      auto: "主題：跟隨系統",
+      light: "主題：淺色",
+      dark: "主題：深色",
+    },
+  },
+};
+
+export const translations: Record<Lang, Translation> = {
+  en,
+  fr,
+  zh,
+  "zh-hant": zhHant,
+};
