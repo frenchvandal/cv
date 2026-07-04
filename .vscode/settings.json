@@ -1,4 +1,3 @@
 {
-  "//": "Deno is this project's task runner and package manager, not the type checker. Astro + TypeScript (astro check / tsconfig.json) own the source, so the Deno language server stays off the Astro/React files to avoid false positives (unresolved npm specifiers, no-window, missing JSX types).",
-  "deno.enable": false
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

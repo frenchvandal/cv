@@ -12,7 +12,10 @@ dist
 dist-ssr
 *.local
 
-# Astro cache
+# Playwright MCP artifacts
+.playwright-mcp
+
+# Astro cache (legacy)
 .astro
 
 # Editor directories and files

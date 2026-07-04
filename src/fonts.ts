@@ -1,0 +1,26 @@
+/*
+ * Self-hosted Noto Sans (Latin) + Noto Sans SC (subset to the glyphs used).
+ *
+ * The woff2 files are imported (not referenced via CSS `url()`): Bun inlines
+ * CSS-referenced fonts as base64, but a JS import goes through the `file` loader
+ * and is emitted as a separate hashed asset. We then inject the @font-face rules
+ * at runtime with those build-time URLs. `unicode-range` keeps the CJK file lazy
+ * — a visitor reading English never downloads the Chinese subset.
+ *
+ * A named font (not `system-ui`) is required for accurate pretext measurement.
+ */
+
+import latinUrl from './fonts/noto-sans-latin.woff2';
+import scUrl from './fonts/noto-sans-sc.woff2';
+
+const LATIN_RANGE = 'U+20, U+22-23, U+25-3e, U+40-57, U+59, U+5b, U+5d, U+5f-7d, U+a9, U+b7, U+c0-c2, U+c7-ca, U+cc-ce, U+d2-d4, U+d9-db, U+dd, U+e0-e2, U+e7-ea, U+ec-ee, U+f2-f4, U+f9-fb, U+fd, U+106-109, U+11c-11d, U+122-125, U+134-137, U+139-13c, U+143-146, U+154-157, U+15a-15f, U+162-163, U+174-177, U+17a, U+1f4-1f5, U+1f8-1f9, U+228-229, U+300-302, U+327, U+1e08-1e09, U+1e10-1e11, U+1e28-1e29, U+1e30-1e31, U+1e3e-1e3f, U+1e54-1e55, U+1e80-1e83, U+1e91, U+1ea4-1ea7, U+1ebe-1ec1, U+1ed0-1ed3, U+1ef2-1ef3, U+2013-2014';
+const SC_RANGE = 'U+b7, U+2014, U+3001-3002, U+4e00, U+4e0a-4e0b, U+4e0e, U+4e13, U+4e16, U+4e1a, U+4e25, U+4e2d, U+4e3a-4e3b, U+4e4b, U+4e50, U+4e60, U+4e66, U+4e86, U+4e89, U+4e8b-4e8c, U+4e8e, U+4e92, U+4e9a, U+4ea4, U+4ea7, U+4eab, U+4eba, U+4ece, U+4ed3, U+4ee5, U+4ef6-4ef7, U+4f01, U+4f18, U+4f1a, U+4f20, U+4f4d, U+4f59, U+4f5c, U+4f60, U+4f7f, U+4f9b, U+4fdd, U+4fe1, U+5065, U+5076, U+5143, U+5145, U+5148, U+5165, U+5168, U+516c, U+5171, U+5173-5174, U+5177, U+517b-517c, U+5185, U+5199, U+51b2-51b3, U+51c6, U+51fb, U+5206, U+5217, U+521b, U+521d, U+5229, U+5230, U+5236, U+524d, U+529b, U+52a0-52a1, U+52a8-52a9, U+52bf, U+5316, U+533a-533b, U+534f, U+535a, U+5370, U+5386, U+538b, U+53c2, U+53ca, U+53cc, U+53d1, U+53d7, U+53d9, U+53eb, U+53ef-53f0, U+53f8, U+5408, U+540c-540d, U+5411, U+542c, U+5458, U+5468, U+547c, U+548c, U+54c1, U+54cd, U+5546, U+56db, U+56de, U+56e0, U+56e2, U+56fa, U+56fd, U+5728, U+5730, U+573a, U+5747, U+578b, U+57c3, U+57f9-57fa, U+5883, U+58eb, U+5907, U+5916, U+591a, U+5927, U+592a, U+5956, U+597d, U+59cb, U+5b50, U+5b66, U+5b89, U+5b8c, U+5b8f, U+5b9a, U+5b9e, U+5ba1, U+5bb6, U+5bb9, U+5bc6, U+5bf9, U+5bfb-5bfc, U+5c0f, U+5c48, U+5c5e, U+5c97, U+5ddd-5dde, U+5de5, U+5df2, U+5e01-5e03, U+5e0c, U+5e38, U+5e72-5e74, U+5e76, U+5e8f, U+5e93-5e94, U+5e9c, U+5efa, U+5f00, U+5f0f, U+5f20, U+5f3a, U+5f52, U+5f55, U+5f71, U+5f97, U+5fae, U+5fc3, U+6027, U+606f, U+610f, U+614e, U+620f-6211, U+6216, U+622a, U+6237, U+623f-6240, U+624e, U+6253, U+627e, U+6280, U+6295, U+62a4, U+62df, U+62e5, U+6301, U+6309, U+6325, U+636e, U+6392, U+63a2, U+63a5, U+63a7, U+63aa, U+63d0, U+652f, U+6536, U+653f, U+6545, U+6548, U+6559, U+6570, U+6574, U+6587, U+65ad, U+65b0, U+65b9, U+65bd, U+65c5, U+65e5, U+65f6, U+6613, U+662f, U+666f, U+66f2, U+66f4, U+6708-6709, U+670d, U+6717, U+671b, U+671f, U+672a, U+672c, U+672f, U+673a, U+6761, U+6765, U+677f, U+6784, U+6790, U+67e5, U+6807, U+683c, U+6851, U+6863, U+6a21, U+6b21-6b22, U+6b62-6b63, U+6bcd, U+6bcf, U+6bd4, U+6c47, U+6c83, U+6c89, U+6cd5, U+6ce8, U+6d1b, U+6d3b, U+6d41, U+6d45, U+6d4e, U+6d78, U+6df1, U+6e05, U+6e38, U+6e90, U+6eda, U+70b9, U+70ed, U+7231, U+7259, U+7269, U+7279, U+72ec, U+73a9, U+73af, U+7403, U+7406, U+745e, U+751f, U+7528, U+7531, U+7535, U+754c, U+7597, U+7684, U+76ee, U+76f4, U+770b, U+7814, U+7840, U+786c, U+793e, U+79d1, U+7a0b, U+7a33, U+7a76, U+7acb, U+7ade, U+7ae0, U+7b2c, U+7b56, U+7b97, U+7ba1, U+7c7b, U+7cfb, U+7d20, U+7d22, U+7ea7, U+7ebf, U+7ec3-7ec4, U+7ec6-7ec7, U+7ecf, U+7edc, U+7edf, U+7ee9, U+7ef4, U+7efc, U+7f16, U+7f51, U+7f6e, U+7f72, U+7fa4, U+8005, U+804c, U+8054, U+80b2, U+80cc, U+80fd, U+81ea, U+81f4, U+8272, U+827a, U+8282, U+82f1, U+836f, U+83b7, U+8404, U+8461, U+865a, U+878d, U+884c, U+88c5, U+89c2, U+89c4, U+89e3, U+8a00, U+8ba1, U+8bad, U+8bba, U+8bbe, U+8bc1, U+8bc6, U+8bca, U+8bdd, U+8bed, U+8bfb, U+8bfe, U+8c28, U+8d1f, U+8d22-8d23, U+8d27, U+8d38, U+8d44, U+8d5b, U+8da3, U+8ddf, U+8de8, U+8df3, U+8f6c, U+8f6f, U+8f91, U+8fb9, U+8fc7, U+8fce, U+8fd1, U+8fdb-8fdc, U+9002, U+901a, U+90a6, U+90ae, U+90e8, U+90fd, U+914d, U+91cd, U+91cf, U+91d1, U+94f6, U+9500, U+95f4, U+961f, U+9645, U+9662, U+9664, U+968f, U+969c, U+96c6, U+975e, U+9762, U+97f3, U+9879, U+9884, U+9898, U+9a7b, U+9a8c, U+9a91, U+ff08-ff09, U+ff0c, U+ff1a';
+
+const css = [
+  `@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(${latinUrl}) format('woff2');unicode-range:${LATIN_RANGE};}`,
+  `@font-face{font-family:'Noto Sans SC';font-style:normal;font-weight:400 800;font-display:swap;src:url(${scUrl}) format('woff2');unicode-range:${SC_RANGE};}`,
+].join('');
+
+const style = document.createElement('style');
+style.textContent = css;
+document.head.appendChild(style);
