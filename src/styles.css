@@ -75,6 +75,7 @@ html {
   html {
     scroll-behavior: auto;
   }
+
   *,
   *::before,
   *::after {
@@ -91,10 +92,12 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 #app {
   min-height: 100vh;
+  min-height: 100dvh;
   transition: opacity 0.25s var(--ease);
 }
 
@@ -105,6 +108,7 @@ body {
 .page {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .page::before {
@@ -166,9 +170,9 @@ body {
   background: var(--accent-dim);
 }
 
-[data-theme-toggle] {
-  font-size: 0.9rem !important;
-  padding: 0.35rem 0.55rem !important;
+.controls .controls__theme {
+  font-size: 0.9rem;
+  padding: 0.35rem 0.55rem;
 }
 
 .skip-link {
@@ -193,6 +197,7 @@ body {
     opacity: 0;
     transform: translateY(24px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -203,17 +208,20 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
 @keyframes pulse-dot {
+
   0%,
   100% {
     opacity: 0.4;
     transform: scale(0.8);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.1);
@@ -252,6 +260,7 @@ body {
 .hero {
   position: relative;
   min-height: 92vh;
+  min-height: 92dvh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -267,17 +276,15 @@ body {
   left: -10%;
   width: 60%;
   height: 70%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(99, 102, 241, 0.12) 0%,
-    rgba(168, 85, 247, 0.06) 40%,
-    transparent 70%
-  );
+  background: radial-gradient(ellipse at center,
+      rgba(99, 102, 241, 0.12) 0%,
+      rgba(168, 85, 247, 0.06) 40%,
+      transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
-.hero > * {
+.hero>* {
   position: relative;
   z-index: 1;
 }
@@ -398,7 +405,6 @@ body {
   letter-spacing: -0.03em;
   color: var(--fg);
   white-space: nowrap;
-  transform-origin: left top;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
@@ -421,7 +427,7 @@ body {
   max-width: 55rem;
 }
 
-.section__body p + p {
+.section__body p+p {
   margin-top: var(--space-md);
 }
 
@@ -431,8 +437,69 @@ body {
   text-align: justify;
   text-align-last: justify;
 }
+
 .kp-line:last-child {
   text-align-last: left;
+}
+
+/* About orbs: pretext-flowed text around draggable section-shortcut circles. */
+.about-stage {
+  position: relative;
+}
+
+.about-line {
+  position: absolute;
+  white-space: pre;
+  z-index: 1;
+}
+
+.about-orb {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--fg);
+  text-decoration: none;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.about-orb:hover {
+  transform: scale(1.05);
+}
+
+.about-orb.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.about-orb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .card {
@@ -456,7 +523,7 @@ body {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
-.card + .card {
+.card+.card {
   margin-top: var(--space-md);
 }
 
@@ -494,7 +561,7 @@ body {
   color: var(--fg-muted);
 }
 
-.card__list li + li {
+.card__list li+li {
   margin-top: var(--space-xs);
 }
 
@@ -601,10 +668,6 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .section::before {
-    display: none;
-  }
-
   .section__title {
     position: static;
     white-space: normal;
@@ -633,5 +696,92 @@ body {
   .contact__link {
     word-break: break-word;
     font-size: clamp(1.125rem, 5vw, 1.75rem);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Print: a CV must print. Force the light palette, reveal everything,
+ * drop the fixed/sticky chrome, and keep each card on one page.
+ * ------------------------------------------------------------------ */
+@media print {
+
+  :root,
+  :root[data-theme='dark'] {
+    color-scheme: light;
+    --bg: #ffffff;
+    --bg-elevated: #ffffff;
+    --surface: transparent;
+    --surface-2: transparent;
+    --fg: #000000;
+    --fg-muted: #333333;
+    --fg-subtle: #555555;
+    --accent: #4f46e5;
+    --accent-2: #9333ea;
+    --accent-dim: transparent;
+    --glow: transparent;
+    --border: #d4d4d4;
+    --grid: transparent;
+  }
+
+  /* Scroll reveals never happen on paper: show everything, statically. */
+  .js .animate {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .controls,
+  .skip-link {
+    display: none !important;
+  }
+
+  .page::before,
+  .hero::before {
+    display: none;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: var(--space-lg);
+  }
+
+  /* Inline fitted px sizes are tuned to the screen, not the sheet. */
+  .hero__name {
+    font-size: 3rem !important;
+  }
+
+  .section {
+    display: block;
+  }
+
+  .section__title {
+    position: static;
+    white-space: normal;
+    font-size: 2rem !important;
+    margin-bottom: var(--space-md);
+  }
+
+  .card,
+  .stat {
+    break-inside: avoid;
+  }
+
+  /* The orb layout is a screen toy: print the real paragraphs instead. */
+  .about-stage {
+    height: auto !important;
+  }
+
+  .about-lines,
+  .about-orb {
+    display: none;
+  }
+
+  .about-stage .sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 var(--space-md);
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
   }
 }

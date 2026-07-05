@@ -1,7 +1,7 @@
 # Jorge Paula Pinheiro — CV
 
-A trilingual (EN / FR / ZH) portfolio, pre-rendered to static HTML and progressively
-enhanced with pretext-driven typography. No framework.
+A four-language (EN / FR / 简体 / 繁體) portfolio, pre-rendered to static HTML and
+progressively enhanced with pretext-driven typography. No framework.
 
 ## Stack
 
@@ -22,9 +22,13 @@ enhanced with pretext-driven typography. No framework.
   name to the viewport width and sizes the section titles to their column (uniform, no
   ellipsis truncation) across all four languages. A dev-only console audit flags any title
   that would overflow.
+- **About orbs** ([src/orbs.ts](src/orbs.ts)) — the About paragraphs flow around four
+  draggable, labelled circles (real anchors to their sections), re-laid-out each frame
+  with pretext. Falls back to the layout below when it can't run.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the About
   paragraphs are re-typeset with TeX-style optimal line breaking and syllable hyphenation,
-  over pretext-measured boxes/glue (Latin languages; Chinese wraps natively).
+  over pretext-measured boxes/glue (Latin languages; Chinese wraps natively). The
+  hyphenation patterns load per language, on demand.
 - **Self-hosted fonts** — Noto Sans + Noto Sans SC/TC, subset per language to the glyphs
   actually used and imported so Bun emits them as external hashed files; `unicode-range`
   and per-page font stacks keep each Chinese subset lazy. No web-font CDN, no runtime network dependency.
@@ -35,8 +39,9 @@ enhanced with pretext-driven typography. No framework.
 ```bash
 bun install            # install dependencies
 bun run dev            # dev server with HMR → http://localhost:3000/
-bun run build          # type-check + pre-render the 3 pages into dist/
+bun run build          # type-check + pre-render the 4 pages into dist/
 bun run check          # tsc --noEmit (the type gate)
+bun test               # Knuth–Plass unit tests (canvas-free, injected measure)
 bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
 ```
 
@@ -45,9 +50,12 @@ bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are a
 `bun run build` produces a self-contained `dist/` with **relative asset paths**, so it
 uploads to any static host or cloud-storage bucket — at any path — with no configuration
 (and works on GitHub Pages too). Set `SITE_URL=https://example.com` before building to emit
-absolute canonical / `hreflang` URLs.
+absolute canonical / `hreflang` URLs and a sitemap (search engines require absolute URLs
+there).
 
-The included GitHub Actions workflow builds with Bun and publishes `dist/` to Pages.
+The included GitHub Actions workflow builds with Bun and publishes `dist/` to Pages; it
+sets `SITE_URL` automatically from the Pages base URL. A second workflow type-checks,
+tests and builds every pull request.
 
 ## Editing content
 

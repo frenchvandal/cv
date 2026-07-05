@@ -10,13 +10,15 @@ has none of them.
 
 - **Runtime/tooling:** Bun (package manager, dev server, bundler). No Vite, no Webpack.
   - `bun run dev` → `bun ./index.html` (dev server + HMR, http://localhost:3000/).
-  - `bun run build` → `tsc --noEmit && rm -rf dist && bun build ./index.html --outdir=dist --public-path=/cv/ --minify --sourcemap=linked`.
-  - `bun run check` → `tsc --noEmit` (the type gate).
+  - `bun run build` → `tsc --noEmit && bun scripts/build.ts` (bundle + pre-render the
+    four language pages into `dist/`).
+  - `bun run check` → `tsc --noEmit` (the type gate). `bun test` → unit tests.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
   rendered into `#app` by [src/main.ts](src/main.ts). Content lives in
-  [src/translations.ts](src/translations.ts) (EN/FR/ZH). Text measurement/layout
-  is done with `@chenglou/pretext` in [src/measure.ts](src/measure.ts).
-- **Output:** a fully static site deployed to GitHub Pages under `/cv/`.
+  [src/translations.ts](src/translations.ts) (EN / FR / zh-Hans / zh-Hant). Text
+  measurement/layout is done with `@chenglou/pretext` in [src/measure.ts](src/measure.ts).
+- **Output:** a fully static `dist/` with relative asset paths — deploys to GitHub Pages
+  (or any static host) at any base path. CI sets `SITE_URL` for absolute SEO URLs.
 
 ## 2. Language & syntax — stay erasable
 
@@ -55,9 +57,9 @@ bundler-agnostic:
 
 ## 4. tsconfig — the safety contract
 
-Current config is already `strict` with `noUnusedLocals`, `noUnusedParameters`,
-`noFallthroughCasesInSwitch`, `moduleResolution: "bundler"`. Recommended additions
-(enable, then fix the fallout — each catches a real class of bug):
+Current config is `strict` with `noUnusedLocals`, `noUnusedParameters`,
+`noFallthroughCasesInSwitch`, `moduleResolution: "bundler"`, **plus** the three
+flags below (enabled — keep them on; each catches a real class of bug):
 
 - **`noUncheckedIndexedAccess`** — array/record access returns `T | undefined`.
   This code indexes `translations[lang]`, `nav[id]`, `lines[i]` — this flag forces
@@ -66,8 +68,10 @@ Current config is already `strict` with `noUnusedLocals`, `noUnusedParameters`,
   (matters for the optional fields in `FitFont`/fit options in `measure.ts`).
 - **`verbatimModuleSyntax`** — forces explicit `import type`, guaranteeing clean
   erasure under Bun.
-- Keep `target` on an evergreen baseline (ES2022+); this site targets modern
-  browsers only, so don't down-level.
+
+`include` covers both `src/` and `scripts/` (the build and font scripts are typed
+against `@types/bun`). Keep `target` on an evergreen baseline (ES2022+); this site
+targets modern browsers only, so don't down-level.
 
 ## 5. Tooling & quality gates
 
@@ -82,10 +86,11 @@ Current config is already `strict` with `noUnusedLocals`, `noUnusedParameters`,
   ```
   Let a formatter own formatting; end the ESLint config with `eslint-config-prettier`
   to disable conflicting rules. Never run the formatter *through* ESLint.
-- **No dead tooling.** Dependencies are deliberately minimal: one dev dependency
-  (`typescript`) and two runtime ones — `@chenglou/pretext` (measurement) and
-  `hyphen` (Liang hyphenation patterns). Don't add build tools that Bun already
-  covers (bundling, CSS, TS, dev server).
+- **No dead tooling.** Dependencies are deliberately minimal: two dev dependencies
+  (`typescript`, `@types/bun`) and two runtime ones — `@chenglou/pretext`
+  (measurement) and `hyphen` (Liang hyphenation patterns, `import()`ed per
+  language). Don't add build tools that Bun already covers (bundling, CSS, TS,
+  dev server).
 
 ## 6. pretext / measurement conventions (project-specific)
 

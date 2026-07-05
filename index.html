@@ -7,11 +7,12 @@
     <title>Jorge Paula Pinheiro</title>
 
     <link rel="icon" type="image/svg+xml" href="./public/favicon.svg" />
+    <meta name="theme-color" content="#0a0a0a" />
 
     <script>
-      // Mark JS as available (progressive enhancement) and apply the saved theme
-      // before first paint. Without JS, the pre-rendered content stays visible.
-      document.documentElement.classList.add('js');
+      // Apply the saved theme before first paint. (The `js` class that gates the
+      // reveal animations is added by src/main.ts itself, NOT here: adding it
+      // before the bundle runs would hide the pre-rendered content.)
       try {
         const saved = localStorage.getItem('cv-theme');
         if (saved === 'light' || saved === 'dark') {
@@ -21,7 +22,7 @@
     </script>
 
     <style>
-      /* Minimal loader styles available instantly, before any JS/CSS loads. */
+      /* Minimal base styles available instantly, before any JS/CSS loads. */
       :root {
         --loader-bg: #0a0a0a;
         --loader-fg: #f2f2f2;
@@ -42,7 +43,11 @@
       }
       #app {
         min-height: 100vh;
+        min-height: 100dvh;
       }
+    </style>
+    <!-- Loader-only styles: the SSG build strips this block (pre-rendered pages have no loader). -->
+    <style data-loader>
       .loader {
         position: fixed;
         inset: 0;
@@ -56,10 +61,6 @@
         font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         z-index: 9999;
         transition: opacity 0.4s ease, visibility 0.4s ease;
-      }
-      .loader--hidden {
-        opacity: 0;
-        visibility: hidden;
       }
       .loader__name {
         font-size: clamp(2rem, 8vw, 4rem);

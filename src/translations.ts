@@ -1,7 +1,7 @@
 /**
  * Portfolio content, fully typed and available in four languages.
  *
- * The English object `en` is the source of truth: its inferred type becomes
+ * The English object `en` is the source of truth: its inferred type is
  * {@link Translation}, so `fr`, `zh` and `zhHant` must expose the exact same
  * shape — a missing or misnamed key is a compile-time error. This guarantees
  * parity across languages without hand-writing a large interface.
@@ -30,11 +30,18 @@ export const LANG_LABEL: Record<Lang, string> = {
   "zh-hant": "繁",
 };
 
+/** Full language names (endonyms) for accessible labels on the switcher links. */
+export const LANG_NAME: Record<Lang, string> = {
+  en: "English",
+  fr: "Français",
+  zh: "简体中文",
+  "zh-hant": "繁體中文",
+};
+
 /** Language-invariant profile constants (proper nouns, URLs, contact). */
 export const PROFILE = {
   fullName: "Jorge Paula Pinheiro",
   nameLines: ["JORGE", "PAULA PINHEIRO"] as const,
-  logo: "J. PAULA PINHEIRO",
   email: "jorge.paulapinheiro@gmail.com",
   location: "Lausanne, Switzerland",
   spotifyUrl: "https://open.spotify.com/intl-fr/artist/0CKa7wVI7tiJaFdIBNHw8T",
@@ -42,7 +49,6 @@ export const PROFILE = {
 
 const en = {
   meta: {
-    title: "Jorge Paula Pinheiro — Portfolio",
     description:
       "Jorge Paula Pinheiro — Economics student with 8 years of IT background, transitioning to economic and financial analysis. Based in Lausanne, currently a CSC scholar in Chengdu.",
   },
@@ -61,11 +67,8 @@ const en = {
       "📍 Currently in Chengdu, China · Based in Lausanne, Switzerland · 🎓 Bachelor in Economics",
     ctaPrimary: "Get in Touch",
     ctaSecondary: "Learn More",
-    scrollHint: "Scroll to content",
   },
   about: {
-    tag: "About Me",
-    title: "Bridging Technology & Economics",
     p1:
       "Economics student with solid professional experience in information technology, currently completing my bachelor's degree while engaged in an intensive language program abroad alongside my studies.",
     p2:
@@ -80,8 +83,6 @@ const en = {
     },
   },
   experience: {
-    tag: "Experience",
-    title: "Professional Journey",
     chuv: {
       title: "IT Technician",
       company: "CHUV — Centre Hospitalier Universitaire Vaudois, Lausanne",
@@ -119,8 +120,6 @@ const en = {
     },
   },
   education: {
-    tag: "Education",
-    title: "Academic Background",
     bachelor: {
       title: "Bachelor in Economics and Management",
       date: "2023 – Present",
@@ -179,8 +178,6 @@ const en = {
     },
   },
   skills: {
-    tag: "Skills",
-    title: "Competencies",
     data: {
       title: "📊 Data & Analytics",
       tags: [
@@ -251,8 +248,6 @@ const en = {
     },
   },
   hobbies: {
-    tag: "Beyond Work",
-    title: "Hobbies & Interests",
     music: {
       title: "Music Production",
       desc:
@@ -279,145 +274,31 @@ const en = {
     },
   },
   contact: {
-    tag: "Get in Touch",
-    title: "Let's Connect",
     intro:
       "I'm looking for roles in IT support or economic and financial analysis where my IT + economics dual background is valued. Open to internships and entry-level positions starting August 2026.",
     emailLabel: "Email",
     locationLabel: "Location",
-    footer: "© 2026 Jorge Paula Pinheiro · Built with Vite, Bun & pretext",
+    footer: "© 2026 Jorge Paula Pinheiro · Built with Bun & pretext",
   },
   ui: {
     skipLink: "Skip to content",
-    primaryNav: "Sections",
     languageNav: "Language",
     theme: {
-      auto: "Theme: system",
       light: "Theme: light",
       dark: "Theme: dark",
     },
   },
-} satisfies TranslationShape;
-
-/** Structural contract every language must satisfy (inferred from `en`). */
-type TranslationShape = {
-  meta: { title: string; description: string };
-  nav: Record<
-    "about" | "experience" | "education" | "skills" | "hobbies" | "contact",
-    string
-  >;
-  hero: {
-    greeting: string;
-    title: string;
-    location: string;
-    ctaPrimary: string;
-    ctaSecondary: string;
-    scrollHint: string;
-  };
-  about: {
-    tag: string;
-    title: string;
-    p1: string;
-    p2: string;
-    p3: string;
-    stats: Record<"years" | "gpa" | "languages" | "ects", string>;
-  };
-  experience: {
-    tag: string;
-    title: string;
-    chuv: { title: string; company: string; date: string; items: string[] };
-    studentJobsTitle: string;
-    galexis: { title: string; company: string; date: string; desc: string };
-    uber: { title: string; company: string; date: string; desc: string };
-    gfk: { title: string; company: string; date: string; desc: string };
-  };
-  education: {
-    tag: string;
-    title: string;
-    bachelor: {
-      title: string;
-      date: string;
-      subtitle: string;
-      courses: string[];
-      thesisTitle: string;
-      thesis: string;
-      thesisSubject: string;
-      methodology: string;
-      methodologyValue: string;
-      dataSources: string;
-      dataSourcesValue: string;
-      tools: string;
-      toolsValue: string;
-      focus: string;
-      focusValue: string;
-    };
-    china: {
-      title: string;
-      date: string;
-      subtitle: string;
-      csc: string;
-      intensive: string;
-      gpa: string;
-      gpaDesc: string;
-      immersion: string;
-      adaptability: string;
-    };
-    cfc: { title: string; date: string; subtitle: string; desc: string };
-    epfl: { title: string; date: string; subtitle: string; desc: string };
-  };
-  skills: {
-    tag: string;
-    title: string;
-    data: SkillGroup;
-    econometrics: SkillGroup;
-    it: SkillGroup;
-    finance: SkillGroup;
-    economics: SkillGroup;
-    accounting: SkillGroup;
-    programming: SkillGroup;
-    soft: SkillGroup;
-    languages: {
-      title: string;
-      french: LanguageSkill;
-      portuguese: LanguageSkill;
-      english: LanguageSkill;
-      chinese: LanguageSkill;
-    };
-  };
-  hobbies: {
-    tag: string;
-    title: string;
-    music: { title: string; desc: string; link: string };
-    gaming: { title: string; desc: string };
-    travel: { title: string; desc: string };
-    cycling: { title: string; desc: string };
-    language: { title: string; desc: string };
-  };
-  contact: {
-    tag: string;
-    title: string;
-    intro: string;
-    emailLabel: string;
-    locationLabel: string;
-    footer: string;
-  };
-  ui: {
-    skipLink: string;
-    primaryNav: string;
-    languageNav: string;
-    theme: { auto: string; light: string; dark: string };
-  };
 };
 
-type SkillGroup = { title: string; tags: string[] };
-type LanguageSkill = { name: string; level: string };
-
-/** The canonical content type, inferred from the English source of truth. */
+/**
+ * The canonical content type, inferred from the English source of truth.
+ * `fr`, `zh` and `zhHant` are annotated with it, so any missing, extra or
+ * misnamed key in a translation is a compile-time error.
+ */
 export type Translation = typeof en;
 
 const fr: Translation = {
   meta: {
-    title: "Jorge Paula Pinheiro — Portfolio",
     description:
       "Jorge Paula Pinheiro — Étudiant en économie avec 8 ans d'expérience IT, en réorientation vers l'analyse économique et financière. Basé à Lausanne, actuellement boursier CSC à Chengdu.",
   },
@@ -436,11 +317,8 @@ const fr: Translation = {
       "📍 Actuellement à Chengdu, Chine · Basé à Lausanne, Suisse · 🎓 Bachelor en Économie",
     ctaPrimary: "Me contacter",
     ctaSecondary: "En savoir plus",
-    scrollHint: "Défiler vers le contenu",
   },
   about: {
-    tag: "À propos",
-    title: "Allier Technologie & Économie",
     p1:
       "Étudiant en économie avec une solide expérience professionnelle en informatique, actuellement en fin de bachelor tout en suivant un programme intensif de langue à l'étranger en parallèle de mes études.",
     p2:
@@ -455,8 +333,6 @@ const fr: Translation = {
     },
   },
   experience: {
-    tag: "Expérience",
-    title: "Parcours Professionnel",
     chuv: {
       title: "Informaticien",
       company: "CHUV — Centre Hospitalier Universitaire Vaudois, Lausanne",
@@ -494,8 +370,6 @@ const fr: Translation = {
     },
   },
   education: {
-    tag: "Formation",
-    title: "Parcours Académique",
     bachelor: {
       title: "Bachelor en Économie et Management",
       date: "2023 – Présent",
@@ -555,8 +429,6 @@ const fr: Translation = {
     },
   },
   skills: {
-    tag: "Compétences",
-    title: "Compétences",
     data: {
       title: "📊 Data & Analytics",
       tags: [
@@ -627,8 +499,6 @@ const fr: Translation = {
     },
   },
   hobbies: {
-    tag: "Au-delà du Travail",
-    title: "Loisirs & Intérêts",
     music: {
       title: "Production Musicale",
       desc:
@@ -655,20 +525,16 @@ const fr: Translation = {
     },
   },
   contact: {
-    tag: "Me Contacter",
-    title: "Restons en Contact",
     intro:
       "Je recherche des postes en support informatique ou en analyse économique et financière où mon double bagage IT + économie est un atout. Ouvert aux stages et postes junior à partir d'août 2026.",
     emailLabel: "E-mail",
     locationLabel: "Localisation",
-    footer: "© 2026 Jorge Paula Pinheiro · Construit avec Vite, Bun & pretext",
+    footer: "© 2026 Jorge Paula Pinheiro · Construit avec Bun & pretext",
   },
   ui: {
     skipLink: "Aller au contenu",
-    primaryNav: "Sections",
     languageNav: "Langue",
     theme: {
-      auto: "Thème : système",
       light: "Thème : clair",
       dark: "Thème : sombre",
     },
@@ -677,7 +543,6 @@ const fr: Translation = {
 
 const zh: Translation = {
   meta: {
-    title: "Jorge Paula Pinheiro — 作品集",
     description:
       "Jorge Paula Pinheiro — 拥有8年IT背景的经济学学生，正转向经济与金融分析。常驻瑞士洛桑，目前为成都的CSC奖学金学者。",
   },
@@ -695,11 +560,8 @@ const zh: Translation = {
     location: "📍 目前在中国成都 · 常驻瑞士洛桑 · 🎓 经济学学士",
     ctaPrimary: "联系我",
     ctaSecondary: "了解更多",
-    scrollHint: "向下滚动查看内容",
   },
   about: {
-    tag: "关于我",
-    title: "技术与经济学的交汇",
     p1:
       "我是一名拥有扎实信息技术专业背景的经济学学生，目前正在通过瑞士远程大学完成学士学位，同时在中国成都参加密集型中文课程。",
     p2:
@@ -713,8 +575,6 @@ const zh: Translation = {
     },
   },
   experience: {
-    tag: "职业经历",
-    title: "职业历程",
     chuv: {
       title: "IT技术员",
       company: "CHUV — 洛桑大学中心医院",
@@ -751,8 +611,6 @@ const zh: Translation = {
     },
   },
   education: {
-    tag: "教育背景",
-    title: "学术经历",
     bachelor: {
       title: "经济学与管理学士",
       date: "2023 – 在读",
@@ -805,8 +663,6 @@ const zh: Translation = {
     },
   },
   skills: {
-    tag: "技能",
-    title: "专业能力",
     data: {
       title: "📊 数据与分析",
       tags: [
@@ -872,8 +728,6 @@ const zh: Translation = {
     },
   },
   hobbies: {
-    tag: "工作之余",
-    title: "爱好与兴趣",
     music: {
       title: "音乐制作",
       desc:
@@ -898,20 +752,16 @@ const zh: Translation = {
     },
   },
   contact: {
-    tag: "联系我",
-    title: "保持联系",
     intro:
       "我正在寻找IT技术支持或经济金融分析类岗位，希望充分发挥IT+经济双背景的优势。欢迎2026年8月开始的实习和初级职位机会。",
     emailLabel: "电子邮件",
     locationLabel: "所在地",
-    footer: "© 2026 Jorge Paula Pinheiro · 使用 Vite、Bun 与 pretext 构建",
+    footer: "© 2026 Jorge Paula Pinheiro · 使用 Bun 与 pretext 构建",
   },
   ui: {
     skipLink: "跳到内容",
-    primaryNav: "章节",
     languageNav: "语言",
     theme: {
-      auto: "主题：跟随系统",
       light: "主题：浅色",
       dark: "主题：深色",
     },
@@ -920,7 +770,6 @@ const zh: Translation = {
 
 const zhHant: Translation = {
   meta: {
-    title: "Jorge Paula Pinheiro — 作品集",
     description:
       "Jorge Paula Pinheiro — 擁有8年IT背景的經濟學學生，正轉向經濟與金融分析。常駐瑞士洛桑，目前為成都的CSC獎學金學者。",
   },
@@ -938,11 +787,8 @@ const zhHant: Translation = {
     location: "📍 目前在中國成都 · 常駐瑞士洛桑 · 🎓 經濟學學士",
     ctaPrimary: "聯絡我",
     ctaSecondary: "瞭解更多",
-    scrollHint: "向下捲動檢視內容",
   },
   about: {
-    tag: "關於我",
-    title: "技術與經濟學的交會",
     p1:
       "我是一名擁有紮實資訊科技專業背景的經濟學學生，目前正透過瑞士遠距大學完成學士學位，同時在中國成都參加密集中文課程。",
     p2:
@@ -956,8 +802,6 @@ const zhHant: Translation = {
     },
   },
   experience: {
-    tag: "工作經歷",
-    title: "職涯歷程",
     chuv: {
       title: "IT技術員",
       company: "CHUV — 洛桑大學中心醫院",
@@ -994,8 +838,6 @@ const zhHant: Translation = {
     },
   },
   education: {
-    tag: "學歷背景",
-    title: "學術經歷",
     bachelor: {
       title: "經濟與管理學士",
       date: "2023 – 就讀中",
@@ -1048,8 +890,6 @@ const zhHant: Translation = {
     },
   },
   skills: {
-    tag: "技能",
-    title: "專業能力",
     data: {
       title: "📊 資料與分析",
       tags: [
@@ -1115,8 +955,6 @@ const zhHant: Translation = {
     },
   },
   hobbies: {
-    tag: "工作之餘",
-    title: "興趣與嗜好",
     music: {
       title: "音樂製作",
       desc:
@@ -1141,20 +979,16 @@ const zhHant: Translation = {
     },
   },
   contact: {
-    tag: "聯絡我",
-    title: "保持聯絡",
     intro:
       "我正在尋找IT技術支援或經濟金融分析類職位，希望充分發揮IT+經濟雙背景的優勢。歡迎2026年8月起的實習與初階職位機會。",
     emailLabel: "電子郵件",
     locationLabel: "所在地",
-    footer: "© 2026 Jorge Paula Pinheiro · 以 Vite、Bun 與 pretext 打造",
+    footer: "© 2026 Jorge Paula Pinheiro · 以 Bun 與 pretext 打造",
   },
   ui: {
     skipLink: "跳至內容",
-    primaryNav: "章節",
     languageNav: "語言",
     theme: {
-      auto: "主題：跟隨系統",
       light: "主題：淺色",
       dark: "主題：深色",
     },

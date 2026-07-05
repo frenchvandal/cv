@@ -1,5 +1,12 @@
 # Proposition de design — Jorge Paula Pinheiro
 
+> **Statut (juillet 2026) : proposition historique, non retenue telle quelle.**
+> Le site implémenté a gardé le layout 2 colonnes / titres sticky / fade-up, mais
+> avec Noto Sans (multilingue, requis par la mesure pretext), l'accent indigo
+> `#6366f1` et un fond `#0a0a0a` — pas Space Grotesk ni le noir absolu, et pas
+> d'anneau orbital (les « orbs » de la section À propos en sont l'écho ludique).
+> Conservé comme référence d'intention visuelle.
+
 ## Inspiration
 Le site de [Moonshot AI](https://www.moonshot.ai) repose sur une esthétique **cosmos / noir absolu / luxe tech** :
 - fond `#000000` profond,

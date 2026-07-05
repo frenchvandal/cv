@@ -2,89 +2,170 @@
  * Static site generator (run by Bun: `bun scripts/build.ts`).
  *
  * 1. Bun.build bundles the HTML entry → JS/CSS/font assets with hashed names.
- * 2. For each language we take the built shell, inject the pre-rendered markup
- *    (the same pure `renderApp` the client uses) plus per-language <head> meta,
- *    and write sibling pages at the site root: index.html, fr.html, zh.html.
+ * 2. For each of the four languages we take the built shell, inject the
+ *    pre-rendered markup (the same pure `renderApp` the client uses) plus
+ *    per-language <head> meta and the @font-face rules (so fonts load before
+ *    any JS, and no-JS visitors get them too), and write sibling pages at the
+ *    site root: index.html, fr.html, zh.html, zh-hant.html.
  *
- * The three pages are siblings (same depth) so every asset path stays relative
- * (`./assets/…`) and the whole `dist/` uploads to any host/bucket path unchanged.
- * Set SITE_URL=https://example.com to emit absolute canonical/hreflang URLs.
+ * The pages are siblings (same depth) so every asset path stays relative
+ * (`./assets/…`) and the whole `dist/` uploads to any host/bucket path
+ * unchanged. Set SITE_URL=https://example.com to emit absolute canonical /
+ * hreflang URLs and a sitemap — search engines require absolute URLs there,
+ * so the GitHub Actions workflow sets it from the Pages base URL.
  */
 
-import { rm } from 'node:fs/promises';
-import { langUrl, renderApp } from '../src/render.ts';
-import { HTML_LANG, LANGS, type Lang, translations } from '../src/translations.ts';
+import { readdir, rm } from "node:fs/promises";
+import { langUrl, pageTitle, renderApp } from "../src/render.ts";
+import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
+import {
+  HTML_LANG,
+  type Lang,
+  LANGS,
+  PROFILE,
+  translations,
+} from "../src/translations.ts";
 
-const OUT = 'dist';
-const SITE = (process.env.SITE_URL ?? '').replace(/\/+$/, '');
+const OUT = "dist";
+const SITE = (process.env.SITE_URL ?? "").replace(/\/+$/, "");
+
+/** Open Graph wants underscore locales, not BCP-47 tags. */
+const OG_LOCALE: Record<Lang, string> = {
+  en: "en_US",
+  fr: "fr_FR",
+  zh: "zh_CN",
+  "zh-hant": "zh_TW",
+};
 
 function attr(value: string): string {
   return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /** Public URL of a language's page — relative by default, absolute when SITE_URL is set. */
 function href(lang: Lang): string {
   if (!SITE) return langUrl(lang);
-  return lang === 'en' ? `${SITE}/` : `${SITE}/${lang}.html`;
+  return lang === "en" ? `${SITE}/` : `${SITE}/${lang}.html`;
 }
 
 function outFile(lang: Lang): string {
-  return lang === 'en' ? `${OUT}/index.html` : `${OUT}/${lang}.html`;
+  return lang === "en" ? `${OUT}/index.html` : `${OUT}/${lang}.html`;
 }
 
 await rm(OUT, { recursive: true, force: true });
 
 const result = await Bun.build({
-  entrypoints: ['./index.html'],
+  entrypoints: ["./index.html"],
   outdir: OUT,
   minify: true,
-  sourcemap: 'linked',
-  publicPath: './',
-  naming: { asset: 'assets/[name]-[hash].[ext]' },
+  sourcemap: "linked",
+  publicPath: "./",
+  // Dynamic imports (the per-language hyphenation patterns) become their own
+  // chunks: a visitor only downloads the patterns of the language they read.
+  splitting: true,
+  naming: { asset: "assets/[name]-[hash].[ext]" },
 });
 
 if (!result.success) {
-  console.error('Bundle failed:');
+  console.error("Bundle failed:");
   for (const log of result.logs) console.error(log);
   process.exit(1);
 }
+
+/*
+ * @font-face for the pre-rendered pages. FONT_FACES from src/fonts.ts carries
+ * the families and unicode ranges; the URLs there are runtime file paths, so we
+ * remap each source basename to its emitted hashed asset in dist/assets.
+ */
+const fontAssets = (await readdir(`${OUT}/assets`)).filter((name) =>
+  name.endsWith(".woff2")
+);
+
+function distFontUrl(sourceUrl: string): string {
+  const base = sourceUrl.split("/").pop()!.replace(/\.woff2$/, "");
+  const match = fontAssets.find((name) => name.startsWith(`${base}-`));
+  if (!match) throw new Error(`No emitted asset found for font "${base}"`);
+  return `./assets/${match}`;
+}
+
+const distFontFaces = FONT_FACES.map((face) => ({
+  ...face,
+  url: distFontUrl(face.url),
+}));
+const fontsStyle = `<style data-fonts="ssg">${
+  fontFaceCss(distFontFaces)
+}</style>`;
+// Only the Latin subset is preloaded: every page needs it, while the CJK
+// subsets stay lazy behind their unicode-range.
+const latinFace = distFontFaces.find((face) => face.family === "Noto Sans")!;
+const fontPreload = `<link rel="preload" href="${
+  attr(latinFace.url)
+}" as="font" type="font/woff2" crossorigin />`;
 
 const shell = await Bun.file(`${OUT}/index.html`).text();
 
 for (const lang of LANGS) {
   const t = translations[lang];
-  const title = `Jorge Paula Pinheiro — ${t.hero.title}`;
-  const description = `${t.hero.title} · ${t.hero.location}`;
-  const content = renderApp(lang, 'dark');
+  const title = pageTitle(t);
+  const description = t.meta.description;
+  const content = renderApp(lang, "dark");
 
   const alternates = LANGS.map(
-    (l) => `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${attr(href(l))}" />`,
-  ).join('\n    ');
+    (l) =>
+      `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${
+        attr(href(l))
+      }" />`,
+  ).join("\n    ");
+
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: PROFILE.fullName,
+    email: `mailto:${PROFILE.email}`,
+    jobTitle: t.hero.title,
+    url: href(lang),
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Lausanne",
+      addressCountry: "CH",
+    },
+    sameAs: [PROFILE.spotifyUrl],
+    knowsLanguage: ["fr", "pt", "en", "zh"],
+  }).replace(/</g, "\\u003C");
 
   const headExtra = `
+    ${fontPreload}
+    ${fontsStyle}
     <link rel="canonical" href="${attr(href(lang))}" />
     ${alternates}
-    <link rel="alternate" hreflang="x-default" href="${attr(href('en'))}" />
+    <link rel="alternate" hreflang="x-default" href="${attr(href("en"))}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${attr(title)}" />
     <meta property="og:description" content="${attr(description)}" />
-    <meta property="og:locale" content="${HTML_LANG[lang]}" />`;
+    <meta property="og:url" content="${attr(href(lang))}" />
+    <meta property="og:locale" content="${OG_LOCALE[lang]}" />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json">${jsonLd}</script>`;
 
   const html = await new HTMLRewriter()
-    .on('html', {
+    .on("html", {
       element(el) {
-        el.setAttribute('lang', HTML_LANG[lang]);
-        el.setAttribute('data-lang', lang);
+        el.setAttribute("lang", HTML_LANG[lang]);
+        el.setAttribute("data-lang", lang);
       },
     })
-    .on('title', { element: (el) => el.setInnerContent(title) })
-    .on('meta[name="description"]', { element: (el) => el.setAttribute('content', description) })
-    .on('head', { element: (el) => el.append(headExtra, { html: true }) })
-    .on('#app', { element: (el) => el.setInnerContent(content, { html: true }) })
+    .on("title", { element: (el) => void el.setInnerContent(title) })
+    .on('meta[name="description"]', {
+      element: (el) => void el.setAttribute("content", description),
+    })
+    .on("style[data-loader]", { element: (el) => void el.remove() })
+    .on("head", { element: (el) => void el.append(headExtra, { html: true }) })
+    .on("#app", {
+      element: (el) => void el.setInnerContent(content, { html: true }),
+    })
     .transform(new Response(shell))
     .text();
 
@@ -92,4 +173,54 @@ for (const lang of LANGS) {
   console.log(`  ${outFile(lang)}  (${lang})`);
 }
 
-console.log(`\n✓ Pre-rendered ${LANGS.length} pages into ${OUT}/`);
+// Robots + sitemap (the sitemap needs absolute URLs, so it is SITE_URL-gated).
+const robots = [
+  "User-agent: *",
+  "Allow: /",
+  ...(SITE ? [`Sitemap: ${SITE}/sitemap.xml`] : []),
+  "",
+];
+await Bun.write(`${OUT}/robots.txt`, robots.join("\n"));
+console.log(`  ${OUT}/robots.txt`);
+
+if (SITE) {
+  const urls = LANGS.map(
+    (lang) => `  <url>\n    <loc>${attr(href(lang))}</loc>\n  </url>`,
+  ).join("\n");
+  const sitemap =
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+  await Bun.write(`${OUT}/sitemap.xml`, sitemap);
+  console.log(`  ${OUT}/sitemap.xml`);
+}
+
+// Friendly 404 for GitHub Pages (served for any unknown path).
+const notFound = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>404 — ${attr(PROFILE.fullName)}</title>
+    <style>
+      body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #f2f2f2;
+             display: grid; place-items: center; min-height: 100vh; margin: 0; }
+      main { text-align: center; }
+      a { color: #6366f1; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>404</h1>
+      <p>This page does not exist. <a href="./">Back to the CV</a>.</p>
+    </main>
+  </body>
+</html>
+`;
+await Bun.write(`${OUT}/404.html`, notFound);
+console.log(`  ${OUT}/404.html`);
+
+console.log(
+  `\n✓ Pre-rendered ${LANGS.length} pages into ${OUT}/${
+    SITE ? "" : " (relative URLs — set SITE_URL for canonical/hreflang/sitemap)"
+  }`,
+);

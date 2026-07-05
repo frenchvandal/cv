@@ -3,28 +3,39 @@
  *
  * Noto changes very rarely, so the .woff2 files are committed and the normal
  * build stays hermetic (offline/CI-safe, deterministic). Run this ONLY when the
- * text in src/translations.ts gains new characters — especially Chinese ones —
- * so the subset covers them. It re-extracts the exact glyph set, fetches the
- * matching Noto Sans / Noto Sans SC / Noto Sans TC subsets, and rewrites
+ * user-visible text gains new characters — especially Chinese ones — so the
+ * subset covers them. It re-extracts the exact glyph set, fetches the matching
+ * Noto Sans / Noto Sans SC / Noto Sans TC subsets, and rewrites
  * src/fonts/*.woff2 and src/fonts.ts (with fresh unicode-range values).
  *
- * The two Chinese glyph sets are extracted per language (from the imported
- * translation objects, not the raw file): Simplified and Traditional pages each
- * ship only their own script, and shared codepoints get the right regional
- * glyph variant from their respective family (SC = PRC forms, TC = Taiwan MOE).
+ * Latin glyphs are scanned from every source file that contains user-visible
+ * literals (translations.ts AND render.ts — e.g. the ↗ link arrow lives in the
+ * markup, not the translations). The two Chinese glyph sets are extracted per
+ * language (from the imported translation objects, not the raw file):
+ * Simplified and Traditional pages each ship only their own script, and shared
+ * codepoints get the right regional glyph variant from their respective family
+ * (SC = PRC forms, TC = Taiwan MOE).
  */
 
-import { translations } from '../src/translations.ts';
+import { translations } from "../src/translations.ts";
 
 const UA =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 
-const source = await Bun.file('src/translations.ts').text();
+/** Files whose string literals can reach the page in the Latin-script languages. */
+const LATIN_SOURCES = ["src/translations.ts", "src/render.ts"];
 
-function unique(text: string, pred: (cp: number, ch: string) => boolean): string {
+const sources = (
+  await Promise.all(LATIN_SOURCES.map((path) => Bun.file(path).text()))
+).join("");
+
+function unique(
+  text: string,
+  pred: (cp: number, ch: string) => boolean,
+): string {
   const set = new Set<string>();
   for (const ch of text) if (pred(ch.codePointAt(0)!, ch)) set.add(ch);
-  return [...set].sort().join('');
+  return [...set].sort().join("");
 }
 
 const isLatin = (cp: number): boolean =>
@@ -32,42 +43,60 @@ const isLatin = (cp: number): boolean =>
   (cp >= 0xa0 && cp <= 0x24f) ||
   (cp >= 0x2010 && cp <= 0x203a) ||
   cp === 0x20ac ||
-  cp === 0xb0;
+  cp === 0xb0 ||
+  cp === 0x2197; // ↗ (external-link arrow in render.ts)
 const isCjk = (cp: number, ch: string): boolean =>
-  (cp >= 0x4e00 && cp <= 0x9fff) || '（）：，。—·、'.includes(ch);
+  (cp >= 0x4e00 && cp <= 0x9fff) || "（）：，。—·、".includes(ch);
 
-const latin = unique(source, (cp) => isLatin(cp));
+const latin = unique(sources, (cp) => isLatin(cp));
 const sc = unique(JSON.stringify(translations.zh), isCjk);
-const tc = unique(JSON.stringify(translations['zh-hant']), isCjk);
+const tc = unique(JSON.stringify(translations["zh-hant"]), isCjk);
 
-console.log(`Glyphs — Latin: ${latin.length}, SC: ${sc.length}, TC: ${tc.length}`);
+console.log(
+  `Glyphs — Latin: ${latin.length}, SC: ${sc.length}, TC: ${tc.length}`,
+);
 
-async function subset(family: string, text: string): Promise<{ url: string; range: string }> {
+async function subset(
+  family: string,
+  text: string,
+): Promise<{ url: string; range: string }> {
   const cssUrl =
     `https://fonts.googleapis.com/css2?family=${family}:wght@400..800` +
     `&text=${encodeURIComponent(text)}&display=swap`;
-  const css = await (await fetch(cssUrl, { headers: { 'User-Agent': UA } })).text();
+  const response = await fetch(cssUrl, { headers: { "User-Agent": UA } });
+  if (!response.ok) {
+    throw new Error(
+      `Fetching CSS for ${family} failed: HTTP ${response.status}`,
+    );
+  }
+  const css = await response.text();
   const url = css.match(/url\((https:\/\/[^)]+)\)/)?.[1];
   const range = css.match(/unicode-range:\s*([^;]+);/)?.[1]?.trim();
-  if (!url || !range) throw new Error(`Could not parse @font-face for ${family}`);
+  if (!url || !range) {
+    throw new Error(`Could not parse @font-face for ${family}`);
+  }
   return { url, range };
 }
 
 const [latinFont, scFont, tcFont] = await Promise.all([
-  subset('Noto+Sans', latin),
-  subset('Noto+Sans+SC', sc),
-  subset('Noto+Sans+TC', tc),
+  subset("Noto+Sans", latin),
+  subset("Noto+Sans+SC", sc),
+  subset("Noto+Sans+TC", tc),
 ]);
 
 async function download(url: string, path: string): Promise<void> {
-  const bytes = await (await fetch(url, { headers: { 'User-Agent': UA } })).arrayBuffer();
+  const response = await fetch(url, { headers: { "User-Agent": UA } });
+  if (!response.ok) {
+    throw new Error(`Downloading ${url} failed: HTTP ${response.status}`);
+  }
+  const bytes = await response.arrayBuffer();
   await Bun.write(path, bytes);
   console.log(`  wrote ${path} (${Math.round(bytes.byteLength / 1024)} KB)`);
 }
 
-await download(latinFont.url, 'src/fonts/noto-sans-latin.woff2');
-await download(scFont.url, 'src/fonts/noto-sans-sc.woff2');
-await download(tcFont.url, 'src/fonts/noto-sans-tc.woff2');
+await download(latinFont.url, "src/fonts/noto-sans-latin.woff2");
+await download(scFont.url, "src/fonts/noto-sans-sc.woff2");
+await download(tcFont.url, "src/fonts/noto-sans-tc.woff2");
 
 const fontsTs = `/*
  * Self-hosted Noto Sans (Latin) + Noto Sans SC/TC (subset to the glyphs used).
@@ -75,10 +104,15 @@ const fontsTs = `/*
  *
  * The woff2 files are imported (not referenced via CSS \`url()\`): Bun inlines
  * CSS-referenced fonts as base64, but a JS import goes through the \`file\` loader
- * and is emitted as a separate hashed asset. We then inject the @font-face rules
- * at runtime with those build-time URLs. \`unicode-range\` keeps the CJK files lazy,
- * and each page's \`--font\` stack names only its own CJK family (SC or TC), so a
- * visitor never downloads a Chinese subset they don't read.
+ * and is emitted as a separate hashed asset. \`unicode-range\` keeps the CJK files
+ * lazy, and each page's \`--font\` stack names only its own CJK family (SC or TC),
+ * so a visitor never downloads a Chinese subset they don't read.
+ *
+ * The @font-face rules exist in two places, on purpose:
+ *   - the SSG build ([scripts/build.ts](scripts/build.ts)) inlines them into each
+ *     pre-rendered <head> (fonts load before JS, and no-JS visitors get them too);
+ *   - this module injects them at runtime as a fallback for the dev shell, and
+ *     skips itself when the build-injected <style data-fonts> is already present.
  *
  * A named font (not \`system-ui\`) is required for accurate pretext measurement.
  */
@@ -91,17 +125,34 @@ const LATIN_RANGE = '${latinFont.range}';
 const SC_RANGE = '${scFont.range}';
 const TC_RANGE = '${tcFont.range}';
 
-const css = [
-  \`@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400 800;font-display:swap;src:url(\${latinUrl}) format('woff2');unicode-range:\${LATIN_RANGE};}\`,
-  \`@font-face{font-family:'Noto Sans SC';font-style:normal;font-weight:400 800;font-display:swap;src:url(\${scUrl}) format('woff2');unicode-range:\${SC_RANGE};}\`,
-  \`@font-face{font-family:'Noto Sans TC';font-style:normal;font-weight:400 800;font-display:swap;src:url(\${tcUrl}) format('woff2');unicode-range:\${TC_RANGE};}\`,
-].join('');
+/** The three subsets with their build-emitted URLs and unicode ranges. */
+export const FONT_FACES = [
+  { family: 'Noto Sans', url: latinUrl, range: LATIN_RANGE },
+  { family: 'Noto Sans SC', url: scUrl, range: SC_RANGE },
+  { family: 'Noto Sans TC', url: tcUrl, range: TC_RANGE },
+] as const;
 
-const style = document.createElement('style');
-style.textContent = css;
-document.head.appendChild(style);
+/** @font-face rules for the given subset URLs (SSG passes its own hashed paths). */
+export function fontFaceCss(
+  faces: readonly { family: string; url: string; range: string }[],
+): string {
+  return faces
+    .map(
+      (f) =>
+        \`@font-face{font-family:'\${f.family}';font-style:normal;font-weight:400 800;font-display:swap;src:url(\${f.url}) format('woff2');unicode-range:\${f.range};}\`,
+    )
+    .join('');
+}
+
+// Runtime fallback for the dev shell; pre-rendered pages already carry the rules.
+if (typeof document !== 'undefined' && !document.querySelector('style[data-fonts]')) {
+  const style = document.createElement('style');
+  style.dataset.fonts = 'runtime';
+  style.textContent = fontFaceCss(FONT_FACES);
+  document.head.appendChild(style);
+}
 `;
 
-await Bun.write('src/fonts.ts', fontsTs);
-console.log('  wrote src/fonts.ts');
-console.log('\n✓ Fonts regenerated. Rebuild with `bun run build`.');
+await Bun.write("src/fonts.ts", fontsTs);
+console.log("  wrote src/fonts.ts");
+console.log("\n✓ Fonts regenerated. Rebuild with `bun run build`.");

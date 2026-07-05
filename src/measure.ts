@@ -9,12 +9,14 @@
  *   2. fitSectionTitles — size the sticky section titles so the longest one fits
  *      its column at every language, instead of being truncated with an ellipsis.
  *
- * The site renders with self-hosted Noto Sans / Noto Sans SC — named fonts, which
- * pretext requires for accuracy (system-ui is explicitly unsafe). Measurement
- * waits for `document.fonts.ready` so it runs against the real glyphs, and each
- * fit keeps a small safety margin (MEASURE_SAFETY) as insurance against sub-pixel
- * rounding: the hero name lands a hair inside the edge, titles shrink a touch
- * early rather than clipping.
+ * The site renders with self-hosted Noto Sans / Noto Sans SC/TC — named fonts,
+ * which pretext requires for accuracy (system-ui is explicitly unsafe). Callers
+ * pass the page's computed font stack via `FitFont.family` so CJK text is
+ * measured with the family it actually renders in (SC on zh, TC on zh-hant).
+ * Measurement waits for `document.fonts.ready` so it runs against the real
+ * glyphs, and each fit keeps a small safety margin (MEASURE_SAFETY) as insurance
+ * against sub-pixel rounding: the hero name lands a hair inside the edge, titles
+ * shrink a touch early rather than clipping.
  */
 
 import { measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext";
@@ -25,9 +27,11 @@ const REFERENCE_PX = 100;
 /** Fraction we shrink every fit by, as insurance against rounding — invisible, never overflows. */
 const MEASURE_SAFETY = 0.98;
 
-/** Mirrors the CSS `--font` stack so canvas falls back like the DOM. */
-const FONT_STACK =
-  "'Noto Sans', 'Noto Sans SC', system-ui, -apple-system, sans-serif";
+/**
+ * Fallback stack when the caller passes no `family`. Latin-only; CJK pages must
+ * pass the computed per-page stack (SC vs TC) for the measurement to be exact.
+ */
+const FONT_STACK = "'Noto Sans', system-ui, -apple-system, sans-serif";
 
 export interface FitFont {
   weight: number;
@@ -120,7 +124,7 @@ export interface FitTitlesOptions extends FitFont {
  * Gives every section title one uniform size: the largest size (capped at
  * `maxPx`) at which the *longest* title still fits the column. Prevents the
  * ellipsis truncation the CSS falls back to, and keeps titles visually
- * consistent as you scroll — across all three languages. On narrow viewports
+ * consistent as you scroll — across all four languages. On narrow viewports
  * the titles wrap normally, so any inline size is cleared.
  */
 export function fitSectionTitles(
@@ -182,8 +186,8 @@ export interface AuditEntry {
 /**
  * Dev-only, pretext-powered QA: without switching languages or touching the DOM,
  * report any section title that cannot render at `maxPx` within its column in
- * EN / FR / ZH — i.e. that the fitter must shrink. Catches a localized label
- * that would otherwise overflow, browser-tab-free.
+ * any of the four languages — i.e. that the fitter must shrink. Catches a
+ * localized label that would otherwise overflow, browser-tab-free.
  */
 export function auditSectionTitles(
   labelsByLang: Record<string, string[]>,

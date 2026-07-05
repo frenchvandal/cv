@@ -32,16 +32,26 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Pinned to the same major.minor as package.json's engines field so
+          # deploys are reproducible; bump deliberately.
+          bun-version: "1.3.x"
 
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Test
+        run: bun test
 
       - name: Build
         run: bun run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+        env:
+          # Absolute base URL of the deployed site, so the build emits valid
+          # (absolute) canonical/hreflang URLs and a sitemap.
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

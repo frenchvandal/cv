@@ -1,17 +1,23 @@
 /*
  * Pure, side-effect-free rendering. Every function takes data and returns an
  * HTML string — no DOM access — so the exact same code runs in two places:
- *   - the client ([src/main.ts](src/main.ts)) to (re)render on language/theme change,
+ *   - the client ([src/main.ts](src/main.ts)) to (re)render on language change,
  *   - the static build ([scripts/build.ts](scripts/build.ts)) to pre-render each
  *     language page at build time (SEO, link previews, no-JS content).
  */
 
-import { LANG_LABEL, LANGS, translations, type Lang, type Translation } from './translations';
+import {
+  HTML_LANG,
+  LANG_LABEL,
+  LANG_NAME,
+  LANGS,
+  PROFILE,
+  translations,
+  type Lang,
+  type Translation,
+} from './translations';
 
 export type Theme = 'light' | 'dark';
-
-const EMAIL = 'jorge.paulapinheiro@gmail.com';
-const SPOTIFY = 'https://open.spotify.com/intl-fr/artist/0CKa7wVI7tiJaFdIBNHw8T';
 
 function escapeHtml(text: string): string {
   return text
@@ -23,50 +29,56 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Relative URL to a language's page. All three pages are siblings at the site
- * root (`index.html`, `fr.html`, `zh.html`), so the link is the same from any
- * page and works under any deploy path — no base tag, no absolute origin.
+ * Relative URL to a language's page. All four pages are siblings at the site
+ * root (`index.html`, `fr.html`, `zh.html`, `zh-hant.html`), so the link is the
+ * same from any page and works under any deploy path — no base tag, no absolute
+ * origin.
  */
 export function langUrl(lang: Lang): string {
   return lang === 'en' ? './' : `${lang}.html`;
 }
 
+/** Document title for a language's page — shared by the SSG build and the client. */
+export function pageTitle(t: Translation): string {
+  return `${PROFILE.fullName} — ${t.hero.title}`;
+}
+
 function controls(t: Translation, lang: Lang, theme: Theme): string {
   const isLight = theme === 'light';
-  const languages = LANGS.map((code) => ({ code, label: LANG_LABEL[code] }));
 
   return `
-    <div class="controls" role="toolbar" aria-label="${escapeHtml(t.ui.primaryNav)}">
-      ${languages
-        .map(
-          (l) => `
-        <a href="${langUrl(l.code)}" data-lang="${l.code}"${lang === l.code ? ' aria-current="page"' : ''} aria-label="${escapeHtml(t.ui.languageNav)} ${l.code}">
-          ${l.label}
+    <nav class="controls" aria-label="${escapeHtml(t.ui.languageNav)}">
+      ${LANGS.map(
+    (code) => `
+        <a href="${langUrl(code)}" hreflang="${HTML_LANG[code]}" data-lang="${code}"${lang === code ? ' aria-current="page"' : ''} aria-label="${escapeHtml(LANG_NAME[code])}">
+          <span lang="${HTML_LANG[code]}">${LANG_LABEL[code]}</span>
         </a>`,
-        )
-        .join('')}
+  ).join('')}
       <button type="button" class="controls__theme" data-theme-toggle aria-label="${escapeHtml(isLight ? t.ui.theme.dark : t.ui.theme.light)}">
         ${isLight ? '☾' : '☀'}
       </button>
-    </div>
+    </nav>
   `;
 }
 
 function hero(t: Translation): string {
   return `
     <section class="hero" id="top" aria-label="Introduction">
-      <a class="skip-link" href="#about">${escapeHtml(t.ui.skipLink)}</a>
       <div class="hero__eyebrow animate">${escapeHtml(t.hero.greeting)}</div>
       <h1 class="hero__name">
-        <span class="hero__name-line animate animate--delayed-1">JORGE</span>
-        <span class="hero__name-line animate animate--delayed-2">PAULA PINHEIRO</span>
+        ${PROFILE.nameLines
+      .map(
+        (line, i) =>
+          `<span class="hero__name-line animate animate--delayed-${i + 1}">${escapeHtml(line)}</span>`,
+      )
+      .join('\n        ')}
       </h1>
       <p class="hero__title animate animate--delayed-3">
         ${escapeHtml(t.hero.title)}
       </p>
       <p class="hero__location animate animate--delayed-4">${escapeHtml(t.hero.location)}</p>
       <div class="hero__actions animate animate--delayed-5">
-        <a class="button" href="mailto:${EMAIL}">${escapeHtml(t.hero.ctaPrimary)}</a>
+        <a class="button" href="mailto:${PROFILE.email}">${escapeHtml(t.hero.ctaPrimary)}</a>
         <a class="button button--ghost" href="#experience">${escapeHtml(t.hero.ctaSecondary)}</a>
       </div>
     </section>
@@ -75,8 +87,16 @@ function hero(t: Translation): string {
 
 function sectionTitle(t: Translation, id: keyof Translation['nav'], index: number): string {
   const label = `0${index + 1}`;
-  return `<h2 class="section__title animate" id="${id}"><span>${label}</span>${escapeHtml(t.nav[id])}</h2>`;
+  return `<h2 class="section__title animate" id="${id}" tabindex="-1"><span aria-hidden="true">${label}</span>${escapeHtml(t.nav[id])}</h2>`;
 }
+
+/** Stat values are language-invariant; labels come from the translation. */
+const STATS: readonly { value: string; label: (t: Translation) => string }[] = [
+  { value: '8', label: (t) => t.about.stats.years },
+  { value: '5.66', label: (t) => t.about.stats.gpa },
+  { value: '4', label: (t) => t.about.stats.languages },
+  { value: '152', label: (t) => t.about.stats.ects },
+];
 
 function about(t: Translation): string {
   return `
@@ -87,22 +107,13 @@ function about(t: Translation): string {
         <p class="kp">${escapeHtml(t.about.p2)}</p>
         <p class="kp">${escapeHtml(t.about.p3)}</p>
         <div class="stats animate">
-          <div class="stat" data-count="8">
-            <div class="stat__label">${escapeHtml(t.about.stats.years)}</div>
-            <div class="stat__value">8</div>
-          </div>
-          <div class="stat" data-count="5.66">
-            <div class="stat__label">${escapeHtml(t.about.stats.gpa)}</div>
-            <div class="stat__value">5.66</div>
-          </div>
-          <div class="stat" data-count="4">
-            <div class="stat__label">${escapeHtml(t.about.stats.languages)}</div>
-            <div class="stat__value">4</div>
-          </div>
-          <div class="stat" data-count="152">
-            <div class="stat__label">${escapeHtml(t.about.stats.ects)}</div>
-            <div class="stat__value">152</div>
-          </div>
+          ${STATS.map(
+    (stat) => `
+          <div class="stat" data-count="${stat.value}">
+            <div class="stat__label">${escapeHtml(stat.label(t))}</div>
+            <div class="stat__value">${stat.value}</div>
+          </div>`,
+  ).join('')}
         </div>
       </div>
     </section>
@@ -232,21 +243,33 @@ function skills(t: Translation): string {
     t.skills.programming,
     t.skills.soft,
   ];
+  const languages = [
+    t.skills.languages.french,
+    t.skills.languages.portuguese,
+    t.skills.languages.english,
+    t.skills.languages.chinese,
+  ];
   return `
     <section class="section" aria-labelledby="skills">
       <div>${sectionTitle(t, 'skills', 3)}</div>
       <div class="section__body animate">
         ${groups
-          .map(
-            (group) => `
+      .map(
+        (group) => `
           <div class="card">
             <h3 class="card__subtitle" style="margin-bottom: var(--space-xs)">${escapeHtml(group.title)}</h3>
             <div class="tags">
               ${group.tags.map((item) => `<span class="tag">${escapeHtml(item)}</span>`).join('')}
             </div>
           </div>`,
-          )
-          .join('')}
+      )
+      .join('')}
+        <div class="card">
+          <h3 class="card__subtitle" style="margin-bottom: var(--space-xs)">${escapeHtml(t.skills.languages.title)}</h3>
+          <div class="tags">
+            ${languages.map((l) => `<span class="tag">${escapeHtml(l.name)} · ${escapeHtml(l.level)}</span>`).join('')}
+          </div>
+        </div>
       </div>
     </section>
   `;
@@ -265,15 +288,15 @@ function hobbies(t: Translation): string {
       <div>${sectionTitle(t, 'hobbies', 4)}</div>
       <div class="section__body animate">
         ${items
-          .map(
-            (item) => `
+      .map(
+        (item) => `
           <article class="card">
             <h3 class="card__title">${escapeHtml(item.title)}</h3>
             <p style="color: var(--fg-muted)">${escapeHtml(item.desc)}</p>
-            ${'hasLink' in item ? `<a class="contact__link" href="${SPOTIFY}" target="_blank" rel="noopener" style="font-size: 1rem; margin-top: var(--space-xs); display: inline-block">${escapeHtml(item.link)} ↗</a>` : ''}
+            ${'hasLink' in item ? `<a class="contact__link" href="${PROFILE.spotifyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 1rem; margin-top: var(--space-xs); display: inline-block">${escapeHtml(item.link)} ↗</a>` : ''}
           </article>`,
-          )
-          .join('')}
+      )
+      .join('')}
       </div>
     </section>
   `;
@@ -282,12 +305,12 @@ function hobbies(t: Translation): string {
 function contact(t: Translation): string {
   return `
     <section class="contact" aria-labelledby="contact">
-      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span>06</span>${escapeHtml(t.nav.contact)}</h2>
+      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span aria-hidden="true">06</span>${escapeHtml(t.nav.contact)}</h2>
       <p class="animate" style="color: var(--fg-muted); margin-bottom: var(--space-md); max-width: 50rem">${escapeHtml(t.contact.intro)}</p>
       <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg)">
         <div>
           <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${escapeHtml(t.contact.emailLabel)}</p>
-          <a class="contact__link" href="mailto:${EMAIL}">${EMAIL}</a>
+          <a class="contact__link" href="mailto:${PROFILE.email}">${PROFILE.email}</a>
         </div>
         <div>
           <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${escapeHtml(t.contact.locationLabel)}</p>
@@ -305,7 +328,8 @@ function contact(t: Translation): string {
 export function renderApp(lang: Lang, theme: Theme): string {
   const t = translations[lang];
   return `
-    <div class="page" data-lang="${lang}" data-theme="${theme}">
+    <div class="page" data-lang="${lang}">
+      <a class="skip-link" href="#about">${escapeHtml(t.ui.skipLink)}</a>
       ${controls(t, lang, theme)}
       ${hero(t)}
       ${about(t)}
