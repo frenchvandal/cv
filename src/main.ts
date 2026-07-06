@@ -333,6 +333,35 @@ function observeSections(): void {
   revealObserver = observer;
 }
 
+let backToTopObserver: IntersectionObserver | null = null;
+
+/**
+ * Show the back-to-top link only once the hero has fully scrolled out of view
+ * (i.e. the reader is inside a section). The link itself is a plain `#top`
+ * anchor — scrolling and focus are native, JS only toggles visibility.
+ */
+function observeBackToTop(): void {
+  if (!app) return;
+  backToTopObserver?.disconnect();
+  backToTopObserver = null;
+
+  const link = app.querySelector<HTMLElement>("[data-back-to-top]");
+  if (!link) return;
+
+  const hero = app.querySelector<HTMLElement>(".hero");
+  if (!hero || !("IntersectionObserver" in globalThis)) {
+    link.classList.add("is-visible"); // can't track the hero: keep the link usable
+    return;
+  }
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry) return;
+    link.classList.toggle("is-visible", !entry.isIntersecting);
+  });
+  observer.observe(hero);
+  backToTopObserver = observer;
+}
+
 /* ------------------------------------------------------------------ *
  * Rendering & navigation
  * ------------------------------------------------------------------ */
@@ -362,6 +391,7 @@ function bindEvents(): void {
 
 function afterPaint(): void {
   observeSections();
+  observeBackToTop();
   whenFontsReady(() => {
     applyMeasuredLayout();
     void enhanceAbout();

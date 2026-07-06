@@ -324,6 +324,19 @@ function contact(t: Translation): string {
   `;
 }
 
+/**
+ * Back-to-top: a plain anchor to the hero (`#top`), so it works without JS —
+ * CSS smooth scrolling and native fragment focus handling do the rest. With JS,
+ * [src/main.ts](src/main.ts) only toggles its visibility once the hero scrolls out.
+ */
+function backToTop(t: Translation): string {
+  return `
+    <a class="back-to-top" href="#top" data-back-to-top aria-label="${escapeHtml(t.ui.backToTop)}">
+      <span aria-hidden="true">↑</span>
+    </a>
+  `;
+}
+
 /** The full page markup for one language and theme. */
 export function renderApp(lang: Lang, theme: Theme): string {
   const t = translations[lang];
@@ -338,6 +351,7 @@ export function renderApp(lang: Lang, theme: Theme): string {
       ${skills(t)}
       ${hobbies(t)}
       ${contact(t)}
+      ${backToTop(t)}
     </div>
   `;
 }

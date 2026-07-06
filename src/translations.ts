@@ -283,6 +283,7 @@ const en = {
   ui: {
     skipLink: "Skip to content",
     languageNav: "Language",
+    backToTop: "Back to top",
     theme: {
       light: "Theme: light",
       dark: "Theme: dark",
@@ -534,6 +535,7 @@ const fr: Translation = {
   ui: {
     skipLink: "Aller au contenu",
     languageNav: "Langue",
+    backToTop: "Revenir en haut",
     theme: {
       light: "Thème : clair",
       dark: "Thème : sombre",
@@ -761,6 +763,7 @@ const zh: Translation = {
   ui: {
     skipLink: "跳到内容",
     languageNav: "语言",
+    backToTop: "返回顶部",
     theme: {
       light: "主题：浅色",
       dark: "主题：深色",
@@ -988,6 +991,7 @@ const zhHant: Translation = {
   ui: {
     skipLink: "跳至內容",
     languageNav: "語言",
+    backToTop: "返回頂部",
     theme: {
       light: "主題：淺色",
       dark: "主題：深色",
