@@ -1,3 +1,4 @@
+import { feature } from "bun:bundle";
 import "./fonts";
 import "./styles.css";
 import { HTML_LANG, type Lang, LANGS, translations } from "./translations";
@@ -457,7 +458,13 @@ function init(): void {
     }, 150),
     { passive: true },
   );
-  whenFontsReady(auditTitles);
+  // Dev-only diagnostic. The production build passes `features: ["PROD"]`, so
+  // this branch compiles to `if (false)` and the whole audit (auditTitles +
+  // auditSectionTitles) is tree-shaken out of the bundle; the dev server never
+  // sets feature flags, so it always runs there.
+  if (!feature("PROD")) {
+    whenFontsReady(auditTitles);
+  }
 }
 
 init();

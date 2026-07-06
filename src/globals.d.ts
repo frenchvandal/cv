@@ -8,6 +8,14 @@ declare module "*.woff2" {
   export default url;
 }
 
+// Compile-time feature flags (`bun:bundle`). "PROD" is only set by the
+// scripts/build.ts bundle; flags are always false under the dev server.
+declare module "bun:bundle" {
+  interface Registry {
+    features: "PROD";
+  }
+}
+
 // `hyphen` ships no types; it inserts U+00AD (soft hyphen) at syllable boundaries.
 declare module "hyphen/en" {
   export function hyphenateSync(text: string): string;

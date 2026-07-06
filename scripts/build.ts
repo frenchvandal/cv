@@ -55,9 +55,17 @@ function outFile(lang: Lang): string {
   return lang === "en" ? `${OUT}/index.html` : `${OUT}/${lang}.html`;
 }
 
+// The typecheck gates the build but shares no data with it, so it runs
+// concurrently with the bundle; its exit code is awaited at the end.
+const typecheck = Bun.spawn(["./node_modules/.bin/tsc", "--noEmit"], {
+  stdout: "inherit",
+  stderr: "inherit",
+});
+
 await rm(OUT, { recursive: true, force: true });
 
-const result = await Bun.build({
+// Throws an AggregateError carrying the logs if the bundle fails.
+await Bun.build({
   entrypoints: ["./index.html"],
   outdir: OUT,
   minify: true,
@@ -66,14 +74,16 @@ const result = await Bun.build({
   // Dynamic imports (the per-language hyphenation patterns) become their own
   // chunks: a visitor only downloads the patterns of the language they read.
   splitting: true,
-  naming: { asset: "assets/[name]-[hash].[ext]" },
+  // Everything but the HTML pages lives under assets/, content-hashed, so
+  // far-future caching stays safe and deploys invalidate cleanly.
+  naming: {
+    chunk: "assets/[name]-[hash].[ext]",
+    asset: "assets/[name]-[hash].[ext]",
+  },
+  // `feature("PROD")` (bun:bundle) compiles to `true` here: dev-only paths
+  // guarded by `!feature("PROD")` are dead-code-eliminated from the bundle.
+  features: ["PROD"],
 });
-
-if (!result.success) {
-  console.error("Bundle failed:");
-  for (const log of result.logs) console.error(log);
-  process.exit(1);
-}
 
 /*
  * @font-face for the pre-rendered pages. FONT_FACES from src/fonts.ts carries
@@ -104,6 +114,15 @@ const latinFace = distFontFaces.find((face) => face.family === "Noto Sans")!;
 const fontPreload = `<link rel="preload" href="${
   attr(latinFace.url)
 }" as="font" type="font/woff2" crossorigin />`;
+
+/*
+ * Social preview image. Not referenced by the bundle (it only appears in meta
+ * tags), so it is copied by hand — unhashed, because scrapers cache by URL and
+ * the tags need a stable name. Scrapers also require an absolute URL, so the
+ * og:image/twitter tags are SITE_URL-gated like the sitemap.
+ */
+const OG_IMAGE = "og-image.png";
+await Bun.write(`${OUT}/${OG_IMAGE}`, Bun.file(`public/${OG_IMAGE}`));
 
 const shell = await Bun.file(`${OUT}/index.html`).text();
 
@@ -146,8 +165,18 @@ for (const lang of LANGS) {
     <meta property="og:title" content="${attr(title)}" />
     <meta property="og:description" content="${attr(description)}" />
     <meta property="og:url" content="${attr(href(lang))}" />
-    <meta property="og:locale" content="${OG_LOCALE[lang]}" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:locale" content="${OG_LOCALE[lang]}" />${
+    SITE
+      ? `
+    <meta property="og:image" content="${SITE}/${OG_IMAGE}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${attr(title)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="${SITE}/${OG_IMAGE}" />`
+      : `
+    <meta name="twitter:card" content="summary" />`
+  }
     <script type="application/ld+json">${jsonLd}</script>`;
 
   const html = await new HTMLRewriter()
@@ -218,6 +247,11 @@ const notFound = `<!doctype html>
 `;
 await Bun.write(`${OUT}/404.html`, notFound);
 console.log(`  ${OUT}/404.html`);
+
+if ((await typecheck.exited) !== 0) {
+  console.error("\n✗ Typecheck failed — dist/ was written, but the build is rejected.");
+  process.exit(1);
+}
 
 console.log(
   `\n✓ Pre-rendered ${LANGS.length} pages into ${OUT}/${

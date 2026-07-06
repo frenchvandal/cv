@@ -50,8 +50,10 @@ bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are a
 `bun run build` produces a self-contained `dist/` with **relative asset paths**, so it
 uploads to any static host or cloud-storage bucket — at any path — with no configuration
 (and works on GitHub Pages too). Set `SITE_URL=https://example.com` before building to emit
-absolute canonical / `hreflang` URLs and a sitemap (search engines require absolute URLs
-there).
+absolute canonical / `hreflang` URLs, a sitemap, and the `og:image` / Twitter-card tags for
+social link previews (search engines and social scrapers require absolute URLs there). The
+preview image itself is [public/og-image.png](public/og-image.png), copied to the site root
+at build time.
 
 The included GitHub Actions workflow builds with Bun and publishes `dist/` to Pages; it
 sets `SITE_URL` automatically from the Pages base URL. A second workflow type-checks,
