@@ -40,7 +40,7 @@ progressively enhanced with pretext-driven typography. No framework.
 bun install            # install dependencies
 bun run dev            # dev server with HMR → http://localhost:3000/
 bun run build          # type-check + pre-render the 4 pages into dist/
-bun run check          # tsc --noEmit (the type gate)
+bun run check          # tsgo --noEmit (TypeScript 7 native compiler, the type gate)
 bun test               # Knuth–Plass unit tests (canvas-free, injected measure)
 bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
 ```

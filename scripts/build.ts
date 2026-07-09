@@ -57,7 +57,7 @@ function outFile(lang: Lang): string {
 
 // The typecheck gates the build but shares no data with it, so it runs
 // concurrently with the bundle; its exit code is awaited at the end.
-const typecheck = Bun.spawn(["./node_modules/.bin/tsc", "--noEmit"], {
+const typecheck = Bun.spawn(["./node_modules/.bin/tsgo", "--noEmit"], {
   stdout: "inherit",
   stderr: "inherit",
 });

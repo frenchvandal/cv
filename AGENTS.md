@@ -10,9 +10,9 @@ has none of them.
 
 - **Runtime/tooling:** Bun (package manager, dev server, bundler). No Vite, no Webpack.
   - `bun run dev` → `bun ./index.html` (dev server + HMR, http://localhost:3000/).
-  - `bun run build` → `tsc --noEmit && bun scripts/build.ts` (bundle + pre-render the
-    four language pages into `dist/`).
-  - `bun run check` → `tsc --noEmit` (the type gate). `bun test` → unit tests.
+  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render the four language
+    pages into `dist/`; runs `tsgo --noEmit` concurrently and gates on it).
+  - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
   rendered into `#app` by [src/main.ts](src/main.ts). Content lives in
   [src/translations.ts](src/translations.ts) (EN / FR / zh-Hans / zh-Hant). Text
@@ -58,7 +58,7 @@ bundler-agnostic:
 ## 4. tsconfig — the safety contract
 
 Current config is `strict` with `noUnusedLocals`, `noUnusedParameters`,
-`noFallthroughCasesInSwitch`, `moduleResolution: "bundler"`, **plus** the three
+`noFallthroughCasesInSwitch`, `moduleResolution: "bundler"`, **plus** the five
 flags below (enabled — keep them on; each catches a real class of bug):
 
 - **`noUncheckedIndexedAccess`** — array/record access returns `T | undefined`.
@@ -68,6 +68,12 @@ flags below (enabled — keep them on; each catches a real class of bug):
   (matters for the optional fields in `FitFont`/fit options in `measure.ts`).
 - **`verbatimModuleSyntax`** — forces explicit `import type`, guaranteeing clean
   erasure under Bun.
+- **`erasableSyntaxOnly`** — bans runtime TS syntax (enums, namespaces, parameter
+  properties). Bun executes these files by *stripping* types, so anything
+  non-erasable would silently change runtime behavior; this makes it a type error.
+- **`noUncheckedSideEffectImports`** — side-effect imports (`import "./styles.css"`)
+  must resolve to a declared module (see `src/globals.d.ts`) instead of being
+  silently ignored when the path is wrong.
 
 `include` covers both `src/` and `scripts/` (the build and font scripts are typed
 against `@types/bun`). Keep `target` on an evergreen baseline (ES2022+); this site
@@ -75,9 +81,10 @@ targets modern browsers only, so don't down-level.
 
 ## 5. Tooling & quality gates
 
-- **Type checking is the gate:** `tsc --noEmit` runs in `build` and in CI. Keep it green.
-  (Optional speed-up: TypeScript 7 — the Go compiler — as `typescript@rc` for
-  near-instant `tsc --noEmit`; semantics match 6.x.)
+- **Type checking is the gate:** `tsgo --noEmit` runs in `build` and in CI. Keep it
+  green. The checker is TypeScript 7 (`@typescript/native-preview`, the native Go
+  compiler — near-instant, semantics match 6.x). VS Code uses it too via
+  `js/ts.experimental.useTsgo` in [.vscode/settings.json](.vscode/settings.json).
 - **Formatting vs linting are separate concerns.** If a linter is added, use
   ESLint **flat config** (`eslint.config.ts`) with `typescript-eslint` v8 and
   type-aware rules via the Project Service:
@@ -87,7 +94,7 @@ targets modern browsers only, so don't down-level.
   Let a formatter own formatting; end the ESLint config with `eslint-config-prettier`
   to disable conflicting rules. Never run the formatter *through* ESLint.
 - **No dead tooling.** Dependencies are deliberately minimal: two dev dependencies
-  (`typescript`, `@types/bun`) and two runtime ones — `@chenglou/pretext`
+  (`@typescript/native-preview`, `@types/bun`) and two runtime ones — `@chenglou/pretext`
   (measurement) and `hyphen` (Liang hyphenation patterns, `import()`ed per
   language). Don't add build tools that Bun already covers (bundling, CSS, TS,
   dev server).
