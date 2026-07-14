@@ -46,7 +46,10 @@ const isLatin = (cp: number): boolean =>
   cp === 0xb0 ||
   cp === 0x2197; // ↗ (external-link arrow in render.ts)
 const isCjk = (cp: number, ch: string): boolean =>
-  (cp >= 0x4e00 && cp <= 0x9fff) || "（）：，。—·、".includes(ch);
+  (cp >= 0x4e00 && cp <= 0x9fff) || // unified ideographs
+  (cp >= 0x3000 && cp <= 0x303f) || // CJK punctuation（、。「」）
+  (cp >= 0xff00 && cp <= 0xffef) || // fullwidth forms（？！：，）
+  "—·".includes(ch);
 
 const latin = unique(sources, (cp) => isLatin(cp));
 const sc = unique(JSON.stringify(translations.zh), isCjk);

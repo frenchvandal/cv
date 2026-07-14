@@ -63,6 +63,7 @@ const en = {
     education: "Education",
     skills: "Skills",
     hobbies: "Hobbies",
+    dialogue: "Dialogue",
     contact: "Contact",
   },
   hero: {
@@ -243,6 +244,46 @@ const en = {
         "Mandarin as daily life: classes, errands, and book reviews — HSK 5 next.",
     },
   },
+  dialogue: {
+    visitor: "Visitor",
+    me: "Philippe",
+    disclaimer: "A barely embellished transcript of a real conversation.",
+    messages: [
+      { me: false, text: "Are you really available immediately?" },
+      {
+        me: true,
+        text:
+          "Yes. My personal backlog is empty — everything prioritized, tested, shipped.",
+      },
+      {
+        me: false,
+        text: "Twenty years in life insurance… isn't that a little dull?",
+      },
+      {
+        me: true,
+        text:
+          "Death benefits, annuities, premium waivers — the suspense never stops.",
+      },
+      { me: false, text: "Why Chengdu?" },
+      {
+        me: true,
+        text: "I came for the Mandarin. The hotpot convinced me to stay.",
+      },
+      { me: false, text: "How spicy can you go?" },
+      { me: true, text: "微辣 — mild. I said adaptable, not reckless." },
+      { me: false, text: "An ultramarathon? Seriously?" },
+      {
+        me: true,
+        text:
+          "It's like a major version upgrade: long, painful, and no business interruption.",
+      },
+      {
+        me: false,
+        text: "And how do I reach you? There isn't even an email…",
+      },
+      { me: true, text: "WeChat: frenchvandal. It's 2026." },
+    ],
+  },
   contact: {
     intro:
       "I'm looking for Product Owner, Business Analyst, or project-management roles — in China or in Europe-facing remote collaboration. Twenty years in regulated financial software, based in Chengdu, mobile nationwide, available immediately.",
@@ -283,6 +324,7 @@ const fr: Translation = {
     education: "Formation",
     skills: "Compétences",
     hobbies: "Loisirs",
+    dialogue: "Dialogue",
     contact: "Contact",
   },
   hero: {
@@ -464,6 +506,47 @@ const fr: Translation = {
         "Le mandarin au quotidien : cours, démarches et critiques littéraires — cap sur le HSK 5.",
     },
   },
+  dialogue: {
+    visitor: "Visiteur",
+    me: "Philippe",
+    disclaimer: "Transcription à peine romancée d'une conversation authentique.",
+    messages: [
+      { me: false, text: "Vous êtes vraiment disponible immédiatement ?" },
+      {
+        me: true,
+        text:
+          "Oui. Mon backlog personnel est vide : tout est priorisé, testé, livré.",
+      },
+      {
+        me: false,
+        text: "Vingt ans dans l'assurance vie… ce n'est pas un peu monotone ?",
+      },
+      {
+        me: true,
+        text:
+          "Capital décès, rentes, exonération des primes — le suspense est permanent.",
+      },
+      { me: false, text: "Pourquoi Chengdu ?" },
+      {
+        me: true,
+        text:
+          "Je suis venu pour le mandarin. Le hotpot m'a convaincu de prolonger.",
+      },
+      { me: false, text: "Votre niveau de piment ?" },
+      { me: true, text: "微辣 — doux. J'ai dit adaptable, pas téméraire." },
+      { me: false, text: "Un ultramarathon, sérieusement ?" },
+      {
+        me: true,
+        text:
+          "C'est comme une montée de version majeure : long, douloureux, sans interruption d'activité.",
+      },
+      {
+        me: false,
+        text: "Et je vous contacte comment ? Il n'y a même pas d'e-mail…",
+      },
+      { me: true, text: "WeChat : frenchvandal. On est en 2026." },
+    ],
+  },
   contact: {
     intro:
       "Je recherche des postes de Product Owner, Business Analyst ou conduite de projet — en Chine ou en collaboration à distance avec l'Europe. Vingt ans dans le logiciel financier réglementé, basé à Chengdu, mobile dans toute la Chine, disponible immédiatement.",
@@ -497,6 +580,7 @@ const zh: Translation = {
     education: "教育",
     skills: "技能",
     hobbies: "爱好",
+    dialogue: "对话",
     contact: "联系",
   },
   hero: {
@@ -661,6 +745,37 @@ const zh: Translation = {
       desc: "中文即日常：上课、办事、写书评——目标 HSK 5。",
     },
   },
+  dialogue: {
+    visitor: "访客",
+    me: "李北洛",
+    disclaimer: "以下对话根据真实故事（几乎）改编。",
+    messages: [
+      { me: false, text: "你真的可以随时到岗？" },
+      {
+        me: true,
+        text: "真的。我的个人待办列表是空的——全部已排序、已测试、已交付。",
+      },
+      { me: false, text: "做了二十年寿险软件……不会很枯燥吗？" },
+      {
+        me: true,
+        text: "身故保险金、年金、保费豁免——悬念从未停止。",
+      },
+      { me: false, text: "为什么选成都？" },
+      {
+        me: true,
+        text: "本来是来学中文的，结果被火锅说服留下了。",
+      },
+      { me: false, text: "能吃多辣？" },
+      { me: true, text: "微辣。我说的是适应力强，不是不要命。" },
+      { me: false, text: "超级马拉松？认真的吗？" },
+      {
+        me: true,
+        text: "就像一次重大版本升级：漫长、痛苦，但业务零中断。",
+      },
+      { me: false, text: "那怎么联系你？连邮箱都没有……" },
+      { me: true, text: "微信：frenchvandal。都 2026 年了。" },
+    ],
+  },
   contact: {
     intro:
       "我正在寻找产品负责人、业务分析师或项目管理类职位——在中国工作或远程面向欧洲协作均可。二十年受监管金融软件经验，现居成都，可在全国范围工作，可随时到岗。",
@@ -694,6 +809,7 @@ const zhHant: Translation = {
     education: "學歷",
     skills: "技能",
     hobbies: "興趣",
+    dialogue: "對話",
     contact: "聯絡",
   },
   hero: {
@@ -857,6 +973,37 @@ const zhHant: Translation = {
       title: "語言學習",
       desc: "中文即日常：上課、辦事、寫書評——目標 HSK 5。",
     },
+  },
+  dialogue: {
+    visitor: "訪客",
+    me: "李北洛",
+    disclaimer: "以下對話（幾乎）改編自真實故事。",
+    messages: [
+      { me: false, text: "你真的可以隨時到職？" },
+      {
+        me: true,
+        text: "真的。我的個人待辦清單是空的——全部已排序、已測試、已交付。",
+      },
+      { me: false, text: "做了二十年壽險軟體……不會很枯燥嗎？" },
+      {
+        me: true,
+        text: "身故給付、年金、保費豁免——懸念從未停過。",
+      },
+      { me: false, text: "為什麼選成都？" },
+      {
+        me: true,
+        text: "本來是來學中文的，結果被火鍋說服留下來了。",
+      },
+      { me: false, text: "能吃多辣？" },
+      { me: true, text: "微辣。我說的是適應力強，不是不要命。" },
+      { me: false, text: "超級馬拉松？認真的嗎？" },
+      {
+        me: true,
+        text: "就像一次重大版本升級：漫長、痛苦，但業務零中斷。",
+      },
+      { me: false, text: "那要怎麼聯絡你？連電子郵件都沒有……" },
+      { me: true, text: "微信：frenchvandal。都 2026 年了。" },
+    ],
   },
   contact: {
     intro:

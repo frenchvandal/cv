@@ -12,6 +12,7 @@ import {
 } from "./measure";
 import { breakIntoLines } from "./linebreak";
 import { enhanceAboutOrbs } from "./orbs";
+import { enhanceChat } from "./chat";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
 // hides content for the reveal animations, so flipping the class any earlier
@@ -210,6 +211,7 @@ function auditTitles(): void {
       nav.education,
       nav.skills,
       nav.hobbies,
+      nav.dialogue,
     ];
   }
 
@@ -395,6 +397,7 @@ function afterPaint(): void {
   observeBackToTop();
   whenFontsReady(() => {
     applyMeasuredLayout();
+    enhanceChat();
     void enhanceAbout();
   });
 }
@@ -454,6 +457,7 @@ function init(): void {
     "resize",
     debounce(() => {
       applyMeasuredLayout();
+      enhanceChat();
       void enhanceAbout();
     }, 150),
     { passive: true },

@@ -276,10 +276,38 @@ function hobbies(t: Translation): string {
   `;
 }
 
+/**
+ * The faux visitor interview, as iMessage-style bubbles. The pre-rendered
+ * markup wraps at a plain CSS max-width (fine without JS); [src/chat.ts](src/chat.ts)
+ * then tightens each bubble to its optimal wrap width with pretext. The bubble
+ * text is duplicated into data-text so the enhancement measures exactly the
+ * visible text (the .sr-only sender prefix is for screen readers only).
+ */
+function dialogue(t: Translation): string {
+  return `
+    <section class="section" aria-labelledby="dialogue">
+      <div>${sectionTitle(t, 'dialogue', 5)}</div>
+      <div class="section__body animate">
+        <p class="chat__disclaimer">${escapeHtml(t.dialogue.disclaimer)}</p>
+        <div class="chat">
+          ${t.dialogue.messages
+      .map(
+        (m) => `
+          <div class="chat__row${m.me ? ' chat__row--me' : ''}">
+            <div class="msg" data-text="${escapeHtml(m.text)}"><span class="sr-only">${escapeHtml(m.me ? t.dialogue.me : t.dialogue.visitor)}: </span>${escapeHtml(m.text)}</div>
+          </div>`,
+      )
+      .join('')}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function contact(t: Translation): string {
   return `
     <section class="contact" aria-labelledby="contact">
-      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span aria-hidden="true">06</span>${escapeHtml(t.nav.contact)}</h2>
+      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span aria-hidden="true">07</span>${escapeHtml(t.nav.contact)}</h2>
       <p class="animate" style="color: var(--fg-muted); margin-bottom: var(--space-md); max-width: 50rem">${escapeHtml(t.contact.intro)}</p>
       <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg)">
         <div>
@@ -324,6 +352,7 @@ export function renderApp(lang: Lang, theme: Theme): string {
       ${education(t)}
       ${skills(t)}
       ${hobbies(t)}
+      ${dialogue(t)}
       ${contact(t)}
       ${backToTop(t)}
     </div>
