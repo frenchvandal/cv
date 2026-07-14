@@ -8,7 +8,8 @@
  *
  * `zh` (Simplified) and `zh-hant` (Traditional) are independent translations,
  * not script conversions of each other: vocabulary differs between the two
- * (软件/軟體, 网络/網路, 宏观/總體…), so each is written for its audience.
+ * (软件/軟體, 业务分析师/商業分析師, 待办列表/待辦清單…), so each is written
+ * for its audience. The Chinese pages use Philippe's Chinese name, 李北洛.
  */
 
 export const LANGS = ["en", "fr", "zh", "zh-hant"] as const;
@@ -38,19 +39,23 @@ export const LANG_NAME: Record<Lang, string> = {
   "zh-hant": "繁體中文",
 };
 
-/** Language-invariant profile constants (proper nouns, URLs, contact). */
+/** Language-invariant profile constants (proper nouns, contact). */
 export const PROFILE = {
-  fullName: "Jorge Paula Pinheiro",
-  nameLines: ["JORGE", "PAULA PINHEIRO"] as const,
-  email: "jorge.paulapinheiro@gmail.com",
-  location: "Lausanne, Switzerland",
-  spotifyUrl: "https://open.spotify.com/intl-fr/artist/0CKa7wVI7tiJaFdIBNHw8T",
+  fullName: "Philippe Ribeiro",
+  chineseName: "李北洛",
+  wechat: "frenchvandal",
 } as const;
 
 const en = {
+  name: {
+    /** Display name for the page title and headings on this language's page. */
+    display: "Philippe Ribeiro",
+    /** Hero name, one entry per line. */
+    lines: ["PHILIPPE", "RIBEIRO"],
+  },
   meta: {
     description:
-      "Jorge Paula Pinheiro — Economics student with 8 years of IT background, transitioning to economic and financial analysis. Based in Lausanne, currently a CSC scholar in Chengdu.",
+      "Philippe Ribeiro — Product Owner and Business Analyst with 20 years in financial-services software: insurance core systems, bancassurance, public finance. Based in Chengdu, China, available immediately.",
   },
   nav: {
     about: "About",
@@ -62,223 +67,188 @@ const en = {
   },
   hero: {
     greeting: "Hello, I'm",
-    title: "Economics · Data · IT — Available August 2026",
+    title: "Product Owner · Business Analyst — 20 years in financial software",
     location:
-      "📍 Currently in Chengdu, China · Based in Lausanne, Switzerland · 🎓 Bachelor in Economics",
+      "📍 Chengdu, China — mobile nationwide · French national · Available immediately",
     ctaPrimary: "Get in Touch",
     ctaSecondary: "Learn More",
   },
   about: {
     p1:
-      "Economics student with solid professional experience in information technology, currently completing my bachelor's degree while engaged in an intensive language program abroad alongside my studies.",
+      "Product Owner and Business Analyst with twenty years in financial-services software — insurance core systems, bancassurance, and public finance. I have worked on both sides of the software business: as an on-site consultant delivering projects for clients across industries, and as a product owner inside a vendor, steering a packaged product.",
     p2:
-      "I aim for roles in IT support or economic and financial analysis where my IT + economics dual background is actively leveraged as a differentiating asset. My background combines 8 years of IT infrastructure experience with rigorous quantitative training in econometrics, macroeconomics, and financial modeling.",
+      "At KAPIA-RGI I own K4U, a customer-facing insurance web portal serving multiple client companies, end to end: product vision, roadmap, and backlog, prioritized across competing stakeholder demands. I led the cross-company rollout of single sign-on (SAML/OIDC), drive decisions from user feedback and advanced SQL analysis, and ship only tested, compliant increments — ISTQB-certified tester, PSPO-trained.",
     p3:
-      "Currently in Chengdu, China, completing an intensive Mandarin program as a CSC Scholarship recipient. Based in Lausanne, Switzerland.",
+      "Living in Chengdu since 2025 after a year of full-time Mandarin study at Sichuan University — daily life runs in Mandarin (HSK 4, HSK 5 in preparation). Native French and Portuguese, fluent English, working Spanish. Available immediately, mobile across China.",
     stats: {
-      years: "Years IT Experience",
-      gpa: "Grade / 6",
+      years: "Years in software",
       languages: "Languages",
-      ects: "ECTS Earned",
+      defects: "% defect backlog cut",
+      clients: "New clients signed",
     },
   },
   experience: {
-    chuv: {
-      title: "IT Technician",
-      company: "CHUV — Centre Hospitalier Universitaire Vaudois, Lausanne",
-      date: "2017 – 2025",
+    kapia: {
+      title: "Web Product Owner · Business Analyst",
+      company:
+        "KAPIA-RGI — life-insurance core-systems vendor (KELIA / K4U / KARMA)",
+      date: "2011 – 2014 · 2019 – Present",
       items: [
-        "IT park management (10,000+ workstations) via SCCM: installation, maintenance and hardware/software troubleshooting",
-        "iPhone configuration and deployment via AirWatch / Workspace ONE",
-        "Cisco phone configuration via Agile Provisioning",
-        "Interventions on medical equipment and non-standard systems",
-        "Helpdesk support and user assistance: diagnosis and resolution of incidents",
-        "Printer and network peripheral troubleshooting",
-        "Writing and standardization of technical procedures for the team",
-        "Methodical work under pressure respecting priorities and deadlines",
+        "Product Owner of K4U, a packaged customer-facing insurance web portal serving multiple client companies: own the product vision, roadmap, and backlog, prioritized across competing stakeholder demands",
+        "Run all agile ceremonies (refinement, sprint planning, reviews, retrospectives) as the single point of contact between business stakeholders and technology, tracking work and defects in Jira",
+        "Led the cross-company rollout of single sign-on (SAML/OIDC); interface the KELIA back end with external systems through KARMA, the company's REST-API catalog",
+        "Drive evidence-based decisions from user feedback, defect analytics, and advanced SQL analysis; product demos to clients' decision-makers helped sign three new clients",
+        "Appointed AI Ambassador during the company's internal AI rollout — driving adoption across business and technical teams",
+        "As Business Analyst, delivered protection products on KELIA (death benefit, annuities, premium waiver): requirements, functional specifications, integration testing, and UAT",
+        "Cut a client's open-defect backlog by about 75 percent in twelve months; led a major version upgrade with no business interruption",
       ],
     },
-    studentJobsTitle: "Student Jobs",
-    galexis: {
-      title: "Warehouse Worker",
-      company: "Galexis SA · Écublens, Vaud",
-      date: "2014 – 2017",
+    consulting: {
+      title: "IT Consultant — public finance, rail, and insurance",
+      company: "Groupe Open & Adneom Technologies — on-site consulting",
+      date: "2008 – 2011 · 2014 – 2019",
+      items: [
+        "DGFIP, French tax administration (2018–2019): functional designer on the “Digital Assistants” RPA project — about 57 percent less processing time (≈1,000 hours/year) on one process, 7 FTE/year saved on the other",
+        "SNCF, national railway (2016–2018): functional referent for BREHAT, the train-punctuality system — single entry point for the client project manager, estimates, steering one to three consultants",
+        "Groupama Gan Vie, insurance (2014–2016): expert on the Finance Department's downstream databases — production monitoring, data-consistency checks, coordination of acceptance testing",
+        "Earlier assignments (2008–2011): BNP Paribas Cardif (bancassurance), Accenture (life-insurance outsourcing), Linedata (financial software)",
+      ],
+    },
+    insurance: {
+      title: "Insurance operations & contract administration",
+      company: "Fidelidade, SwissLife & AXA",
+      date: "2004 – 2008",
       desc:
-        "Student job alongside my studies. Logistics support and participation in pharmaceutical distribution operations.",
-    },
-    uber: {
-      title: "Uber Pop Driver",
-      company: "Uber · Freelance",
-      date: "2016 – 2017",
-      desc: "Student job alongside my studies.",
-    },
-    gfk: {
-      title: "Call Center Operator",
-      company: "GFK · Lausanne",
-      date: "2011 – 2012",
-      desc: "Student job.",
+        "Contract administration, claims processing, and payment handling across several life insurers — the business foundations of my later work on insurance core systems. At Fidelidade, led a document-automation project and managed a team of two.",
     },
   },
   education: {
-    bachelor: {
-      title: "Bachelor in Economics and Management",
-      date: "2023 – Present",
-      subtitle: "UniDistance Switzerland · 152/180 ECTS · 5.66/6",
-      courses: [
-        "Curriculum: 152 ECTS completed with average 5.66/6",
-        "Economics & Policy — Macroeconomics, Microeconomics, Public Economics, Industrial Organization",
-        "Finance & Control — Money & Finance, Management Control, Corporate Finance, International Finance, International Trade",
-        "Quantitative Methods — Econometrics, Statistics, Mathematics for Economists",
-        "Business Foundations — Financial Accounting, Business Management, Entrepreneurship, Business Law",
+    sichuan: {
+      title: "Chinese Language Program",
+      date: "2025 – 2026",
+      subtitle: "Sichuan University · Wangjiang Campus, Chengdu · Full-time immersion",
+      items: [
+        "One-year sabbatical from KAPIA-RGI to study Mandarin full-time; program completed in July 2026",
+        "Coursework, daily life, and interactions in Mandarin — an inside view of Chinese university life",
+        "HSK 4 passed (2023); HSK 5 in preparation",
       ],
-      thesisTitle: "Bachelor Thesis",
-      thesis:
-        "Global Determinants of Real Estate Prices: A Multi-Country Panel Analysis",
-      thesisSubject:
-        "Impact of financial cycles on real estate markets — transmission of international financial shocks",
-      methodology: "Methodology",
-      methodologyValue:
-        "Multivariate linear regressions (OLS) + Linear projections on panel data",
-      dataSources: "Data Sources",
-      dataSourcesValue: "IMF, BIS — international macroeconomic datasets",
-      tools: "Tools",
-      toolsValue: "R (tidyverse: dplyr, tidyr)",
-      focus: "Focus",
-      focusValue:
-        "Stabilizing effect of macroprudential measures and capital controls against international financial shocks",
     },
-    china: {
-      title: "Chinese Language Program — CSC Scholar",
-      date: "2025 – Present",
-      subtitle: "Sichuan University · Chengdu, China · Full Mandarin Immersion",
-      csc:
-        "CSC Scholarship recipient — competitive Chinese government grant (CSC/bilateral program)",
-      intensive: "Intensive language program (25+ hours/week)",
-      gpa: "GPA 4.0/4.0",
-      gpaDesc: "on all first-semester courses",
-      immersion:
-        "Complete immersion: coursework, daily life, and interactions 100% in Mandarin",
-      adaptability:
-        "Developed strong cross-cultural adaptability through direct integration into Chinese academic and social environments",
+    certifications: {
+      title: "Certifications",
+      date: "2016 – 2024",
+      items: [
+        "Professional Scrum Product Owner (PSPO) — training 2024, certification in progress",
+        "ISTQB Certified Tester — Foundation Level (2016)",
+        "Project Management — Fundamentals & Relational Dimension (2018)",
+        "HSK 4 (2023) · HSKK Spoken Chinese, Beginner (2022) · TOCFL Band A (2024)",
+      ],
     },
-    cfc: {
-      title: "CFC in Computer Science",
-      date: "2015 – 2017",
-      subtitle: "CPNV · 5.3/6",
+    master: {
+      title: "Master's, Financial Instruments Management",
+      date: "2005",
+      subtitle: "Université de Cergy-Pontoise (now CY Cergy Paris Université)",
       desc:
-        "Comprehensive generalist training: development (C#, JavaScript, PHP), databases (SQL), networking, systems (Windows/Linux), technical support",
+        "Financial engineering and instruments management — the quantitative grounding behind twenty years in financial software.",
     },
-    epfl: {
-      title: "EPFL — Swiss Federal Institute of Technology",
-      date: "2011 – 2015",
-      subtitle:
-        "Microtechnology · Propédeutique 4.41/6 · Bachelor not completed",
-      desc:
-        "Initial engineering training: programming (C), mathematics, physics, statistics — solid analytical foundation before career pivot",
+    edc: {
+      title: "Business Degree",
+      date: "2004",
+      subtitle: "EDC Paris Business School",
+      desc: "General business and management education.",
     },
   },
   skills: {
+    product: {
+      title: "🧭 Product & Methodology",
+      tags: [
+        "Agile / Scrum",
+        "Product roadmap & backlog",
+        "Requirements engineering",
+        "MVP scoping",
+        "UAT",
+        "Jira",
+      ],
+    },
     data: {
-      title: "📊 Data & Analytics",
+      title: "📊 Databases & Languages",
       tags: [
-        "R",
-        "SQL",
-        "Excel",
-        "Python",
-        "Linear Regressions",
-        "Panel Data Analysis",
-        "OLS",
-        "Statistical Modeling",
+        "SQL (advanced)",
+        "PL/SQL (foundation)",
+        "JavaScript / TypeScript (foundation)",
       ],
     },
-    econometrics: {
-      title: "📈 Econometrics",
+    interfaces: {
+      title: "🔌 Interfaces & Environments",
       tags: [
-        "Multivariate Analysis",
-        "Time Series",
-        "Fixed Effects Models",
-        "Robustness Analysis",
+        "REST APIs",
+        "SSO (SAML / OIDC)",
+        "Postman",
+        "DEV / QA / PROD stages",
       ],
     },
-    it: {
-      title: "🖥️ IT Infrastructure",
+    domains: {
+      title: "🏦 Domains",
       tags: [
-        "Asset Management (10K+ devices)",
-        "Large-Scale Deployment",
-        "System Administration",
-        "Incident Management",
-        "Helpdesk L2",
+        "Life-insurance core systems",
+        "Bancassurance",
+        "Digital journeys & SSO",
+        "Public finance",
+        "Full software lifecycle",
       ],
-    },
-    finance: {
-      title: "💰 Finance",
-      tags: ["Financial Analysis", "DCF Models", "Comparables"],
-    },
-    economics: {
-      title: "📉 Economics",
-      tags: ["Macroeconomics", "Econometrics", "Int. Finance"],
-    },
-    accounting: {
-      title: "📋 Accounting",
-      tags: ["Financial Accounting", "Management Control"],
-    },
-    programming: {
-      title: "💻 Programming",
-      tags: ["PowerShell", "C#", "PHP", "JavaScript"],
     },
     soft: {
       title: "🤝 Soft Skills",
       tags: [
-        "Rigorous",
-        "User Support",
-        "Confidentiality",
+        "Single point of contact",
+        "Stakeholder facilitation",
+        "Client demos",
         "Documentation",
-        "Synthesis",
-        "Cross-cultural Adaptability",
-        "International Mobility",
-        "Collaboration",
+        "Quality mindset",
+        "Cross-cultural adaptability",
+        "Autonomy",
       ],
     },
     languages: {
       title: "🌍 Languages",
       french: { name: "French", level: "Native" },
       portuguese: { name: "Portuguese", level: "Native" },
-      english: { name: "English", level: "Fluent (IELTS 8/9)" },
-      chinese: { name: "Chinese", level: "Intermediate" },
+      english: { name: "English", level: "Fluent · professional" },
+      spanish: { name: "Spanish", level: "Working proficiency" },
+      mandarin: { name: "Mandarin", level: "HSK 4 · HSK 5 in prep." },
     },
   },
   hobbies: {
-    music: {
-      title: "Music Production",
+    running: {
+      title: "Long-Distance Running",
       desc:
-        "Cyber Metal / Industrial Metal artist — 3 self-produced albums, solo composition & recording, 2-3 occasional collaborations",
-      link: "Listen on Spotify",
-    },
-    gaming: {
-      title: "Video Games",
-      desc:
-        "Passionate gamer exploring virtual worlds and interactive storytelling",
-    },
-    travel: {
-      title: "Traveling",
-      desc:
-        "Exploring new cultures and destinations. Recent focus on Asia-Pacific region",
+        "From 10 km road races to ultramarathons — including the Paris Marathon, twice.",
     },
     cycling: {
       title: "Cycling",
-      desc: "Enjoying the outdoors on two wheels",
+      desc: "Long rides around Chengdu and the Sichuan countryside.",
+    },
+    literature: {
+      title: "French Literature",
+      desc:
+        "A passionate reader — I write book reviews in Chinese on Douban.",
+    },
+    cinema: {
+      title: "Cinema",
+      desc:
+        "Wong Kar-wai, Melville, King Hu — film criticism in French is my most constant writing practice.",
     },
     language: {
       title: "Language Learning",
-      desc: "Currently immersed in Mandarin Chinese",
+      desc:
+        "Mandarin as daily life: classes, errands, and book reviews — HSK 5 next.",
     },
   },
   contact: {
     intro:
-      "I'm looking for roles in IT support or economic and financial analysis where my IT + economics dual background is valued. Open to internships and entry-level positions starting August 2026.",
-    emailLabel: "Email",
+      "I'm looking for Product Owner, Business Analyst, or project-management roles — in China or in Europe-facing remote collaboration. Twenty years in regulated financial software, based in Chengdu, mobile nationwide, available immediately.",
+    wechatLabel: "WeChat",
     locationLabel: "Location",
-    footer: "© 2026 Jorge Paula Pinheiro · Built with Bun & pretext",
+    footer: "© 2026 Philippe Ribeiro · Built with Bun & pretext",
   },
   ui: {
     skipLink: "Skip to content",
@@ -299,9 +269,13 @@ const en = {
 export type Translation = typeof en;
 
 const fr: Translation = {
+  name: {
+    display: "Philippe Ribeiro",
+    lines: ["PHILIPPE", "RIBEIRO"],
+  },
   meta: {
     description:
-      "Jorge Paula Pinheiro — Étudiant en économie avec 8 ans d'expérience IT, en réorientation vers l'analyse économique et financière. Basé à Lausanne, actuellement boursier CSC à Chengdu.",
+      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine, disponible immédiatement.",
   },
   nav: {
     about: "À propos",
@@ -313,224 +287,189 @@ const fr: Translation = {
   },
   hero: {
     greeting: "Bonjour, je suis",
-    title: "Économie · Data · IT — Disponible août 2026",
+    title: "Product Owner · Business Analyst — 20 ans dans le logiciel financier",
     location:
-      "📍 Actuellement à Chengdu, Chine · Basé à Lausanne, Suisse · 🎓 Bachelor en Économie",
+      "📍 Chengdu, Chine — mobile dans toute la Chine · Nationalité française · Disponible immédiatement",
     ctaPrimary: "Me contacter",
     ctaSecondary: "En savoir plus",
   },
   about: {
     p1:
-      "Étudiant en économie avec une solide expérience professionnelle en informatique, actuellement en fin de bachelor tout en suivant un programme intensif de langue à l'étranger en parallèle de mes études.",
+      "Product Owner et Business Analyst, vingt ans dans le logiciel pour services financiers — systèmes cœur d'assurance vie, bancassurance et finances publiques. J'ai travaillé des deux côtés du métier : consultant en régie livrant des projets pour des clients de secteurs variés, puis responsable de produit chez un éditeur, aux commandes d'un progiciel.",
     p2:
-      "Je vise des postes en support informatique ou en analyse économique et financière où mon double bagage IT + économie est exploité comme un atout différenciant. Mon parcours combine 8 ans d'expérience en infrastructure IT avec une formation quantitative rigoureuse en économétrie, macroéconomie et modélisation financière.",
+      "Chez KAPIA-RGI, je porte K4U, un portail web d'assurance destiné aux clients finaux de plusieurs compagnies, de bout en bout : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes. J'ai piloté le déploiement transverse de l'authentification unique (SAML/OIDC), je fonde les décisions sur les retours utilisateurs et l'analyse SQL avancée, et je ne livre que des incréments testés et conformes — testeur certifié ISTQB, formé PSPO.",
     p3:
-      "Actuellement à Chengdu, Chine, en tant que boursier CSC suivant un programme intensif de mandarin. Basé à Lausanne, Suisse.",
+      "Installé à Chengdu depuis 2025 après une année de mandarin à temps plein à l'Université du Sichuan — le quotidien se vit en mandarin (HSK 4, HSK 5 en préparation). Français et portugais langues maternelles, anglais courant, espagnol professionnel. Disponible immédiatement, mobile dans toute la Chine.",
     stats: {
-      years: "Années d'exp. IT",
-      gpa: "Note / 6",
+      years: "Ans dans le logiciel",
       languages: "Langues",
-      ects: "ECTS Acquis",
+      defects: "% d'anomalies en moins",
+      clients: "Nouveaux clients signés",
     },
   },
   experience: {
-    chuv: {
-      title: "Informaticien",
-      company: "CHUV — Centre Hospitalier Universitaire Vaudois, Lausanne",
-      date: "2017 – 2025",
+    kapia: {
+      title: "Web Product Owner · Business Analyst",
+      company:
+        "KAPIA-RGI — éditeur de systèmes cœur d'assurance vie (KELIA / K4U / KARMA)",
+      date: "2011 – 2014 · 2019 – aujourd'hui",
       items: [
-        "Gestion du parc informatique (10 000+ postes) via SCCM : installation, maintenance et dépannage hardware et software",
-        "Configuration et déploiement d'iPhone via AirWatch / Workspace ONE",
-        "Configuration de téléphones Cisco via Agile Provisioning",
-        "Interventions sur du matériel médical et des systèmes non standards",
-        "Tenue du guichet support et assistance aux utilisateurs : diagnostic et résolution des incidents",
-        "Dépannage des imprimantes et des périphériques réseau",
-        "Rédaction et standardisation de procédures techniques pour l'équipe",
-        "Travail méthodique sous pression avec respect des priorités et des délais",
+        "Product Owner de K4U, portail web d'assurance packagé servant les clients finaux de plusieurs compagnies : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes",
+        "Animation de toutes les cérémonies agiles (refinement, sprint planning, revues, rétrospectives) comme interlocuteur unique entre le métier et la technique — travaux et anomalies suivis dans Jira",
+        "Pilotage du déploiement transverse de l'authentification unique (SAML/OIDC) ; interfaçage du back-end KELIA avec les systèmes externes via KARMA, le catalogue d'API REST de l'éditeur",
+        "Décisions fondées sur les retours utilisateurs, l'analyse des anomalies et le SQL avancé ; des démonstrations produit aux décideurs ont contribué à la signature de trois nouveaux clients",
+        "Nommé AI Ambassador lors du déploiement interne de l'IA — promotion de l'adoption auprès des équipes métier et techniques",
+        "Comme Business Analyst, produits de prévoyance sur KELIA (capital décès, rentes, exonération des primes) : besoins, spécifications fonctionnelles, tests d'intégration et recette",
+        "Réduction d'environ 75 % du stock d'anomalies ouvertes d'un client en douze mois ; pilotage d'une montée de version majeure sans interruption d'activité",
       ],
     },
-    studentJobsTitle: "Jobs Étudiants",
-    galexis: {
-      title: "Manutentionnaire",
-      company: "Galexis SA · Écublens, Vaud",
-      date: "2014 – 2017",
+    consulting: {
+      title: "Consultant IT — finances publiques, ferroviaire, assurance",
+      company: "Groupe Open & Adneom Technologies — conseil en régie",
+      date: "2008 – 2011 · 2014 – 2019",
+      items: [
+        "DGFIP, ministère des Finances (2018–2019) : concepteur fonctionnel du projet RPA « Assistants digitaux » — environ 57 % de temps de traitement en moins (≈ 1 000 heures/an) sur un processus, 7 ETP/an économisés sur l'autre",
+        "SNCF (2016–2018) : référent fonctionnel de BREHAT, le système des horaires réels et des indicateurs de régularité — point d'entrée unique du chef de projet client, devis, pilotage d'un à trois consultants",
+        "Groupama Gan Vie (2014–2016) : expertise des bases de données avales de la Direction financière — suivi de production, contrôles de cohérence, coordination des recettes",
+        "Missions antérieures (2008–2011) : BNP Paribas Cardif (bancassurance), Accenture (gestion déléguée d'assurance vie), Linedata (logiciels financiers)",
+      ],
+    },
+    insurance: {
+      title: "Opérations d'assurance & gestion de contrats",
+      company: "Fidelidade, SwissLife & AXA",
+      date: "2004 – 2008",
       desc:
-        "Job étudiant en parallèle des études. Support logistique et participation aux opérations de distribution pharmaceutique.",
-    },
-    uber: {
-      title: "Chauffeur Uber Pop",
-      company: "Uber · Freelance",
-      date: "2016 – 2017",
-      desc: "Job étudiant en parallèle des études.",
-    },
-    gfk: {
-      title: "Opérateur Call Center",
-      company: "GFK · Lausanne",
-      date: "2011 – 2012",
-      desc: "Job étudiant.",
+        "Gestion de contrats, indemnisation et règlements chez plusieurs assureurs vie — le socle métier de mes travaux ultérieurs sur les systèmes cœur d'assurance. Chez Fidelidade, conduite d'un projet d'automatisation documentaire et encadrement de deux collaborateurs.",
     },
   },
   education: {
-    bachelor: {
-      title: "Bachelor en Économie et Management",
-      date: "2023 – Présent",
-      subtitle: "UniDistance Suisse · 152/180 ECTS · 5.66/6",
-      courses: [
-        "Programme complet : 152 ECTS acquis, moyenne 5.66/6",
-        "Économie & Politique — Macroéconomie, Microéconomie, Économie publique, Organisation industrielle",
-        "Finance & Contrôle — Monnaie et finance, Contrôle de gestion, Finance d'entreprise, Finance internationale, Commerce international",
-        "Méthodes quantitatives — Économétrie, Statistiques, Mathématiques pour économistes",
-        "Fondements business — Comptabilité financière, Gestion des entreprises, Entrepreneuriat, Droit de l'entreprise",
-      ],
-      thesisTitle: "Mémoire de Bachelor",
-      thesis:
-        "Déterminants globaux des prix immobiliers : Une analyse de panel multi-pays",
-      thesisSubject:
-        "Impact des cycles financiers sur les marchés immobiliers — transmission des chocs financiers internationaux",
-      methodology: "Méthodologie",
-      methodologyValue:
-        "Régressions linéaires multivariées (MCO) + Projections linéaires sur données de panel",
-      dataSources: "Sources de données",
-      dataSourcesValue:
-        "FMI, BRI — jeux de données macroéconomiques internationaux",
-      tools: "Outils",
-      toolsValue: "R (tidyverse : dplyr, tidyr)",
-      focus: "Objet d'étude",
-      focusValue:
-        "Effet stabilisateur des mesures macroprudentielles et des contrôles de capitaux contre les chocs financiers internationaux",
-    },
-    china: {
-      title: "Programme de Chinois — Boursier CSC",
-      date: "2025 – Présent",
+    sichuan: {
+      title: "Programme de langue chinoise",
+      date: "2025 – 2026",
       subtitle:
-        "Université du Sichuan · Chengdu, Chine · Immersion complète en mandarin",
-      csc:
-        "Boursier CSC — bourse gouvernementale chinoise compétitive (programme CSC/bilatéral)",
-      intensive: "Programme de langue intensif (25+ heures/semaine)",
-      gpa: "GPA 4.0/4.0",
-      gpaDesc: "à tous les cours du premier semestre",
-      immersion:
-        "Immersion totale : cours, vie quotidienne et interactions 100% en mandarin",
-      adaptability:
-        "Développement d'une forte capacité d'adaptation interculturelle par intégration directe dans les environnements académiques et sociaux chinois",
+        "Université du Sichuan · Campus Wangjiang, Chengdu · Temps plein, en immersion",
+      items: [
+        "Année sabbatique de KAPIA-RGI pour étudier le mandarin à temps plein ; programme achevé en juillet 2026",
+        "Cours, vie quotidienne et échanges en mandarin — une connaissance de l'intérieur de l'université chinoise",
+        "HSK 4 obtenu (2023) ; HSK 5 en préparation",
+      ],
     },
-    cfc: {
-      title: "CFC en Informatique",
-      date: "2015 – 2017",
-      subtitle: "CPNV · 5.3/6",
-      desc:
-        "Formation généraliste complète : développement (C#, JavaScript, PHP), bases de données (SQL), réseaux, systèmes (Windows/Linux), support technique",
+    certifications: {
+      title: "Certifications",
+      date: "2016 – 2024",
+      items: [
+        "Professional Scrum Product Owner (PSPO) — formation 2024, certification en cours",
+        "ISTQB — Testeur certifié, niveau fondation (2016)",
+        "Gestion de projet — Fondamentaux & dimension relationnelle (2018)",
+        "HSK 4 (2023) · HSKK chinois oral, débutant (2022) · TOCFL niveau A (2024)",
+      ],
     },
-    epfl: {
-      title: "EPFL — École polytechnique fédérale de Lausanne",
-      date: "2011 – 2015",
-      subtitle: "Microtechnique · Propédeutique 4.41/6 · Bachelor non terminé",
+    master: {
+      title: "Master, Gestion des instruments financiers",
+      date: "2005",
+      subtitle: "Université de Cergy-Pontoise (auj. CY Cergy Paris Université)",
       desc:
-        "Formation initiale en ingénierie : programmation (C), mathématiques, physique, statistiques — base analytique solide avant réorientation",
+        "Ingénierie financière et gestion d'instruments — le socle quantitatif de vingt ans dans le logiciel financier.",
+    },
+    edc: {
+      title: "Diplôme d'école de commerce",
+      date: "2004",
+      subtitle: "EDC Paris Business School",
+      desc: "Formation générale en commerce et gestion.",
     },
   },
   skills: {
+    product: {
+      title: "🧭 Produit & Méthodologie",
+      tags: [
+        "Agile / Scrum",
+        "Feuille de route & backlog",
+        "Ingénierie des besoins",
+        "Cadrage MVP",
+        "Recette (UAT)",
+        "Jira",
+      ],
+    },
     data: {
-      title: "📊 Data & Analytics",
+      title: "📊 Bases de données & Langages",
       tags: [
-        "R",
-        "SQL",
-        "Excel",
-        "Python",
-        "Régressions Linéaires",
-        "Analyse de Données de Panel",
-        "MCO",
-        "Modélisation Statistique",
+        "SQL (avancé)",
+        "PL/SQL (notions)",
+        "JavaScript / TypeScript (notions)",
       ],
     },
-    econometrics: {
-      title: "📈 Économétrie",
+    interfaces: {
+      title: "🔌 Interfaces & Environnements",
       tags: [
-        "Analyse Multivariée",
-        "Séries Temporelles",
-        "Modèles à Effets Fixes",
-        "Analyse de Robustesse",
+        "API REST",
+        "SSO (SAML / OIDC)",
+        "Postman",
+        "Environnements DEV / QA / PROD",
       ],
     },
-    it: {
-      title: "🖥️ Infrastructure IT",
+    domains: {
+      title: "🏦 Domaines",
       tags: [
-        "Gestion de Parc (10K+ postes)",
-        "Déploiement Large Échelle",
-        "Administration Système",
-        "Gestion des Incidents",
-        "Support Niveau 2",
+        "Systèmes cœur d'assurance vie",
+        "Bancassurance",
+        "Parcours numériques & SSO",
+        "Finances publiques",
+        "Cycle de vie logiciel complet",
       ],
-    },
-    finance: {
-      title: "💰 Finance",
-      tags: ["Analyse Financière", "Modèles DCF", "Comparables"],
-    },
-    economics: {
-      title: "📉 Économie",
-      tags: ["Macroéconomie", "Économétrie", "Finance Internationale"],
-    },
-    accounting: {
-      title: "📋 Comptabilité",
-      tags: ["Comptabilité Financière", "Contrôle de Gestion"],
-    },
-    programming: {
-      title: "💻 Programmation",
-      tags: ["PowerShell", "C#", "PHP", "JavaScript"],
     },
     soft: {
-      title: "🤝 Soft Skills",
+      title: "🤝 Savoir-être",
       tags: [
-        "Rigueur",
-        "Support Utilisateurs",
-        "Confidentialité",
+        "Interlocuteur unique",
+        "Facilitation multi-acteurs",
+        "Démonstrations clients",
         "Documentation",
-        "Synthèse",
-        "Adaptabilité Interculturelle",
-        "Mobilité Internationale",
-        "Collaboration",
+        "Culture qualité",
+        "Adaptabilité interculturelle",
+        "Autonomie",
       ],
     },
     languages: {
       title: "🌍 Langues",
       french: { name: "Français", level: "Langue maternelle" },
       portuguese: { name: "Portugais", level: "Langue maternelle" },
-      english: { name: "Anglais", level: "Courant (IELTS 8/9)" },
-      chinese: { name: "Chinois", level: "Intermédiaire" },
+      english: { name: "Anglais", level: "Courant · professionnel" },
+      spanish: { name: "Espagnol", level: "Professionnel" },
+      mandarin: { name: "Mandarin", level: "HSK 4 · HSK 5 en prép." },
     },
   },
   hobbies: {
-    music: {
-      title: "Production Musicale",
+    running: {
+      title: "Course de fond",
       desc:
-        "Artiste Cyber Metal / Metal Industriel — 3 albums auto-produits, composition et enregistrement en solo, 2-3 collaborations ponctuelles",
-      link: "Écouter sur Spotify",
-    },
-    gaming: {
-      title: "Jeux Vidéo",
-      desc:
-        "Gamer passionné explorant les mondes virtuels et le storytelling interactif",
-    },
-    travel: {
-      title: "Voyages",
-      desc:
-        "Explorer de nouvelles cultures et destinations. Focus récent sur la région Asie-Pacifique",
+        "Du 10 km à l'ultramarathon — dont deux marathons de Paris.",
     },
     cycling: {
-      title: "Vélo",
-      desc: "Profiter de l'extérieur sur deux roues",
+      title: "Cyclisme",
+      desc: "Longues sorties autour de Chengdu et dans la campagne du Sichuan.",
+    },
+    literature: {
+      title: "Littérature française",
+      desc:
+        "Lecteur passionné — je publie des critiques de romans en chinois sur Douban.",
+    },
+    cinema: {
+      title: "Cinéma",
+      desc:
+        "Wong Kar-wai, Melville, King Hu — la critique de films en français est mon exercice d'écriture le plus constant.",
     },
     language: {
-      title: "Apprentissage des Langues",
-      desc: "Actuellement immergé dans le Mandarin",
+      title: "Apprentissage des langues",
+      desc:
+        "Le mandarin au quotidien : cours, démarches et critiques littéraires — cap sur le HSK 5.",
     },
   },
   contact: {
     intro:
-      "Je recherche des postes en support informatique ou en analyse économique et financière où mon double bagage IT + économie est un atout. Ouvert aux stages et postes junior à partir d'août 2026.",
-    emailLabel: "E-mail",
+      "Je recherche des postes de Product Owner, Business Analyst ou conduite de projet — en Chine ou en collaboration à distance avec l'Europe. Vingt ans dans le logiciel financier réglementé, basé à Chengdu, mobile dans toute la Chine, disponible immédiatement.",
+    wechatLabel: "WeChat",
     locationLabel: "Localisation",
-    footer: "© 2026 Jorge Paula Pinheiro · Construit avec Bun & pretext",
+    footer: "© 2026 Philippe Ribeiro · Construit avec Bun & pretext",
   },
   ui: {
     skipLink: "Aller au contenu",
@@ -544,9 +483,13 @@ const fr: Translation = {
 };
 
 const zh: Translation = {
+  name: {
+    display: "李北洛 Philippe Ribeiro",
+    lines: ["李北洛"],
+  },
   meta: {
     description:
-      "Jorge Paula Pinheiro — 拥有8年IT背景的经济学学生，正转向经济与金融分析。常驻瑞士洛桑，目前为成都的CSC奖学金学者。",
+      "李北洛（Philippe Ribeiro）— 产品负责人 / 业务分析师，二十年金融软件经验：人寿保险核心系统、银行保险、公共财政。现居中国成都，可随时到岗。",
   },
   nav: {
     about: "关于我",
@@ -558,207 +501,172 @@ const zh: Translation = {
   },
   hero: {
     greeting: "你好，我是",
-    title: "经济学 · 数据 · IT — 2026年8月可入职",
-    location: "📍 目前在中国成都 · 常驻瑞士洛桑 · 🎓 经济学学士",
+    title: "产品负责人 · 业务分析师 — 二十年金融软件经验",
+    location: "📍 中国成都 · 可在全国范围工作 · 法国籍 · 可随时到岗",
     ctaPrimary: "联系我",
     ctaSecondary: "了解更多",
   },
   about: {
     p1:
-      "我是一名拥有扎实信息技术专业背景的经济学学生，目前正在通过瑞士远程大学完成学士学位，同时在中国成都参加密集型中文课程。",
+      "产品负责人兼业务分析师，二十年金融服务软件经验——人寿保险核心系统、银行保险与公共财政。我在软件行业的两端都工作过：先是驻场顾问，为多个行业的客户交付项目；后加入软件厂商，主导标准化产品的演进。",
     p2:
-      "我的目标是从事IT技术支持或经济金融分析类岗位，充分发挥IT+经济双背景的独特优势。我的背景融合了8年IT基础设施经验，以及计量经济学、宏观经济学和金融建模方面的严谨定量培训。",
-    p3: "目前在中国成都，作为CSC奖学金获得者完成密集型中文课程。常驻瑞士洛桑。",
+      "在 KAPIA-RGI，我全面负责 K4U——一个服务多家保险公司终端客户的网页门户：产品愿景、路线图与待办列表，在相互竞争的需求之间做优先级取舍。我主导了单点登录（SAML/OIDC）的跨公司部署，依托用户反馈与高级 SQL 分析驱动决策，只交付经过测试、符合监管要求的增量——持有 ISTQB 测试认证，受过 PSPO 培训。",
+    p3:
+      "2025 年起定居成都，在四川大学完成一年全日制中文学习——日常生活以中文进行（已通过 HSK 4，正备考 HSK 5）。法语、葡萄牙语为母语，英语流利，西班牙语可作工作语言。可随时到岗，可在全国范围内工作。",
     stats: {
-      years: "年IT经验",
-      gpa: "绩点 / 6",
-      languages: "语言",
-      ects: "已获学分",
+      years: "年软件经验",
+      languages: "门语言",
+      defects: "% 缺陷积压削减",
+      clients: "位新客户签约",
     },
   },
   experience: {
-    chuv: {
-      title: "IT技术员",
-      company: "CHUV — 洛桑大学中心医院",
-      date: "2017 – 2025",
+    kapia: {
+      title: "网页产品负责人 · 业务分析师",
+      company: "KAPIA-RGI — 人寿保险核心系统软件厂商（KELIA / K4U / KARMA）",
+      date: "2011 – 2014 · 2019 – 至今",
       items: [
-        "通过SCCM管理IT设备群（10,000+台）：安装、维护和软硬件故障排除",
-        "通过AirWatch / Workspace ONE配置和部署iPhone",
-        "通过Agile Provisioning配置Cisco电话",
-        "对医疗设备和非标准系统进行干预",
-        "负责服务台支持并协助用户：诊断和解决事件",
-        "打印机和网络外设故障排除",
-        "为团队编写和标准化技术程序",
-        "在压力下按优先级和截止日期进行有条理的工作",
+        "负责 K4U——服务多家保险公司终端客户的标准化网页门户：产品愿景、路线图与待办列表，在相互竞争的干系人需求之间做优先级取舍",
+        "主持全部敏捷仪式（需求梳理、迭代计划、评审、回顾），作为业务与技术之间的唯一接口人，在 Jira 中跟踪工作与缺陷",
+        "主导单点登录（SAML/OIDC）的跨公司部署；通过公司的 REST API 目录 KARMA 将 KELIA 后端与外部系统对接",
+        "依托用户反馈、缺陷分析与高级 SQL 驱动决策；面向客户决策层的产品演示助力签下三位新客户",
+        "在公司内部推广 AI 期间被任命为 AI 大使，推动业务与技术团队采用 AI",
+        "作为业务分析师，在 KELIA 平台交付保障型产品（身故保险金、年金、保费豁免）：需求分析、功能规格、集成测试与验收",
+        "十二个月内将客户未结缺陷积压削减约 75%；主导一次重大版本升级，业务零中断",
       ],
     },
-    studentJobsTitle: "学生兼职",
-    galexis: {
-      title: "仓库工作人员",
-      company: "Galexis SA · 瑞士沃州埃屈布朗",
-      date: "2014 – 2017",
-      desc: "边学习边工作。提供物流支持并参与药品分销业务。",
+    consulting: {
+      title: "IT 顾问 — 公共财政、铁路、保险",
+      company: "Groupe Open & Adneom Technologies — 驻场咨询",
+      date: "2008 – 2011 · 2014 – 2019",
+      items: [
+        "法国税务总局 DGFIP（2018–2019）：“数字助手”RPA 项目功能设计师——一个流程的处理时间缩短约 57%（约合每年 1000 小时），另一个流程每年节省 7 个全职人力",
+        "法国国家铁路 SNCF（2016–2018）：列车正点率系统 BREHAT 的功能负责人——客户项目经理的唯一对接人，负责报价并带领一至三名顾问",
+        "Groupama Gan Vie 保险（2014–2016）：财务部门下游数据库专家——生产监控、数据一致性核查、验收测试协调",
+        "早期项目（2008–2011）：BNP Paribas Cardif（银行保险）、埃森哲（寿险外包）、Linedata（金融软件）",
+      ],
     },
-    uber: {
-      title: "Uber Pop司机",
-      company: "Uber · 自由职业",
-      date: "2016 – 2017",
-      desc: "边学习边工作。",
-    },
-    gfk: {
-      title: "呼叫中心接线员",
-      company: "GFK · 洛桑",
-      date: "2011 – 2012",
-      desc: "学生兼职。",
+    insurance: {
+      title: "保险运营与合同管理",
+      company: "Fidelidade、SwissLife 与 AXA",
+      date: "2004 – 2008",
+      desc:
+        "在多家寿险公司从事合同管理、理赔处理与款项支付——这是我日后深耕保险核心系统的业务根基。在 Fidelidade 主导一个文档自动化项目，并管理两名下属。",
     },
   },
   education: {
-    bachelor: {
-      title: "经济学与管理学士",
-      date: "2023 – 在读",
-      subtitle: "瑞士远程大学 · 152/180 ECTS · 5.66/6",
-      courses: [
-        "完整课程：已完成152 ECTS，平均成绩5.66/6",
-        "经济学与政策 — 宏观经济学、微观经济学、公共经济学、产业组织",
-        "财务与管理 — 货币与金融、管理控制、企业财务、国际金融、国际贸易",
-        "定量方法 — 计量经济学、统计学、经济学家数学",
-        "商业基础 — 财务会计、企业管理、创业学、商业法",
+    sichuan: {
+      title: "汉语进修项目",
+      date: "2025 – 2026",
+      subtitle: "四川大学 · 成都望江校区 · 全日制沉浸式学习",
+      items: [
+        "从 KAPIA-RGI 停薪留职一年，全日制学习中文；项目于 2026 年 7 月结业",
+        "课程、日常生活与交流全程使用中文——对中国大学生活有切身了解",
+        "已通过 HSK 4（2023），正备考 HSK 5",
       ],
-      thesisTitle: "学士论文",
-      thesis: "房地产价格的全球决定因素：多国面板分析",
-      thesisSubject: "金融周期对房地产市场的影响——国际金融冲击的传导机制",
-      methodology: "研究方法",
-      methodologyValue: "多元线性回归（OLS）+ 面板数据线性投影",
-      dataSources: "数据来源",
-      dataSourcesValue:
-        "国际货币基金组织（IMF）、国际清算银行（BIS）——国际宏观经济数据集",
-      tools: "工具",
-      toolsValue: "R语言（tidyverse：dplyr, tidyr）",
-      focus: "研究重点",
-      focusValue: "宏观审慎措施和资本管制对国际金融冲击的稳定效应",
     },
-    china: {
-      title: "中文课程 — CSC奖学金获得者",
-      date: "2025 – 在读",
-      subtitle: "四川大学 · 中国成都 · 全中文沉浸式学习",
-      csc: "CSC奖学金获得者 — 中国政府竞争性奖学金项目",
-      intensive: "强化语言课程（每周25+小时）",
-      gpa: "GPA 4.0/4.0",
-      gpaDesc: "第一学期所有课程",
-      immersion: "完全沉浸式学习：课程、日常生活和社交互动100%使用中文",
-      adaptability:
-        "通过直接融入中国学术和社交环境，培养了强大的跨文化适应能力",
+    certifications: {
+      title: "资格认证",
+      date: "2016 – 2024",
+      items: [
+        "Professional Scrum Product Owner（PSPO）——2024 年培训，认证进行中",
+        "ISTQB 认证测试工程师——基础级（2016）",
+        "项目管理——基础与人际维度（2018）",
+        "HSK 4（2023）· HSKK 初级口语（2022）· TOCFL A 级（2024）",
+      ],
     },
-    cfc: {
-      title: "计算机科学CFC证书",
-      date: "2015 – 2017",
-      subtitle: "CPNV · 5.3/6",
-      desc:
-        "全面的通识培训：开发（C#、JavaScript、PHP）、数据库（SQL）、网络、系统（Windows/Linux）、技术支持",
+    master: {
+      title: "金融工具管理硕士",
+      date: "2005",
+      subtitle: "塞尔吉-蓬图瓦兹大学（现 CY 塞尔吉巴黎大学）",
+      desc: "金融工程与金融工具管理——二十年金融软件生涯的量化根基。",
     },
-    epfl: {
-      title: "洛桑联邦理工学院（EPFL）",
-      date: "2011 – 2015",
-      subtitle: "微技术 · 预科 4.41/6 · 学士未完成",
-      desc:
-        "工程基础训练：编程（C）、数学、物理、统计学——在职业转型前打下了扎实的分析基础",
+    edc: {
+      title: "商科学位",
+      date: "2004",
+      subtitle: "EDC 巴黎商学院",
+      desc: "商业与管理通识教育。",
     },
   },
   skills: {
+    product: {
+      title: "🧭 产品与方法论",
+      tags: [
+        "敏捷 / Scrum",
+        "产品路线图与待办列表",
+        "需求工程",
+        "MVP 范围界定",
+        "验收测试（UAT）",
+        "Jira",
+      ],
+    },
     data: {
-      title: "📊 数据与分析",
+      title: "📊 数据库与编程语言",
+      tags: ["SQL（高级）", "PL/SQL（入门）", "JavaScript / TypeScript（入门）"],
+    },
+    interfaces: {
+      title: "🔌 接口与环境",
+      tags: ["REST API", "单点登录（SAML / OIDC）", "Postman", "DEV / QA / PROD 多环境"],
+    },
+    domains: {
+      title: "🏦 业务领域",
       tags: [
-        "R语言",
-        "SQL",
-        "Excel",
-        "Python",
-        "线性回归",
-        "面板数据分析",
-        "OLS",
-        "统计建模",
+        "人寿保险核心系统",
+        "银行保险",
+        "数字化旅程与 SSO",
+        "公共财政",
+        "完整软件生命周期",
       ],
-    },
-    econometrics: {
-      title: "📈 计量经济学",
-      tags: ["多元分析", "时间序列", "固定效应模型", "稳健性分析"],
-    },
-    it: {
-      title: "🖥️ IT基础设施",
-      tags: [
-        "资产管理（10K+设备）",
-        "大规模部署",
-        "系统管理",
-        "事件管理",
-        "二级技术支持",
-      ],
-    },
-    finance: {
-      title: "💰 金融",
-      tags: ["财务分析", "DCF模型", "可比公司分析"],
-    },
-    economics: {
-      title: "📉 经济学",
-      tags: ["宏观经济学", "计量经济学", "国际金融"],
-    },
-    accounting: {
-      title: "📋 会计",
-      tags: ["财务会计", "管理控制"],
-    },
-    programming: {
-      title: "💻 编程",
-      tags: ["PowerShell", "C#", "PHP", "JavaScript"],
     },
     soft: {
       title: "🤝 软技能",
       tags: [
-        "严谨细致",
-        "用户支持",
-        "保密意识",
+        "唯一接口人",
+        "多方协调",
+        "客户演示",
         "文档编写",
-        "综合分析",
+        "质量意识",
         "跨文化适应",
-        "国际流动性",
-        "团队协作",
+        "自主工作",
       ],
     },
     languages: {
       title: "🌍 语言",
       french: { name: "法语", level: "母语" },
       portuguese: { name: "葡萄牙语", level: "母语" },
-      english: { name: "英语", level: "流利（IELTS 8/9）" },
-      chinese: { name: "中文", level: "中级" },
+      english: { name: "英语", level: "流利 · 工作语言" },
+      spanish: { name: "西班牙语", level: "工作语言" },
+      mandarin: { name: "中文", level: "HSK 4 · 备考 HSK 5" },
     },
   },
   hobbies: {
-    music: {
-      title: "音乐制作",
-      desc:
-        "赛博金属/工业金属艺术家 — 3张自主制作专辑，独立作曲与录制，偶有2-3次合作",
-      link: "在Spotify上收听",
-    },
-    gaming: {
-      title: "电子游戏",
-      desc: "热爱探索虚拟世界和互动叙事的玩家",
-    },
-    travel: {
-      title: "旅行",
-      desc: "探索新的文化和目的地。近期重点关注亚太地区",
+    running: {
+      title: "长跑",
+      desc: "从 10 公里路跑到超级马拉松——包括两次巴黎马拉松。",
     },
     cycling: {
       title: "骑行",
-      desc: "享受户外骑行的乐趣",
+      desc: "环成都及川西乡野的长途骑行。",
+    },
+    literature: {
+      title: "法国文学",
+      desc: "热忱的读者——在豆瓣上用中文撰写书评。",
+    },
+    cinema: {
+      title: "电影",
+      desc: "王家卫、梅尔维尔、胡金铨——用法语写影评是我最持久的写作练习。",
     },
     language: {
       title: "语言学习",
-      desc: "目前正在沉浸式学习中文",
+      desc: "中文即日常：上课、办事、写书评——目标 HSK 5。",
     },
   },
   contact: {
     intro:
-      "我正在寻找IT技术支持或经济金融分析类岗位，希望充分发挥IT+经济双背景的优势。欢迎2026年8月开始的实习和初级职位机会。",
-    emailLabel: "电子邮件",
+      "我正在寻找产品负责人、业务分析师或项目管理类职位——在中国工作或远程面向欧洲协作均可。二十年受监管金融软件经验，现居成都，可在全国范围工作，可随时到岗。",
+    wechatLabel: "微信",
     locationLabel: "所在地",
-    footer: "© 2026 Jorge Paula Pinheiro · 使用 Bun 与 pretext 构建",
+    footer: "© 2026 李北洛 Philippe Ribeiro · 使用 Bun 与 pretext 构建",
   },
   ui: {
     skipLink: "跳到内容",
@@ -772,9 +680,13 @@ const zh: Translation = {
 };
 
 const zhHant: Translation = {
+  name: {
+    display: "李北洛 Philippe Ribeiro",
+    lines: ["李北洛"],
+  },
   meta: {
     description:
-      "Jorge Paula Pinheiro — 擁有8年IT背景的經濟學學生，正轉向經濟與金融分析。常駐瑞士洛桑，目前為成都的CSC獎學金學者。",
+      "李北洛（Philippe Ribeiro）— 產品負責人 / 商業分析師，二十年金融軟體經驗：壽險核心系統、銀行保險、公共財政。現居中國成都，可隨時到職。",
   },
   nav: {
     about: "關於我",
@@ -786,207 +698,172 @@ const zhHant: Translation = {
   },
   hero: {
     greeting: "你好，我是",
-    title: "經濟學 · 資料 · IT — 2026年8月可到職",
-    location: "📍 目前在中國成都 · 常駐瑞士洛桑 · 🎓 經濟學學士",
+    title: "產品負責人 · 商業分析師 — 二十年金融軟體經驗",
+    location: "📍 中國成都 · 可於中國各地工作 · 法國籍 · 可隨時到職",
     ctaPrimary: "聯絡我",
     ctaSecondary: "瞭解更多",
   },
   about: {
     p1:
-      "我是一名擁有紮實資訊科技專業背景的經濟學學生，目前正透過瑞士遠距大學完成學士學位，同時在中國成都參加密集中文課程。",
+      "產品負責人兼商業分析師，二十年金融服務軟體經驗——壽險核心系統、銀行保險與公共財政。我在軟體產業的兩端都工作過：先是駐點顧問，為多個產業的客戶交付專案；後加入軟體廠商，主導標準化產品的演進。",
     p2:
-      "我的目標是從事IT技術支援或經濟金融分析類職位，充分發揮IT+經濟雙背景的獨特優勢。我的背景結合了8年IT基礎架構經驗，以及計量經濟學、總體經濟學與金融建模方面的嚴謹量化訓練。",
-    p3: "目前在中國成都，作為CSC獎學金得主修讀密集中文課程。常駐瑞士洛桑。",
+      "在 KAPIA-RGI，我全權負責 K4U——一個服務多家保險公司終端客戶的網頁入口網站：產品願景、路線圖與待辦清單，在相互競爭的需求之間做優先順序取捨。我主導了單一登入（SAML/OIDC）的跨公司導入，依據使用者回饋與進階 SQL 分析驅動決策，只交付通過測試、符合法規的增量——持有 ISTQB 測試認證，受過 PSPO 培訓。",
+    p3:
+      "2025 年起定居成都，在四川大學完成一年全日制中文課程——日常生活以中文進行（已通過 HSK 4，正準備 HSK 5）。法語、葡萄牙語為母語，英語流利，西班牙語可作工作語言。可隨時到職，可於中國各地工作。",
     stats: {
-      years: "年IT經驗",
-      gpa: "成績 / 6",
-      languages: "語言",
-      ects: "已修學分",
+      years: "年軟體經驗",
+      languages: "門語言",
+      defects: "% 缺陷積壓削減",
+      clients: "位新客戶簽約",
     },
   },
   experience: {
-    chuv: {
-      title: "IT技術員",
-      company: "CHUV — 洛桑大學中心醫院",
-      date: "2017 – 2025",
+    kapia: {
+      title: "網頁產品負責人 · 商業分析師",
+      company: "KAPIA-RGI — 壽險核心系統軟體廠商（KELIA / K4U / KARMA）",
+      date: "2011 – 2014 · 2019 – 迄今",
       items: [
-        "透過SCCM管理IT設備群（10,000+台）：安裝、維護與軟硬體故障排除",
-        "透過AirWatch / Workspace ONE設定與部署iPhone",
-        "透過Agile Provisioning設定Cisco電話",
-        "處理醫療設備與非標準系統的維護作業",
-        "負責服務台支援並協助使用者：診斷與排除事件",
-        "印表機與網路周邊設備故障排除",
-        "為團隊撰寫並標準化技術作業程序",
-        "在壓力下依優先順序與截止期限有條理地工作",
+        "負責 K4U——服務多家保險公司終端客戶的標準化網頁入口網站：產品願景、路線圖與待辦清單，在相互競爭的利害關係人需求之間做優先順序取捨",
+        "主持全部敏捷儀式（需求精煉、衝刺規劃、評審、回顧），作為業務與技術之間的單一窗口，在 Jira 中追蹤工作與缺陷",
+        "主導單一登入（SAML/OIDC）的跨公司導入；透過公司的 REST API 目錄 KARMA 將 KELIA 後端與外部系統介接",
+        "依據使用者回饋、缺陷分析與進階 SQL 驅動決策；面向客戶決策層的產品展示協助簽下三位新客戶",
+        "於公司內部導入 AI 期間獲任命為 AI 大使，推動業務與技術團隊採用 AI",
+        "作為商業分析師，在 KELIA 平台交付保障型商品（身故給付、年金、保費豁免）：需求分析、功能規格、整合測試與驗收",
+        "十二個月內將客戶未結缺陷積壓削減約 75%；主導一次重大版本升級，業務零中斷",
       ],
     },
-    studentJobsTitle: "學生兼職",
-    galexis: {
-      title: "倉儲人員",
-      company: "Galexis SA · 瑞士沃州埃屈布朗",
-      date: "2014 – 2017",
-      desc: "半工半讀。提供物流支援並參與藥品經銷業務。",
+    consulting: {
+      title: "IT 顧問 — 公共財政、鐵路、保險",
+      company: "Groupe Open & Adneom Technologies — 駐點顧問服務",
+      date: "2008 – 2011 · 2014 – 2019",
+      items: [
+        "法國稅務總署 DGFIP（2018–2019）：「數位助理」RPA 專案功能設計師——一項流程的處理時間縮短約 57%（約合每年 1,000 小時），另一項流程每年節省 7 名全職人力",
+        "法國國家鐵路 SNCF（2016–2018）：列車準點率系統 BREHAT 的功能負責人——客戶專案經理的單一窗口，負責估價並帶領一至三名顧問",
+        "Groupama Gan Vie 保險（2014–2016）：財務部門下游資料庫專家——生產監控、資料一致性查核、驗收測試協調",
+        "早期專案（2008–2011）：BNP Paribas Cardif（銀行保險）、埃森哲（壽險委外）、Linedata（金融軟體）",
+      ],
     },
-    uber: {
-      title: "Uber Pop司機",
-      company: "Uber · 自由接案",
-      date: "2016 – 2017",
-      desc: "半工半讀。",
-    },
-    gfk: {
-      title: "客服中心接線員",
-      company: "GFK · 洛桑",
-      date: "2011 – 2012",
-      desc: "學生兼職。",
+    insurance: {
+      title: "保險營運與契約管理",
+      company: "Fidelidade、SwissLife 與 AXA",
+      date: "2004 – 2008",
+      desc:
+        "在多家壽險公司從事契約管理、理賠處理與款項給付——這是我日後深耕保險核心系統的業務根基。在 Fidelidade 主導一項文件自動化專案，並管理兩名部屬。",
     },
   },
   education: {
-    bachelor: {
-      title: "經濟與管理學士",
-      date: "2023 – 就讀中",
-      subtitle: "瑞士遠距大學 · 152/180 ECTS · 5.66/6",
-      courses: [
-        "完整課程：已修畢152 ECTS，平均成績5.66/6",
-        "經濟學與政策 — 總體經濟學、個體經濟學、公共經濟學、產業組織",
-        "財務與管理 — 貨幣與金融、管理控制、公司理財、國際金融、國際貿易",
-        "量化方法 — 計量經濟學、統計學、經濟學家數學",
-        "商業基礎 — 財務會計、企業管理、創業學、商事法",
+    sichuan: {
+      title: "華語進修課程",
+      date: "2025 – 2026",
+      subtitle: "四川大學 · 成都望江校區 · 全日制沉浸式學習",
+      items: [
+        "自 KAPIA-RGI 留職停薪一年，全日制學習中文；課程於 2026 年 7 月結業",
+        "課程、日常生活與交流全程使用中文——對中國大學生活有第一手了解",
+        "已通過 HSK 4（2023），正準備 HSK 5",
       ],
-      thesisTitle: "學士論文",
-      thesis: "房地產價格的全球決定因素：多國面板資料分析",
-      thesisSubject: "金融循環對房地產市場的影響——國際金融衝擊的傳導機制",
-      methodology: "研究方法",
-      methodologyValue: "多元線性迴歸（OLS）+ 面板資料線性投影",
-      dataSources: "資料來源",
-      dataSourcesValue:
-        "國際貨幣基金組織（IMF）、國際清算銀行（BIS）——國際總體經濟資料集",
-      tools: "工具",
-      toolsValue: "R語言（tidyverse：dplyr, tidyr）",
-      focus: "研究重點",
-      focusValue: "總體審慎措施與資本管制對國際金融衝擊的穩定效果",
     },
-    china: {
-      title: "中文課程 — CSC獎學金得主",
-      date: "2025 – 就讀中",
-      subtitle: "四川大學 · 中國成都 · 全中文沉浸式學習",
-      csc: "CSC獎學金得主 — 中國政府競爭性獎學金計畫",
-      intensive: "密集語言課程（每週25+小時）",
-      gpa: "GPA 4.0/4.0",
-      gpaDesc: "第一學期所有課程",
-      immersion: "完全沉浸式學習：課程、日常生活與社交互動100%使用中文",
-      adaptability:
-        "透過直接融入中國學術與社交環境，培養出強大的跨文化適應能力",
+    certifications: {
+      title: "專業認證",
+      date: "2016 – 2024",
+      items: [
+        "Professional Scrum Product Owner（PSPO）——2024 年培訓，認證進行中",
+        "ISTQB 認證測試工程師——基礎級（2016）",
+        "專案管理——基礎與人際面向（2018）",
+        "HSK 4（2023）· HSKK 初級口語（2022）· TOCFL A 級（2024）",
+      ],
     },
-    cfc: {
-      title: "資訊科學CFC證書",
-      date: "2015 – 2017",
-      subtitle: "CPNV · 5.3/6",
-      desc:
-        "全面的通才訓練：開發（C#、JavaScript、PHP）、資料庫（SQL）、網路、系統（Windows/Linux）、技術支援",
+    master: {
+      title: "金融工具管理碩士",
+      date: "2005",
+      subtitle: "塞吉-蓬多瓦茲大學（現 CY 塞吉巴黎大學）",
+      desc: "金融工程與金融工具管理——二十年金融軟體生涯的量化根基。",
     },
-    epfl: {
-      title: "洛桑聯邦理工學院（EPFL）",
-      date: "2011 – 2015",
-      subtitle: "微技術 · 預科 4.41/6 · 學士未完成",
-      desc:
-        "工程基礎訓練：程式設計（C）、數學、物理、統計學——在職涯轉換前打下紮實的分析基礎",
+    edc: {
+      title: "商學學位",
+      date: "2004",
+      subtitle: "EDC 巴黎商學院",
+      desc: "商業與管理通識教育。",
     },
   },
   skills: {
+    product: {
+      title: "🧭 產品與方法論",
+      tags: [
+        "敏捷 / Scrum",
+        "產品路線圖與待辦清單",
+        "需求工程",
+        "MVP 範疇界定",
+        "驗收測試（UAT）",
+        "Jira",
+      ],
+    },
     data: {
-      title: "📊 資料與分析",
+      title: "📊 資料庫與程式語言",
+      tags: ["SQL（進階）", "PL/SQL（入門）", "JavaScript / TypeScript（入門）"],
+    },
+    interfaces: {
+      title: "🔌 介面與環境",
+      tags: ["REST API", "單一登入（SAML / OIDC）", "Postman", "DEV / QA / PROD 多環境"],
+    },
+    domains: {
+      title: "🏦 業務領域",
       tags: [
-        "R語言",
-        "SQL",
-        "Excel",
-        "Python",
-        "線性迴歸",
-        "面板資料分析",
-        "OLS",
-        "統計建模",
+        "壽險核心系統",
+        "銀行保險",
+        "數位旅程與 SSO",
+        "公共財政",
+        "完整軟體生命週期",
       ],
-    },
-    econometrics: {
-      title: "📈 計量經濟學",
-      tags: ["多元分析", "時間序列", "固定效果模型", "穩健性分析"],
-    },
-    it: {
-      title: "🖥️ IT基礎架構",
-      tags: [
-        "資產管理（10K+設備）",
-        "大規模部署",
-        "系統管理",
-        "事件管理",
-        "二線技術支援",
-      ],
-    },
-    finance: {
-      title: "💰 金融",
-      tags: ["財務分析", "DCF模型", "可比公司分析"],
-    },
-    economics: {
-      title: "📉 經濟學",
-      tags: ["總體經濟學", "計量經濟學", "國際金融"],
-    },
-    accounting: {
-      title: "📋 會計",
-      tags: ["財務會計", "管理控制"],
-    },
-    programming: {
-      title: "💻 程式設計",
-      tags: ["PowerShell", "C#", "PHP", "JavaScript"],
     },
     soft: {
       title: "🤝 軟實力",
       tags: [
-        "嚴謹細心",
-        "使用者支援",
-        "保密意識",
+        "單一窗口",
+        "多方協調",
+        "客戶展示",
         "文件撰寫",
-        "綜合分析",
+        "品質意識",
         "跨文化適應",
-        "國際移動力",
-        "團隊合作",
+        "獨立作業",
       ],
     },
     languages: {
       title: "🌍 語言",
       french: { name: "法語", level: "母語" },
       portuguese: { name: "葡萄牙語", level: "母語" },
-      english: { name: "英語", level: "流利（IELTS 8/9）" },
-      chinese: { name: "中文", level: "中級" },
+      english: { name: "英語", level: "流利 · 工作語言" },
+      spanish: { name: "西班牙語", level: "工作語言" },
+      mandarin: { name: "中文", level: "HSK 4 · 準備 HSK 5" },
     },
   },
   hobbies: {
-    music: {
-      title: "音樂製作",
-      desc:
-        "賽博金屬/工業金屬藝術家 — 3張自製專輯，獨立作曲與錄音，偶有2-3次合作",
-      link: "在Spotify上收聽",
-    },
-    gaming: {
-      title: "電玩遊戲",
-      desc: "熱愛探索虛擬世界與互動敘事的玩家",
-    },
-    travel: {
-      title: "旅行",
-      desc: "探索新的文化與目的地。近期聚焦亞太地區",
+    running: {
+      title: "長跑",
+      desc: "從 10 公里路跑到超級馬拉松——包括兩次巴黎馬拉松。",
     },
     cycling: {
-      title: "單車",
-      desc: "享受戶外騎乘的樂趣",
+      title: "自行車",
+      desc: "環成都與川西鄉間的長途騎乘。",
+    },
+    literature: {
+      title: "法國文學",
+      desc: "熱情的讀者——在豆瓣以中文撰寫書評。",
+    },
+    cinema: {
+      title: "電影",
+      desc: "王家衛、梅爾維爾、胡金銓——以法文寫影評是我最持久的寫作練習。",
     },
     language: {
       title: "語言學習",
-      desc: "目前正沉浸式學習中文",
+      desc: "中文即日常：上課、辦事、寫書評——目標 HSK 5。",
     },
   },
   contact: {
     intro:
-      "我正在尋找IT技術支援或經濟金融分析類職位，希望充分發揮IT+經濟雙背景的優勢。歡迎2026年8月起的實習與初階職位機會。",
-    emailLabel: "電子郵件",
+      "我正在尋找產品負責人、商業分析師或專案管理類職位——在中國工作或遠端面向歐洲協作皆可。二十年受監管金融軟體經驗，現居成都，可於中國各地工作，可隨時到職。",
+    wechatLabel: "微信",
     locationLabel: "所在地",
-    footer: "© 2026 Jorge Paula Pinheiro · 以 Bun 與 pretext 打造",
+    footer: "© 2026 李北洛 Philippe Ribeiro · 以 Bun 與 pretext 打造",
   },
   ui: {
     skipLink: "跳至內容",

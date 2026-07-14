@@ -1,4 +1,4 @@
-# Proposition de design — Jorge Paula Pinheiro
+# Proposition de design — Philippe Ribeiro
 
 > **Statut (juillet 2026) : proposition historique, non retenue telle quelle.**
 > Le site implémenté a gardé le layout 2 colonnes / titres sticky / fade-up, mais

@@ -143,16 +143,15 @@ for (const lang of LANGS) {
     "@context": "https://schema.org",
     "@type": "Person",
     name: PROFILE.fullName,
-    email: `mailto:${PROFILE.email}`,
+    alternateName: PROFILE.chineseName,
     jobTitle: t.hero.title,
     url: href(lang),
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Lausanne",
-      addressCountry: "CH",
+      addressLocality: "Chengdu",
+      addressCountry: "CN",
     },
-    sameAs: [PROFILE.spotifyUrl],
-    knowsLanguage: ["fr", "pt", "en", "zh"],
+    knowsLanguage: ["fr", "pt", "en", "es", "zh"],
   }).replace(/</g, "\\u003C");
 
   const headExtra = `

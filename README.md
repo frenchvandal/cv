@@ -1,4 +1,4 @@
-# Jorge Paula Pinheiro — CV
+# Philippe Ribeiro — CV
 
 A four-language (EN / FR / 简体 / 繁體) portfolio, pre-rendered to static HTML and
 progressively enhanced with pretext-driven typography. No framework.
@@ -66,4 +66,4 @@ stay in structural sync. See [AGENTS.md](AGENTS.md) for the code conventions.
 
 ## License
 
-© 2026 Jorge Paula Pinheiro. All rights reserved.
+© 2026 Philippe Ribeiro. All rights reserved.

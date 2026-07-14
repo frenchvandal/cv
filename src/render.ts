@@ -40,7 +40,7 @@ export function langUrl(lang: Lang): string {
 
 /** Document title for a language's page — shared by the SSG build and the client. */
 export function pageTitle(t: Translation): string {
-  return `${PROFILE.fullName} — ${t.hero.title}`;
+  return `${t.name.display} — ${t.hero.title}`;
 }
 
 function controls(t: Translation, lang: Lang, theme: Theme): string {
@@ -66,7 +66,7 @@ function hero(t: Translation): string {
     <section class="hero" id="top" aria-label="Introduction">
       <div class="hero__eyebrow animate">${escapeHtml(t.hero.greeting)}</div>
       <h1 class="hero__name">
-        ${PROFILE.nameLines
+        ${t.name.lines
       .map(
         (line, i) =>
           `<span class="hero__name-line animate animate--delayed-${i + 1}">${escapeHtml(line)}</span>`,
@@ -78,7 +78,7 @@ function hero(t: Translation): string {
       </p>
       <p class="hero__location animate animate--delayed-4">${escapeHtml(t.hero.location)}</p>
       <div class="hero__actions animate animate--delayed-5">
-        <a class="button" href="mailto:${PROFILE.email}">${escapeHtml(t.hero.ctaPrimary)}</a>
+        <a class="button" href="#contact">${escapeHtml(t.hero.ctaPrimary)}</a>
         <a class="button button--ghost" href="#experience">${escapeHtml(t.hero.ctaSecondary)}</a>
       </div>
     </section>
@@ -92,10 +92,10 @@ function sectionTitle(t: Translation, id: keyof Translation['nav'], index: numbe
 
 /** Stat values are language-invariant; labels come from the translation. */
 const STATS: readonly { value: string; label: (t: Translation) => string }[] = [
-  { value: '8', label: (t) => t.about.stats.years },
-  { value: '5.66', label: (t) => t.about.stats.gpa },
-  { value: '4', label: (t) => t.about.stats.languages },
-  { value: '152', label: (t) => t.about.stats.ects },
+  { value: '20', label: (t) => t.about.stats.years },
+  { value: '5', label: (t) => t.about.stats.languages },
+  { value: '75', label: (t) => t.about.stats.defects },
+  { value: '3', label: (t) => t.about.stats.clients },
 ];
 
 function about(t: Translation): string {
@@ -120,49 +120,41 @@ function about(t: Translation): string {
   `;
 }
 
+/** A position with a bullet list (the two main chapters of the career). */
+function jobCard(job: {
+  title: string;
+  company: string;
+  date: string;
+  items: readonly string[];
+}): string {
+  return `
+        <article class="card">
+          <div class="card__header">
+            <h3 class="card__title">${escapeHtml(job.company)}</h3>
+            <span class="card__meta">${escapeHtml(job.date)}</span>
+          </div>
+          <p class="card__subtitle">${escapeHtml(job.title)}</p>
+          <ul class="card__list">
+            ${job.items.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}
+          </ul>
+        </article>`;
+}
+
 function experience(t: Translation): string {
   return `
     <section class="section" aria-labelledby="experience">
       <div>${sectionTitle(t, 'experience', 1)}</div>
       <div class="section__body animate">
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.experience.chuv.company)}</h3>
-            <span class="card__meta">${escapeHtml(t.experience.chuv.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(t.experience.chuv.title)}</p>
-          <ul class="card__list">
-            ${t.experience.chuv.items.map((h) => `<li>${escapeHtml(h)}</li>`).join('')}
-          </ul>
-        </article>
-
-        <h3 class="card__subtitle" style="margin-top: var(--space-lg)">${escapeHtml(t.experience.studentJobsTitle)}</h3>
+        ${jobCard(t.experience.kapia)}
+        ${jobCard(t.experience.consulting)}
 
         <article class="card">
           <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.experience.galexis.company)}</h3>
-            <span class="card__meta">${escapeHtml(t.experience.galexis.date)}</span>
+            <h3 class="card__title">${escapeHtml(t.experience.insurance.company)}</h3>
+            <span class="card__meta">${escapeHtml(t.experience.insurance.date)}</span>
           </div>
-          <p class="card__subtitle">${escapeHtml(t.experience.galexis.title)}</p>
-          <p>${escapeHtml(t.experience.galexis.desc)}</p>
-        </article>
-
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.experience.uber.company)}</h3>
-            <span class="card__meta">${escapeHtml(t.experience.uber.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(t.experience.uber.title)}</p>
-          <p>${escapeHtml(t.experience.uber.desc)}</p>
-        </article>
-
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.experience.gfk.company)}</h3>
-            <span class="card__meta">${escapeHtml(t.experience.gfk.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(t.experience.gfk.title)}</p>
-          <p>${escapeHtml(t.experience.gfk.desc)}</p>
+          <p class="card__subtitle">${escapeHtml(t.experience.insurance.title)}</p>
+          <p>${escapeHtml(t.experience.insurance.desc)}</p>
         </article>
       </div>
     </section>
@@ -176,56 +168,41 @@ function education(t: Translation): string {
       <div class="section__body animate">
         <article class="card">
           <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.education.bachelor.title)}</h3>
-            <span class="card__meta">${escapeHtml(t.education.bachelor.date)}</span>
+            <h3 class="card__title">${escapeHtml(t.education.sichuan.title)}</h3>
+            <span class="card__meta">${escapeHtml(t.education.sichuan.date)}</span>
           </div>
-          <p class="card__subtitle">${escapeHtml(t.education.bachelor.subtitle)}</p>
+          <p class="card__subtitle">${escapeHtml(t.education.sichuan.subtitle)}</p>
           <ul class="card__list">
-            ${t.education.bachelor.courses.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
-          </ul>
-          <div style="margin-top: var(--space-md)">
-            <p><strong>${escapeHtml(t.education.bachelor.thesisTitle)}:</strong> ${escapeHtml(t.education.bachelor.thesis)}</p>
-            <p>${escapeHtml(t.education.bachelor.thesisSubject)}</p>
-          </div>
-          <div class="tags" style="margin-top: var(--space-md)">
-            <span class="tag">${escapeHtml(t.education.bachelor.methodology)}: ${escapeHtml(t.education.bachelor.methodologyValue)}</span>
-            <span class="tag">${escapeHtml(t.education.bachelor.dataSources)}: ${escapeHtml(t.education.bachelor.dataSourcesValue)}</span>
-            <span class="tag">${escapeHtml(t.education.bachelor.tools)}: ${escapeHtml(t.education.bachelor.toolsValue)}</span>
-            <span class="tag">${escapeHtml(t.education.bachelor.focus)}: ${escapeHtml(t.education.bachelor.focusValue)}</span>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.education.china.title)}</h3>
-            <span class="card__meta">${escapeHtml(t.education.china.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(t.education.china.subtitle)}</p>
-          <ul class="card__list">
-            <li>${escapeHtml(t.education.china.csc)}</li>
-            <li>${escapeHtml(t.education.china.intensive)}</li>
-            <li>${escapeHtml(t.education.china.gpa)} ${escapeHtml(t.education.china.gpaDesc)}</li>
-            <li>${escapeHtml(t.education.china.immersion)}</li>
-            <li>${escapeHtml(t.education.china.adaptability)}</li>
+            ${t.education.sichuan.items.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
           </ul>
         </article>
 
         <article class="card">
           <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.education.cfc.title)}</h3>
-            <span class="card__meta">${escapeHtml(t.education.cfc.date)}</span>
+            <h3 class="card__title">${escapeHtml(t.education.certifications.title)}</h3>
+            <span class="card__meta">${escapeHtml(t.education.certifications.date)}</span>
           </div>
-          <p class="card__subtitle">${escapeHtml(t.education.cfc.subtitle)}</p>
-          <p>${escapeHtml(t.education.cfc.desc)}</p>
+          <ul class="card__list">
+            ${t.education.certifications.items.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
+          </ul>
         </article>
 
         <article class="card">
           <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.education.epfl.title)}</h3>
-            <span class="card__meta">${escapeHtml(t.education.epfl.date)}</span>
+            <h3 class="card__title">${escapeHtml(t.education.master.title)}</h3>
+            <span class="card__meta">${escapeHtml(t.education.master.date)}</span>
           </div>
-          <p class="card__subtitle">${escapeHtml(t.education.epfl.subtitle)}</p>
-          <p>${escapeHtml(t.education.epfl.desc)}</p>
+          <p class="card__subtitle">${escapeHtml(t.education.master.subtitle)}</p>
+          <p>${escapeHtml(t.education.master.desc)}</p>
+        </article>
+
+        <article class="card">
+          <div class="card__header">
+            <h3 class="card__title">${escapeHtml(t.education.edc.title)}</h3>
+            <span class="card__meta">${escapeHtml(t.education.edc.date)}</span>
+          </div>
+          <p class="card__subtitle">${escapeHtml(t.education.edc.subtitle)}</p>
+          <p>${escapeHtml(t.education.edc.desc)}</p>
         </article>
       </div>
     </section>
@@ -234,20 +211,18 @@ function education(t: Translation): string {
 
 function skills(t: Translation): string {
   const groups = [
+    t.skills.product,
     t.skills.data,
-    t.skills.econometrics,
-    t.skills.it,
-    t.skills.finance,
-    t.skills.economics,
-    t.skills.accounting,
-    t.skills.programming,
+    t.skills.interfaces,
+    t.skills.domains,
     t.skills.soft,
   ];
   const languages = [
     t.skills.languages.french,
     t.skills.languages.portuguese,
     t.skills.languages.english,
-    t.skills.languages.chinese,
+    t.skills.languages.spanish,
+    t.skills.languages.mandarin,
   ];
   return `
     <section class="section" aria-labelledby="skills">
@@ -277,10 +252,10 @@ function skills(t: Translation): string {
 
 function hobbies(t: Translation): string {
   const items = [
-    { ...t.hobbies.music, hasLink: true },
-    t.hobbies.gaming,
-    t.hobbies.travel,
+    t.hobbies.running,
     t.hobbies.cycling,
+    t.hobbies.literature,
+    t.hobbies.cinema,
     t.hobbies.language,
   ];
   return `
@@ -293,7 +268,6 @@ function hobbies(t: Translation): string {
           <article class="card">
             <h3 class="card__title">${escapeHtml(item.title)}</h3>
             <p style="color: var(--fg-muted)">${escapeHtml(item.desc)}</p>
-            ${'hasLink' in item ? `<a class="contact__link" href="${PROFILE.spotifyUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 1rem; margin-top: var(--space-xs); display: inline-block">${escapeHtml(item.link)} ↗</a>` : ''}
           </article>`,
       )
       .join('')}
@@ -309,8 +283,8 @@ function contact(t: Translation): string {
       <p class="animate" style="color: var(--fg-muted); margin-bottom: var(--space-md); max-width: 50rem">${escapeHtml(t.contact.intro)}</p>
       <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg)">
         <div>
-          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${escapeHtml(t.contact.emailLabel)}</p>
-          <a class="contact__link" href="mailto:${PROFILE.email}">${PROFILE.email}</a>
+          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${escapeHtml(t.contact.wechatLabel)}</p>
+          <p style="font-size: 1.5rem; font-weight: 700">${PROFILE.wechat}</p>
         </div>
         <div>
           <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${escapeHtml(t.contact.locationLabel)}</p>
