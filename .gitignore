@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Env files (secrets never belong in git)
+.env
+.env.*
+!.env.example
+
 # Playwright MCP artifacts
 .playwright-mcp
 

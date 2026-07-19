@@ -1,9 +1,21 @@
 import { feature } from "bun:bundle";
 import { FONT_FACES } from "./fonts.ts";
 import "./styles.css";
-import { DISPLAY_FONT, THEME_COLOR, TITLE_FIT } from "./config.ts";
-import { HTML_LANG, type Lang, LANGS, translations } from "./translations.ts";
+import {
+  DISPLAY_FONT,
+  PAGE_SWAP_MS,
+  THEME_COLOR,
+  TITLE_FIT,
+} from "./config.ts";
+import {
+  HTML_LANG,
+  isLang,
+  type Lang,
+  LANGS,
+  translations,
+} from "./translations.ts";
 import { langUrl, pageTitle, renderApp, type Theme } from "./render.ts";
+import { escapeHtml, reducedMotion } from "./dom.ts";
 import {
   auditSectionTitles,
   debounce,
@@ -29,10 +41,6 @@ const app = document.getElementById("app");
 
 let currentLang: Lang = "en";
 let theme: Theme = "dark";
-
-function isLang(value: string | undefined): value is Lang {
-  return value !== undefined && (LANGS as readonly string[]).includes(value);
-}
 
 /** Language of the current page, from the pre-rendered `<html data-lang>` or the URL. */
 function pageLang(): Lang {
@@ -131,7 +139,7 @@ function applyMeasuredLayout(): void {
   const font = { ...DISPLAY_FONT, family: pageFontFamily() };
 
   const nameEl = app.querySelector<HTMLElement>(".hero__name");
-  if (nameEl) fitHeroName(nameEl, { ...font, minPx: 32, maxPx: 160 });
+  if (nameEl) fitHeroName(nameEl, font); // minPx/maxPx: the measure.ts defaults
 
   const titleEls = Array.from(
     app.querySelectorAll<HTMLElement>(".section .section__title"),
@@ -143,13 +151,6 @@ function applyMeasuredLayout(): void {
       label: sectionTitleLabel,
     });
   }
-}
-
-function escapeLine(text: string): string {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(
-    />/g,
-    "&gt;",
-  );
 }
 
 /**
@@ -184,7 +185,7 @@ async function enhanceAboutKp(): Promise<void> {
       continue;
     }
     p.innerHTML = lines.map((line) =>
-      `<span class="kp-line">${escapeLine(line)}</span>`
+      `<span class="kp-line">${escapeHtml(line)}</span>`
     ).join("");
   }
 }
@@ -248,11 +249,6 @@ function auditTitles(): void {
 
 let revealObserver: IntersectionObserver | null = null;
 
-function prefersReducedMotion(): boolean {
-  return typeof matchMedia === "function" &&
-    matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 function inViewport(el: Element): boolean {
   const rect = el.getBoundingClientRect();
   return rect.top < globalThis.innerHeight && rect.bottom > 0;
@@ -268,7 +264,7 @@ function startStat(stat: HTMLElement): void {
   if (!valueEl) return;
 
   const isFloat = target % 1 !== 0;
-  if (prefersReducedMotion()) {
+  if (reducedMotion()) {
     valueEl.textContent = isFloat ? target.toFixed(2) : String(target);
     return;
   }
@@ -390,7 +386,7 @@ function render(transition: boolean): void {
 
   if (transition) {
     app.classList.add("is-transitioning");
-    setTimeout(paint, 220);
+    setTimeout(paint, PAGE_SWAP_MS);
   } else {
     paint();
   }

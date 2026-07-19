@@ -22,17 +22,9 @@ import {
   type Translation,
   translations,
 } from "./translations.ts";
+import { escapeHtml } from "./dom.ts";
 
 export type Theme = "light" | "dark";
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
 
 /**
  * Relative URL to a language's page. All four pages are siblings at the site
@@ -478,9 +470,9 @@ function panelChrome(t: Translation): string {
     const dup = labels.slice(0, index).filter((l) => l === base).length;
     const label = dup > 0 ? `${base} ${dup + 1}` : base;
     return `
-      <a class="dots__dot" href="#${panel.domId}" data-dot="${
-      panel.domId
-    }" aria-label="${escapeHtml(label)}"><span aria-hidden="true"></span></a>`;
+      <a class="dots__dot" href="#${panel.domId}" data-dot="${panel.domId}" aria-label="${
+      escapeHtml(label)
+    }"><span aria-hidden="true"></span></a>`;
   }).join("");
 
   return `

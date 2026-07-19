@@ -15,6 +15,11 @@
 export const LANGS = ["en", "fr", "zh", "zh-hant"] as const;
 export type Lang = (typeof LANGS)[number];
 
+/** Type guard for language values coming from the DOM or the URL (dataset, path). */
+export function isLang(value: string | undefined): value is Lang {
+  return value !== undefined && (LANGS as readonly string[]).includes(value);
+}
+
 /** BCP-47 tags used for the `<html lang>` attribute and `hreflang` links. */
 export const HTML_LANG: Record<Lang, string> = {
   en: "en",

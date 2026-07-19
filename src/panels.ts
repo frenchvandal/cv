@@ -19,7 +19,8 @@
  * the current scene. Global listeners are attached once.
  */
 
-import { LANGS, type Lang, translations } from "./translations.ts";
+import { isLang, translations } from "./translations.ts";
+import { reducedMotion } from "./dom.ts";
 import { wipeTransition } from "./dither.ts";
 
 export type PanelHooks = {
@@ -52,16 +53,8 @@ let wheelLast = 0;
 let lockUntil = 0;
 let touchY: number | null = null;
 
-function reducedMotion(): boolean {
-  return typeof matchMedia === "function" && matchMedia(REDUCED_QUERY).matches;
-}
-
 function desktop(): boolean {
   return typeof matchMedia === "function" && matchMedia(DESKTOP_QUERY).matches;
-}
-
-function isLang(value: string | undefined): value is Lang {
-  return value !== undefined && (LANGS as readonly string[]).includes(value);
 }
 
 /** Announce the scene change for screen readers (wheel nav moves no focus). */

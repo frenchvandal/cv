@@ -38,3 +38,11 @@ export const TITLE_FIT = {
   minPx: 28,
   desktopMinRem: 56,
 } as const;
+
+/**
+ * Language-switch timing: [src/main.ts](src/main.ts) swaps the DOM this long
+ * after arming the fade — just before the 250ms `#app` opacity transition in
+ * [src/styles.css](src/styles.css) completes, so the fade-in already runs on
+ * the new content. Keep the two in sync.
+ */
+export const PAGE_SWAP_MS = 220;

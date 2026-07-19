@@ -179,7 +179,15 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
   const t = translations[lang];
   const paragraphTexts = [t.about.p1, t.about.p2, t.about.p3];
 
-  let stage = body.querySelector<HTMLElement>(".about-stage");
+  // Validate BEFORE any DOM mutation: bailing out here hands off to the
+  // caller's Knuth–Plass fallback, which needs the p.kp paragraphs intact.
+  // (No horizontal padding on .section__body, so its clientWidth is exactly
+  // the width the fresh stage block will get.)
+  const existing = body.querySelector<HTMLElement>(".about-stage");
+  const width = (existing ?? body).clientWidth;
+  if (width <= 0) return false;
+
+  let stage = existing;
   if (!stage) {
     const paragraphs = Array.from(body.querySelectorAll<HTMLElement>("p.kp"));
     const first = paragraphs[0];
@@ -190,9 +198,6 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
     paragraphs.forEach((p) => p.remove());
   }
   stage.replaceChildren();
-
-  const width = stage.clientWidth;
-  if (width <= 0) return false;
 
   const style = getComputedStyle(stage);
   const font =

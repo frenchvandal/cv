@@ -12,6 +12,7 @@
  */
 
 import ditherUrl from "./dither.wasm";
+import { reducedMotion } from "./dom.ts";
 
 type DitherExports = {
   memory: WebAssembly.Memory;
@@ -49,11 +50,6 @@ let light = false;
 let raf = 0;
 let lastFrame = 0;
 let wipeBlend: number | null = null;
-
-function reducedMotion(): boolean {
-  return typeof matchMedia === "function" &&
-    matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
 
 function easeInOut(x: number): number {
   return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
