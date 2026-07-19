@@ -118,16 +118,25 @@ function stop(): void {
  * Fetch the wasm bytes. Bun's file loader emits a chunk-relative string
  * (`./dither-hash.wasm`) but a bare `fetch()` resolves it against the DOCUMENT
  * — fine at a domain root, wrong under a sub-path deploy (the bundler's
- * `naming` puts the file in `assets/` but the string omits it). Resolving
- * against the chunk's own URL (`import.meta.url`, inside `assets/` in
- * production) is correct in every mode; the raw string is the fallback.
+ * `naming` puts the file in `assets/` but the string omits it). The dev
+ * server has the opposite shape (a root-absolute `/_bun/asset/…` path with a
+ * `file://` import.meta.url that fetch rejects outright). Try the
+ * chunk-resolved spelling first, then the raw one — each environment
+ * succeeds on exactly one of them.
  */
 async function fetchWasmBytes(url: string): Promise<ArrayBuffer> {
-  const first = await fetch(new URL(url, import.meta.url));
-  if (first.ok) return first.arrayBuffer();
-  const retry = await fetch(url);
-  if (!retry.ok) throw new Error(`dither.wasm: HTTP ${first.status}`);
-  return retry.arrayBuffer();
+  const candidates = [new URL(url, import.meta.url).href, url]
+    .map((candidate) => new URL(candidate, location.href))
+    .filter((candidate) => candidate.protocol.startsWith("http"));
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate);
+      if (response.ok) return response.arrayBuffer();
+    } catch {
+      // Network error — try the next spelling.
+    }
+  }
+  throw new Error(`dither.wasm: unreachable from ${import.meta.url}`);
 }
 
 /**
