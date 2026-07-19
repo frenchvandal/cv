@@ -264,7 +264,6 @@ body {
 }
 
 @keyframes pulse-dot {
-
   0%,
   100% {
     opacity: 0.4;
@@ -326,14 +325,14 @@ body {
   width: 60%;
   height: 70%;
   background: radial-gradient(ellipse at center,
-      rgba(99, 102, 241, 0.12) 0%,
-      rgba(168, 85, 247, 0.06) 40%,
-      transparent 70%);
+    rgba(99, 102, 241, 0.12) 0%,
+    rgba(168, 85, 247, 0.06) 40%,
+    transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
 
-.hero>* {
+.hero > * {
   position: relative;
   z-index: 1;
 }
@@ -476,7 +475,7 @@ body {
   max-width: 55rem;
 }
 
-.section__body p+p {
+.section__body p + p {
   margin-top: var(--space-md);
 }
 
@@ -572,7 +571,7 @@ body {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
-.card+.card {
+.card + .card {
   margin-top: var(--space-md);
 }
 
@@ -610,7 +609,7 @@ body {
   color: var(--fg-muted);
 }
 
-.card__list li+li {
+.card__list li + li {
   margin-top: var(--space-xs);
 }
 
@@ -737,8 +736,8 @@ body {
 }
 
 /* A little air between speaker turns, like grouped iMessage threads. */
-.chat__row+.chat__row--me,
-.chat__row--me+.chat__row:not(.chat__row--me) {
+.chat__row + .chat__row--me,
+.chat__row--me + .chat__row:not(.chat__row--me) {
   margin-top: var(--space-xs);
 }
 
@@ -817,7 +816,6 @@ body {
  * drop the fixed/sticky chrome, and keep each card on one page.
  * ------------------------------------------------------------------ */
 @media print {
-
   :root,
   :root[data-theme='dark'] {
     color-scheme: light;

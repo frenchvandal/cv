@@ -57,7 +57,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload static build output
-          path: './dist'
+          path: "./dist"
 
   # Single deploy job since we're just deploying
   deploy:

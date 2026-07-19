@@ -269,7 +269,9 @@ await Bun.write(`${OUT}/404.html`, notFound);
 console.log(`  ${OUT}/404.html`);
 
 if ((await typecheck.exited) !== 0) {
-  console.error("\n✗ Typecheck failed — dist/ was written, but the build is rejected.");
+  console.error(
+    "\n✗ Typecheck failed — dist/ was written, but the build is rejected.",
+  );
   process.exit(1);
 }
 

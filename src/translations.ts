@@ -128,7 +128,8 @@ const en = {
     sichuan: {
       title: "Chinese Language Program",
       date: "2025 – 2026",
-      subtitle: "Sichuan University · Wangjiang Campus, Chengdu · Full-time immersion",
+      subtitle:
+        "Sichuan University · Wangjiang Campus, Chengdu · Full-time immersion",
       items: [
         "One-year sabbatical from KAPIA-RGI to study Mandarin full-time; program completed in July 2026",
         "Final results: 3.88 / 4.0 GPA over 39 credits — Comprehensive Chinese 92.8/100, Listening & Speaking 93.9, Written Chinese 92.8, Computer & Internet Applications in Chinese 90.3",
@@ -231,8 +232,7 @@ const en = {
     },
     literature: {
       title: "French Literature",
-      desc:
-        "A passionate reader — I write book reviews in Chinese on Douban.",
+      desc: "A passionate reader — I write book reviews in Chinese on Douban.",
     },
     cinema: {
       title: "Cinema",
@@ -331,7 +331,8 @@ const fr: Translation = {
   },
   hero: {
     greeting: "Bonjour, je suis",
-    title: "Product Owner · Business Analyst — 20 ans dans le logiciel financier",
+    title:
+      "Product Owner · Business Analyst — 20 ans dans le logiciel financier",
     location:
       "📍 Chengdu, Chine — mobile dans toute la Chine · Nationalité française · Disponible immédiatement",
     ctaPrimary: "Me contacter",
@@ -485,8 +486,7 @@ const fr: Translation = {
   hobbies: {
     running: {
       title: "Course de fond",
-      desc:
-        "Du 10 km à l'ultramarathon — dont deux marathons de Paris.",
+      desc: "Du 10 km à l'ultramarathon — dont deux marathons de Paris.",
     },
     cycling: {
       title: "Cyclisme",
@@ -511,7 +511,8 @@ const fr: Translation = {
   dialogue: {
     visitor: "Visiteur",
     me: "Philippe",
-    disclaimer: "Transcription à peine romancée d'une conversation authentique.",
+    disclaimer:
+      "Transcription à peine romancée d'une conversation authentique.",
     messages: [
       { me: false, text: "Vous êtes vraiment disponible immédiatement ?" },
       {
@@ -689,11 +690,20 @@ const zh: Translation = {
     },
     data: {
       title: "📊 数据库与编程语言",
-      tags: ["SQL（高级）", "PL/SQL（入门）", "JavaScript / TypeScript（入门）"],
+      tags: [
+        "SQL（高级）",
+        "PL/SQL（入门）",
+        "JavaScript / TypeScript（入门）",
+      ],
     },
     interfaces: {
       title: "🔌 接口与环境",
-      tags: ["REST API", "单点登录（SAML / OIDC）", "Postman", "DEV / QA / PROD 多环境"],
+      tags: [
+        "REST API",
+        "单点登录（SAML / OIDC）",
+        "Postman",
+        "DEV / QA / PROD 多环境",
+      ],
     },
     domains: {
       title: "🏦 业务领域",
@@ -919,11 +929,20 @@ const zhHant: Translation = {
     },
     data: {
       title: "📊 資料庫與程式語言",
-      tags: ["SQL（進階）", "PL/SQL（入門）", "JavaScript / TypeScript（入門）"],
+      tags: [
+        "SQL（進階）",
+        "PL/SQL（入門）",
+        "JavaScript / TypeScript（入門）",
+      ],
     },
     interfaces: {
       title: "🔌 介面與環境",
-      tags: ["REST API", "單一登入（SAML / OIDC）", "Postman", "DEV / QA / PROD 多環境"],
+      tags: [
+        "REST API",
+        "單一登入（SAML / OIDC）",
+        "Postman",
+        "DEV / QA / PROD 多環境",
+      ],
     },
     domains: {
       title: "🏦 業務領域",

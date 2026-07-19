@@ -1,27 +1,32 @@
 # Proposition de design — Philippe Ribeiro
 
 > **Statut (juillet 2026) : proposition historique, non retenue telle quelle.**
-> Le site implémenté a gardé le layout 2 colonnes / titres sticky / fade-up, mais
-> avec Noto Sans (multilingue, requis par la mesure pretext), l'accent indigo
-> `#6366f1` et un fond `#0a0a0a` — pas Space Grotesk ni le noir absolu, et pas
-> d'anneau orbital (les « orbs » de la section À propos en sont l'écho ludique).
-> Conservé comme référence d'intention visuelle.
+> Le site implémenté a gardé le layout 2 colonnes / titres sticky / fade-up,
+> mais avec Noto Sans (multilingue, requis par la mesure pretext), l'accent
+> indigo `#6366f1` et un fond `#0a0a0a` — pas Space Grotesk ni le noir absolu,
+> et pas d'anneau orbital (les « orbs » de la section À propos en sont l'écho
+> ludique). Conservé comme référence d'intention visuelle.
 
 ## Inspiration
-Le site de [Moonshot AI](https://www.moonshot.ai) repose sur une esthétique **cosmos / noir absolu / luxe tech** :
+
+Le site de [Moonshot AI](https://www.moonshot.ai) repose sur une esthétique
+**cosmos / noir absolu / luxe tech** :
+
 - fond `#000000` profond,
 - typographie fine et aérée,
 - un élément central lumineux (planète / éclipse),
 - composants arrondis, presque flottants,
 - très peu de couleurs, beaucoup de silence visuel.
 
-L'idée est de transposer cette atmosphère à un CV : un portfolio qui ne crie pas, qui respire, et qui laisse la place au contenu.
+L'idée est de transposer cette atmosphère à un CV : un portfolio qui ne crie
+pas, qui respire, et qui laisse la place au contenu.
 
 ---
 
 ## Direction créative : "Orbital CV"
 
 Le CV devient une **page unique en scroll vertical**, comme un trajet orbital :
+
 1. **Lancement** — hero avec nom et accroche.
 2. **Atmosphère** — about / stats.
 3. **Trajectoire** — expérience.
@@ -30,35 +35,41 @@ Le CV devient une **page unique en scroll vertical**, comme un trajet orbital :
 6. **Contact** — footer CTA.
 
 ### Motif visuel
-Un **anneau / orbite fine** en arrière-plan, légèrement animé (rotation très lente, CSS only). Il rappelle l'éclipse de Moonshot sans la copier. Sur mobile, il devient un simple halo radial.
+
+Un **anneau / orbite fine** en arrière-plan, légèrement animé (rotation très
+lente, CSS only). Il rappelle l'éclipse de Moonshot sans la copier. Sur mobile,
+il devient un simple halo radial.
 
 ---
 
 ## Palette
 
-| Rôle | Dark | Light |
-|------|------|-------|
-| Fond principal | `#000000` | `#fafafa` |
-| Fond élevé | `#0a0a0a` | `#ffffff` |
-| Surface | `rgba(255,255,255,0.04)` | `rgba(0,0,0,0.03)` |
-| Texte principal | `#f2f2f2` | `#111111` |
-| Texte secondaire | `#9ca3af` | `#52525b` |
-| Texte tértiaire | `#52525b` | `#a1a1aa` |
-| Accent | `#ffffff` (dark) / `#111111` (light) | — |
-| Accent secondaire | `#6366f1` | `#4f46e5` |
-| Bordure | `rgba(255,255,255,0.08)` | `rgba(0,0,0,0.08)` |
+| Rôle              | Dark                                 | Light              |
+| ----------------- | ------------------------------------ | ------------------ |
+| Fond principal    | `#000000`                            | `#fafafa`          |
+| Fond élevé        | `#0a0a0a`                            | `#ffffff`          |
+| Surface           | `rgba(255,255,255,0.04)`             | `rgba(0,0,0,0.03)` |
+| Texte principal   | `#f2f2f2`                            | `#111111`          |
+| Texte secondaire  | `#9ca3af`                            | `#52525b`          |
+| Texte tértiaire   | `#52525b`                            | `#a1a1aa`          |
+| Accent            | `#ffffff` (dark) / `#111111` (light) | —                  |
+| Accent secondaire | `#6366f1`                            | `#4f46e5`          |
+| Bordure           | `rgba(255,255,255,0.08)`             | `rgba(0,0,0,0.08)` |
 
-Le blanc devient l'accent principal en dark mode, créant un contraste Moonshot-like. L'indigo reste comme point de chaleur (hover, badges actifs).
+Le blanc devient l'accent principal en dark mode, créant un contraste
+Moonshot-like. L'indigo reste comme point de chaleur (hover, badges actifs).
 
 ---
 
 ## Typographie
 
-- **Display / titres** : `Space Grotesk` (Google Fonts) — géométrique, large, moderne.
+- **Display / titres** : `Space Grotesk` (Google Fonts) — géométrique, large,
+  moderne.
 - **Corps** : `Inter` ou garder `Noto Sans` pour le multilingue.
 - **Mono** : `JetBrains Mono` pour les labels, dates, tags.
 
 Hiérarchie :
+
 - Nom hero : `clamp(3rem, 12vw, 9rem)`, weight 500, letter-spacing `-0.04em`
 - Titres de section : `clamp(2rem, 5vw, 4rem)`, weight 500
 - Corps : `1rem`, weight 400, line-height `1.6`
@@ -69,23 +80,33 @@ Hiérarchie :
 ## Layout
 
 ### Hero
+
 - Pleine hauteur (`min-height: 100dvh`), centré verticalement.
-- Nom en deux lignes, très large, aligné à gauche sur desktop, centré sur mobile.
+- Nom en deux lignes, très large, aligné à gauche sur desktop, centré sur
+  mobile.
 - Sous-titre fin en dessous, max-width `34rem`.
-- Un **anneau orbitale** SVG en arrière-plan, centré derrière le nom, opacity `0.12`.
-- Deux boutons arrondis style Moonshot : outline blanche, fond transparent, `border-radius: 999px`.
+- Un **anneau orbitale** SVG en arrière-plan, centré derrière le nom, opacity
+  `0.12`.
+- Deux boutons arrondis style Moonshot : outline blanche, fond transparent,
+  `border-radius: 999px`.
 
 ### Sections
-- Chaque section occupe toute la largeur avec du padding généreux (`6rem` verticales).
+
+- Chaque section occupe toute la largeur avec du padding généreux (`6rem`
+  verticales).
 - Titres sticky à gauche, contenu à droite (2 colonnes sur desktop).
-- En dark mode, les cartes ont un fond `rgba(255,255,255,0.03)` avec une bordure très subtile.
+- En dark mode, les cartes ont un fond `rgba(255,255,255,0.03)` avec une bordure
+  très subtile.
 - Hover des cartes : légère élévation + bordure blanche plus visible.
 
 ### Skills
-- Affichage en "cloud" de tags arrondis (pill shape) plutôt que des blocs carrés.
+
+- Affichage en "cloud" de tags arrondis (pill shape) plutôt que des blocs
+  carrés.
 - Les tags ont un fond très sombre et une bordure subtile.
 
 ### Contact
+
 - Grand bloc central avec un CTA email très visible.
 - Lien email en `clamp(1.25rem, 4vw, 3rem)`, underline animé.
 
@@ -103,7 +124,8 @@ Hiérarchie :
    - Délais en cascade sur le hero.
 
 3. **Glow subtil**
-   - Derrière le nom, un radial-gradient blanc très faible qui pulse très lentement (optionnel).
+   - Derrière le nom, un radial-gradient blanc très faible qui pulse très
+     lentement (optionnel).
 
 4. **Hover des liens**
    - Underline qui grandit de gauche à droite.
@@ -116,6 +138,7 @@ Hiérarchie :
 ## Composants clés
 
 ### Boutons Moonshot-style
+
 ```css
 .button--outline {
   border: 1px solid rgba(255,255,255,0.25);
@@ -132,6 +155,7 @@ Hiérarchie :
 ```
 
 ### Carte de section
+
 ```css
 .card {
   background: rgba(255,255,255,0.03);
@@ -142,6 +166,7 @@ Hiérarchie :
 ```
 
 ### Badge pill
+
 ```css
 .tag {
   border-radius: 999px;
@@ -159,12 +184,16 @@ Hiérarchie :
 - **Contraste extrême** en dark mode = mémorable.
 - **Animations légères** = sensation de qualité sans distraction.
 - **Structure en 2 colonnes** = scan rapide pour un recruteur.
-- **Facile à imprimer / PDF** : on peut générer une version sans l'orbite et avec fond blanc.
+- **Facile à imprimer / PDF** : on peut générer une version sans l'orbite et
+  avec fond blanc.
 
 ---
 
 ## Options possibles
 
-1. **Version "Deep Space"** (recommandée) : noir absolu, anneau orbital, typographie Space Grotesk.
-2. **Version "Lunar Light"** : même layout, mais fond très clair avec accents noirs.
-3. **Version "Nébuleuse"** : ajout de dégradés violets/bleus subtils derrière le hero.
+1. **Version "Deep Space"** (recommandée) : noir absolu, anneau orbital,
+   typographie Space Grotesk.
+2. **Version "Lunar Light"** : même layout, mais fond très clair avec accents
+   noirs.
+3. **Version "Nébuleuse"** : ajout de dégradés violets/bleus subtils derrière le
+   hero.
