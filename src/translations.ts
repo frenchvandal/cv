@@ -61,6 +61,7 @@ const en = {
     about: "About",
     experience: "Experience",
     education: "Education",
+    certifications: "Certifications",
     skills: "Skills",
     hobbies: "Hobbies",
     dialogue: "Dialogue",
@@ -135,16 +136,6 @@ const en = {
         "HSK 4 passed (2023); HSK 5 in preparation",
       ],
     },
-    certifications: {
-      title: "Certifications",
-      date: "2016 – 2024",
-      items: [
-        "Professional Scrum Product Owner (PSPO) — training 2024, certification in progress",
-        "ISTQB Certified Tester — Foundation Level (2016)",
-        "Project Management — Fundamentals & Relational Dimension (2018)",
-        "HSK 4 (2023) · HSKK Spoken Chinese, Beginner (2022) · TOCFL Band A (2024)",
-      ],
-    },
     master: {
       title: "Master's, Financial Instruments Management",
       date: "2005",
@@ -158,6 +149,15 @@ const en = {
       subtitle: "EDC Paris Business School",
       desc: "General business and management education.",
     },
+  },
+  certifications: {
+    date: "2016 – 2024",
+    items: [
+      "Professional Scrum Product Owner (PSPO) — training 2024, certification in progress",
+      "ISTQB Certified Tester — Foundation Level (2016)",
+      "Project Management — Fundamentals & Relational Dimension (2018)",
+      "HSK 4 (2023) · HSKK Spoken Chinese, Beginner (2022) · TOCFL Band A (2024)",
+    ],
   },
   skills: {
     product: {
@@ -323,6 +323,7 @@ const fr: Translation = {
     about: "À propos",
     experience: "Expérience",
     education: "Formation",
+    certifications: "Certifications",
     skills: "Compétences",
     hobbies: "Loisirs",
     dialogue: "Dialogue",
@@ -398,16 +399,6 @@ const fr: Translation = {
         "HSK 4 obtenu (2023) ; HSK 5 en préparation",
       ],
     },
-    certifications: {
-      title: "Certifications",
-      date: "2016 – 2024",
-      items: [
-        "Professional Scrum Product Owner (PSPO) — formation 2024, certification en cours",
-        "ISTQB — Testeur certifié, niveau fondation (2016)",
-        "Gestion de projet — Fondamentaux & dimension relationnelle (2018)",
-        "HSK 4 (2023) · HSKK chinois oral, débutant (2022) · TOCFL niveau A (2024)",
-      ],
-    },
     master: {
       title: "Master, Gestion des instruments financiers",
       date: "2005",
@@ -421,6 +412,15 @@ const fr: Translation = {
       subtitle: "EDC Paris Business School",
       desc: "Formation générale en commerce et gestion.",
     },
+  },
+  certifications: {
+    date: "2016 – 2024",
+    items: [
+      "Professional Scrum Product Owner (PSPO) — formation 2024, certification en cours",
+      "ISTQB — Testeur certifié, niveau fondation (2016)",
+      "Gestion de projet — Fondamentaux & dimension relationnelle (2018)",
+      "HSK 4 (2023) · HSKK chinois oral, débutant (2022) · TOCFL niveau A (2024)",
+    ],
   },
   skills: {
     product: {
@@ -580,6 +580,7 @@ const zh: Translation = {
     about: "关于我",
     experience: "经历",
     education: "教育",
+    certifications: "认证",
     skills: "技能",
     hobbies: "爱好",
     dialogue: "对话",
@@ -652,16 +653,6 @@ const zh: Translation = {
         "已通过 HSK 4（2023），正备考 HSK 5",
       ],
     },
-    certifications: {
-      title: "资格认证",
-      date: "2016 – 2024",
-      items: [
-        "Professional Scrum Product Owner（PSPO）——2024 年培训，认证进行中",
-        "ISTQB 认证测试工程师——基础级（2016）",
-        "项目管理——基础与人际维度（2018）",
-        "HSK 4（2023）· HSKK 初级口语（2022）· TOCFL A 级（2024）",
-      ],
-    },
     master: {
       title: "金融工具管理硕士",
       date: "2005",
@@ -674,6 +665,15 @@ const zh: Translation = {
       subtitle: "EDC 巴黎商学院",
       desc: "商业与管理通识教育。",
     },
+  },
+  certifications: {
+    date: "2016 – 2024",
+    items: [
+      "Professional Scrum Product Owner（PSPO）——2024 年培训，认证进行中",
+      "ISTQB 认证测试工程师——基础级（2016）",
+      "项目管理——基础与人际维度（2018）",
+      "HSK 4（2023）· HSKK 初级口语（2022）· TOCFL A 级（2024）",
+    ],
   },
   skills: {
     product: {
@@ -810,6 +810,7 @@ const zhHant: Translation = {
     about: "關於我",
     experience: "經歷",
     education: "學歷",
+    certifications: "認證",
     skills: "技能",
     hobbies: "興趣",
     dialogue: "對話",
@@ -882,16 +883,6 @@ const zhHant: Translation = {
         "已通過 HSK 4（2023），正準備 HSK 5",
       ],
     },
-    certifications: {
-      title: "專業認證",
-      date: "2016 – 2024",
-      items: [
-        "Professional Scrum Product Owner（PSPO）——2024 年培訓，認證進行中",
-        "ISTQB 認證測試工程師——基礎級（2016）",
-        "專案管理——基礎與人際面向（2018）",
-        "HSK 4（2023）· HSKK 初級口語（2022）· TOCFL A 級（2024）",
-      ],
-    },
     master: {
       title: "金融工具管理碩士",
       date: "2005",
@@ -904,6 +895,15 @@ const zhHant: Translation = {
       subtitle: "EDC 巴黎商學院",
       desc: "商業與管理通識教育。",
     },
+  },
+  certifications: {
+    date: "2016 – 2024",
+    items: [
+      "Professional Scrum Product Owner（PSPO）——2024 年培訓，認證進行中",
+      "ISTQB 認證測試工程師——基礎級（2016）",
+      "專案管理——基礎與人際面向（2018）",
+      "HSK 4（2023）· HSKK 初級口語（2022）· TOCFL A 級（2024）",
+    ],
   },
   skills: {
     product: {

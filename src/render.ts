@@ -179,16 +179,6 @@ function education(t: Translation): string {
 
         <article class="card">
           <div class="card__header">
-            <h3 class="card__title">${escapeHtml(t.education.certifications.title)}</h3>
-            <span class="card__meta">${escapeHtml(t.education.certifications.date)}</span>
-          </div>
-          <ul class="card__list">
-            ${t.education.certifications.items.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
-          </ul>
-        </article>
-
-        <article class="card">
-          <div class="card__header">
             <h3 class="card__title">${escapeHtml(t.education.master.title)}</h3>
             <span class="card__meta">${escapeHtml(t.education.master.date)}</span>
           </div>
@@ -203,6 +193,25 @@ function education(t: Translation): string {
           </div>
           <p class="card__subtitle">${escapeHtml(t.education.edc.subtitle)}</p>
           <p>${escapeHtml(t.education.edc.desc)}</p>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+/** Certifications as their own chapter — one card, the section title carries the name. */
+function certifications(t: Translation): string {
+  return `
+    <section class="section" aria-labelledby="certifications">
+      <div>${sectionTitle(t, 'certifications', 3)}</div>
+      <div class="section__body animate">
+        <article class="card">
+          <div class="card__header">
+            <span class="card__meta">${escapeHtml(t.certifications.date)}</span>
+          </div>
+          <ul class="card__list">
+            ${t.certifications.items.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}
+          </ul>
         </article>
       </div>
     </section>
@@ -226,7 +235,7 @@ function skills(t: Translation): string {
   ];
   return `
     <section class="section" aria-labelledby="skills">
-      <div>${sectionTitle(t, 'skills', 3)}</div>
+      <div>${sectionTitle(t, 'skills', 4)}</div>
       <div class="section__body animate">
         ${groups
       .map(
@@ -260,7 +269,7 @@ function hobbies(t: Translation): string {
   ];
   return `
     <section class="section" aria-labelledby="hobbies">
-      <div>${sectionTitle(t, 'hobbies', 4)}</div>
+      <div>${sectionTitle(t, 'hobbies', 5)}</div>
       <div class="section__body animate">
         ${items
       .map(
@@ -286,7 +295,7 @@ function hobbies(t: Translation): string {
 function dialogue(t: Translation): string {
   return `
     <section class="section" aria-labelledby="dialogue">
-      <div>${sectionTitle(t, 'dialogue', 5)}</div>
+      <div>${sectionTitle(t, 'dialogue', 6)}</div>
       <div class="section__body animate">
         <p class="chat__disclaimer">${escapeHtml(t.dialogue.disclaimer)}</p>
         <div class="chat">
@@ -307,7 +316,7 @@ function dialogue(t: Translation): string {
 function contact(t: Translation): string {
   return `
     <section class="contact" aria-labelledby="contact">
-      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span aria-hidden="true">07</span>${escapeHtml(t.nav.contact)}</h2>
+      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span aria-hidden="true">08</span>${escapeHtml(t.nav.contact)}</h2>
       <p class="animate" style="color: var(--fg-muted); margin-bottom: var(--space-md); max-width: 50rem">${escapeHtml(t.contact.intro)}</p>
       <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg)">
         <div>
@@ -350,6 +359,7 @@ export function renderApp(lang: Lang, theme: Theme): string {
       ${about(t)}
       ${experience(t)}
       ${education(t)}
+      ${certifications(t)}
       ${skills(t)}
       ${hobbies(t)}
       ${dialogue(t)}

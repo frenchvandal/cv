@@ -209,6 +209,7 @@ function auditTitles(): void {
       nav.about,
       nav.experience,
       nav.education,
+      nav.certifications,
       nav.skills,
       nav.hobbies,
       nav.dialogue,
