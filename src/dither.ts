@@ -115,6 +115,22 @@ function stop(): void {
 }
 
 /**
+ * Fetch the wasm bytes, tolerant of how the bundler spells the URL. Bun's
+ * file loader emits a chunk-relative string (`./dither-hash.wasm`) but the
+ * browser resolves a bare `fetch()` against the DOCUMENT — fine at the domain
+ * root, wrong under a sub-path deploy (the bundler's `naming` puts the file
+ * in `assets/` but the string omits it). Retry resolved against the chunk's
+ * own URL (`import.meta.url`), which lands in `assets/` in production.
+ */
+async function fetchWasmBytes(url: string): Promise<ArrayBuffer> {
+  const first = await fetch(url);
+  if (first.ok) return first.arrayBuffer();
+  const retry = await fetch(new URL(url, import.meta.url));
+  if (!retry.ok) throw new Error(`dither.wasm: HTTP ${first.status}`);
+  return retry.arrayBuffer();
+}
+
+/**
  * Load the wasm and attach the canvas. Resolves false (and arms the CSS
  * fallback) when anything fails — the site must never depend on the engine.
  * Idempotent.
@@ -122,10 +138,8 @@ function stop(): void {
 export async function initDither(): Promise<boolean> {
   if (engine) return true;
   try {
-    const response = await fetch(ditherUrl);
-    if (!response.ok) throw new Error(`dither.wasm: HTTP ${response.status}`);
     const { instance } = await WebAssembly.instantiate(
-      await response.arrayBuffer(),
+      await fetchWasmBytes(ditherUrl),
       {},
     );
     engine = instance.exports as unknown as DitherExports;
