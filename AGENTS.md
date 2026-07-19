@@ -17,8 +17,11 @@ has none of them.
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
   - `bun run wasm:build` → `cargo build --release --target wasm32-unknown-unknown`
-    (root Cargo workspace) and copies the artifact to `src/dither.wasm`. The
-    **compiled .wasm is committed** — CI/deploy stay Bun-only and need no Rust.
+    (root Cargo workspace) and copies the artifact to `src/dither.wasm`. CI
+    (ci.yaml + deploy.yaml) installs the Rust toolchain and runs this before
+    `bun run build`, so the deployed bundle always carries a fresh engine. The
+    compiled .wasm is ALSO committed so local dev (`bun run dev`) works without
+    a Rust install — rebuild + commit it when you change the crate.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
   rendered into `#app` by [src/main.ts](src/main.ts). Content lives in
   [src/translations.ts](src/translations.ts) (EN / FR / zh-Hans / zh-Hant). Text
