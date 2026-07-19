@@ -12,6 +12,7 @@ import {
   isLang,
   type Lang,
   LANGS,
+  PROFILE,
   translations,
 } from "./translations.ts";
 import { langUrl, pageTitle, renderApp, type Theme } from "./render.ts";
@@ -269,12 +270,16 @@ function startStat(stat: HTMLElement): void {
     return;
   }
 
-  const duration = 1200;
+  const duration = 900;
+  // Quantized ease-out: the value climbs in visible ticks (dither-style
+  // discreteness) instead of a smooth blur of digits.
+  const ticks = 10;
   const start = performance.now();
   const frame = (now: number): void => {
     const progress = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3);
-    const current = target * eased;
+    const stepped = progress >= 1 ? 1 : Math.floor(eased * ticks) / ticks;
+    const current = target * stepped;
     valueEl.textContent = isFloat
       ? current.toFixed(2)
       : String(Math.round(current));
@@ -358,6 +363,22 @@ function bindEvents(): void {
   // Theme is pure CSS (`data-theme` on <html>): no re-render, just the icon sync.
   app?.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
     applyTheme(theme === "light" ? "dark" : "light");
+  });
+
+  // Contact closer: copy the WeChat id, flash the copied label on the button.
+  const copyBtn = app?.querySelector<HTMLButtonElement>("[data-copy-wechat]");
+  copyBtn?.addEventListener("click", () => {
+    navigator.clipboard?.writeText(PROFILE.wechat).then(() => {
+      const label = copyBtn.textContent;
+      copyBtn.textContent = copyBtn.dataset.copiedLabel ?? label;
+      copyBtn.classList.add("is-copied");
+      setTimeout(() => {
+        copyBtn.textContent = label;
+        copyBtn.classList.remove("is-copied");
+      }, 1600);
+    }).catch(() => {
+      // Clipboard denied — the id is printed right above the button anyway.
+    });
   });
 }
 

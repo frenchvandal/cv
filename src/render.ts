@@ -114,7 +114,8 @@ function sectionTitle(
   domId: string = id,
 ): string {
   const label = String(index + 1).padStart(2, "0");
-  return `<h2 class="section__title animate" id="${domId}" tabindex="-1"><span aria-hidden="true">${label}</span>${
+  const total = String(PANELS.length - 1).padStart(2, "0"); // hero is unnumbered
+  return `<h2 class="section__title animate" id="${domId}" tabindex="-1"><span aria-hidden="true">${label} / ${total}</span>${
     escapeHtml(t.nav[id])
   }</h2>`;
 }
@@ -431,6 +432,13 @@ function contact(t: Translation): string {
           <p class="contact__value">${escapeHtml(t.hero.location)}</p>
         </div>
       </div>
+      <button
+        class="button button--copy animate animate--delayed-1"
+        type="button"
+        data-copy-wechat
+        data-copied-label="${escapeHtml(t.ui.copied)}"
+        aria-live="polite"
+      >${escapeHtml(t.ui.copyWechat)}</button>
       <footer class="footer">
         <p>${escapeHtml(t.contact.footer)}</p>
       </footer>

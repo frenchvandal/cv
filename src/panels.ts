@@ -123,6 +123,16 @@ function applyState(index: number, focus: boolean): void {
     previous.classList.remove("is-active");
     previous.setAttribute("inert", "");
     previous.setAttribute("aria-hidden", "true");
+    // Rewind reveals while hidden so re-entering replays the cascade
+    // (and the stat counters — startStat guards on data-animated).
+    previous.querySelectorAll(".animate.is-revealed").forEach((el) => {
+      el.classList.remove("is-revealed");
+    });
+    previous.querySelectorAll<HTMLElement>(".stat[data-animated]").forEach(
+      (el) => {
+        delete el.dataset.animated;
+      },
+    );
   }
   current = index;
   const panel = panels[current]!;

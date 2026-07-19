@@ -382,6 +382,20 @@ body {
   }
 }
 
+/* Deck-mode variant: the reveal assembles in quantized jumps — the motion
+   equivalent of the Bayer dither. */
+@keyframes fade-up-steps {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulse-dot {
   0%,
   100% {
@@ -422,6 +436,23 @@ body {
 
 .animate--delayed-5.is-revealed {
   animation-delay: 0.4s;
+}
+
+/* Deck mode: stepped entrance, choreographed number → title → content.
+   Longhand properties on purpose — the animation shorthand would reset the
+   .animate--delayed-* stagger used inside panels (hero lines, contact). */
+.js.panels-on .animate.is-revealed {
+  animation-name: fade-up-steps;
+  animation-duration: 0.45s;
+  animation-timing-function: steps(5, end);
+}
+
+.js.panels-on .section__title.is-revealed {
+  animation-delay: 0.05s;
+}
+
+.js.panels-on .section__body.is-revealed {
+  animation-delay: 0.16s;
 }
 
 /* ------------------------------------------------------------------ *
@@ -608,6 +639,24 @@ body {
   box-shadow: 4px 4px 0 var(--shadow-hard);
 }
 
+/* Contact closer: bigger brick, and a pressed/inverted "copied" state. */
+.button--copy {
+  margin-top: var(--space-lg);
+  font-size: 1rem;
+  padding: 0.9rem 1.8rem;
+  /* Direct grid child of the contact panel — don't stretch to full width. */
+  justify-self: start;
+  width: fit-content;
+}
+
+.button--copy.is-copied,
+.button--copy.is-copied:hover {
+  background: var(--bg);
+  color: var(--fg);
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--shadow-hard);
+}
+
 /* ------------------------------------------------------------------ *
  * Section titles & bodies
  * ------------------------------------------------------------------ */
@@ -630,12 +679,12 @@ body {
 
 .section__title span {
   display: block;
-  color: var(--fg-subtle);
+  color: var(--fg-muted);
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   margin-bottom: var(--space-xs);
 }
 
@@ -811,8 +860,24 @@ body {
 }
 
 .card__list {
+  list-style: none;
   padding-left: 1.1rem;
   color: var(--fg-muted);
+}
+
+.card__list li {
+  position: relative;
+}
+
+/* Square 1-bit bullet (drawn, not a glyph — no font subset dependency). */
+.card__list li::before {
+  content: "";
+  position: absolute;
+  left: -1.1rem;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  background: var(--fg-subtle);
 }
 
 .card__list li + li {
@@ -846,7 +911,50 @@ body {
   flex-direction: column-reverse;
   gap: var(--space-sm);
   padding-top: var(--space-md);
-  border-top: 2px solid var(--fg);
+  position: relative;
+}
+
+/* The top rule is drawn left-to-right in Bayer-ish steps on reveal; without
+   JS it is simply there (no .js scaleX(0) baseline applies). */
+.stat::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--fg);
+  transform-origin: left;
+}
+
+.js .section--stats .section__body:not(.is-revealed) .stat::before {
+  transform: scaleX(0);
+}
+
+.js .section--stats .section__body.is-revealed .stat::before {
+  animation: draw-rule 0.7s steps(8, end) forwards;
+}
+
+.js .section--stats .section__body.is-revealed .stat:nth-child(2)::before {
+  animation-delay: 0.1s;
+}
+
+.js .section--stats .section__body.is-revealed .stat:nth-child(3)::before {
+  animation-delay: 0.2s;
+}
+
+.js .section--stats .section__body.is-revealed .stat:nth-child(4)::before {
+  animation-delay: 0.3s;
+}
+
+@keyframes draw-rule {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .stat__value {
@@ -951,6 +1059,28 @@ html.panels-on .chat {
   max-height: min(52dvh, 34rem);
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* Thin square monochrome scrollbars on the internal scrollers. */
+.panel,
+.chat {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fg-subtle) transparent;
+}
+
+.panel::-webkit-scrollbar,
+.chat::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel::-webkit-scrollbar-thumb,
+.chat::-webkit-scrollbar-thumb {
+  background: var(--fg-subtle);
+}
+
+.panel::-webkit-scrollbar-track,
+.chat::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .chat__row {

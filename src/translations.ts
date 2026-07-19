@@ -309,6 +309,8 @@ const en = {
     panelsNav: "Sections",
     continue: "Scroll to explore",
     terminalTitle: "philippe@cv: ~/interview.log",
+    copyWechat: "Copy WeChat ID",
+    copied: "Copied",
     progressAnnouncement: "Section {current} of {total}: {label}",
     theme: {
       light: "Theme: light",
@@ -579,6 +581,8 @@ const fr: Translation = {
     panelsNav: "Sections",
     continue: "Faire défiler pour explorer",
     terminalTitle: "philippe@cv: ~/interview.log",
+    copyWechat: "Copier l'ID WeChat",
+    copied: "Copié",
     progressAnnouncement: "Section {current} sur {total} : {label}",
     theme: {
       light: "Thème : clair",
@@ -823,6 +827,8 @@ const zh: Translation = {
     panelsNav: "章节",
     continue: "滑动开启探索",
     terminalTitle: "philippe@cv: ~/interview.log",
+    copyWechat: "复制微信号",
+    copied: "已复制",
     progressAnnouncement: "第 {current} 屏，共 {total} 屏：{label}",
     theme: {
       light: "主题：浅色",
@@ -1067,6 +1073,8 @@ const zhHant: Translation = {
     panelsNav: "章節",
     continue: "滑動開啟探索",
     terminalTitle: "philippe@cv: ~/interview.log",
+    copyWechat: "複製微信號",
+    copied: "已複製",
     progressAnnouncement: "第 {current} 屏，共 {total} 屏：{label}",
     theme: {
       light: "主題：淺色",
