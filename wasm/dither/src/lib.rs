@@ -26,6 +26,12 @@ static mut COLS: i32 = 0;
 static mut ROWS: i32 = 0;
 static mut SEED: u32 = 0;
 
+/// Point masses that locally condense the clouds — the pointer halo (slot 0)
+/// and the draggable About orbs (slots 1..). `[x, y, radius, strength]` in
+/// cell units; radius <= 0 disables the slot.
+const MAX_MASSES: usize = 5;
+static mut MASSES: [[f64; 4]; MAX_MASSES] = [[0.0; 4]; MAX_MASSES];
+
 fn frame_ptr_mut() -> *mut u8 {
     // addr_of_mut! avoids creating a reference to a static mut.
     core::ptr::addr_of_mut!(FRAME) as *mut u8
@@ -172,22 +178,33 @@ fn fbm4(x: f64, y: f64, seed: u32) -> f64 {
 // Shading
 // ---------------------------------------------------------------------------
 
-/// Continuous luminance in [0,1] for one cell: FBM clouds + sparse stars.
-///
-/// Composition mirrors the Moonshot/Kimi hero: bold cloud masses hug the
-/// frame edges and corners while the center stays a readable void. `edge`
-/// is a radial mask on the aspect-normalized distance² from center (no sqrt
-/// in `core`), and `intensity` (0..1) is the per-panel drama dial — the deck
-/// turns it up on the hero/contact panels and down on dense content.
-fn cell_luminance(
-    x: i32,
-    y: i32,
-    t_ms: f64,
+/// Frame-invariant inputs to the per-cell shading, built once per `render`.
+#[derive(Clone, Copy)]
+struct Scene<'a> {
+    t: f64,
     seed: u32,
     cols: i32,
     rows: i32,
+    /// Per-panel drama dial (0..1) — the deck turns it up on hero/contact.
     intensity: f64,
-) -> f64 {
+    masses: &'a [[f64; 4]; MAX_MASSES],
+}
+
+/// Continuous luminance in [0,1] for one cell: FBM clouds + sparse stars.
+///
+/// Composition mirrors the Moonshot/Kimi hero: bold cloud masses hug the
+/// frame edges and corners while the center stays a readable void — `edge`
+/// is a radial mask on the aspect-normalized distance² from center (no sqrt
+/// in `core`).
+fn cell_luminance(x: i32, y: i32, scene: &Scene<'_>) -> f64 {
+    let Scene {
+        t: t_ms,
+        seed,
+        cols,
+        rows,
+        intensity,
+        masses,
+    } = *scene;
     let px = x as f64 * SCALE + t_ms * DRIFT_X;
     let py = y as f64 * SCALE + t_ms * DRIFT_Y;
     // Slowly-evolving domain warp — the "breathing" of the cloud masses.
@@ -206,7 +223,24 @@ fn cell_luminance(
     let wisp = raw * 0.30;
     let gain = intensity * (0.18 + 0.82 * edge);
     let mass = smoothstep(0.42, 0.80, raw) * gain;
-    let cloud = if wisp > mass { wisp } else { mass };
+    let mut cloud = if wisp > mass { wisp } else { mass };
+
+    // Point masses (pointer, orbs) condense the fog into soft dithered halos.
+    // d²-based falloff — no sqrt in `core`.
+    for m in masses {
+        let r = m[2];
+        if r <= 0.0 {
+            continue;
+        }
+        let dx = x as f64 - m[0];
+        let dy = y as f64 - m[1];
+        let d2 = dx * dx + dy * dy;
+        let r2 = r * r;
+        if d2 < r2 * 1.8 {
+            cloud += m[3] * (1.0 - smoothstep(r2 * 0.15, r2 * 1.8, d2));
+        }
+    }
+    let cloud = clamp01(cloud);
 
     // Sparse static starfield: ~0.7% of cells.
     let sh = hash01(x, y, seed ^ 0xA511_E9B3);
@@ -263,6 +297,18 @@ pub extern "C" fn init(cols: i32, rows: i32, seed: u32) -> i32 {
     0
 }
 
+/// Place (or, with radius <= 0, clear) one point mass. Coordinates and
+/// radius are in cell units; `strength` is the added luminance at the core.
+#[no_mangle]
+pub extern "C" fn set_mass(slot: u32, x: f64, y: f64, radius: f64, strength: f64) {
+    if (slot as usize) >= MAX_MASSES {
+        return;
+    }
+    unsafe {
+        MASSES[slot as usize] = [x, y, radius, strength];
+    }
+}
+
 /// Same validation as `init`, keeps the current seed.
 #[no_mangle]
 pub extern "C" fn resize(cols: i32, rows: i32) -> i32 {
@@ -298,6 +344,15 @@ pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32, intensity
     let t = if mode == 2 { 0.0 } else { t_ms };
     let blend = clamp01(blend);
     let intensity = clamp01(intensity);
+    let masses = unsafe { MASSES };
+    let scene = Scene {
+        t,
+        seed,
+        cols,
+        rows,
+        intensity,
+        masses: &masses,
+    };
     let ptr = frame_ptr_mut();
 
     let mut idx = 0usize;
@@ -318,7 +373,7 @@ pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32, intensity
                     (true, false) => 0xfa,  // light bg #fafafa
                 }
             } else {
-                let v = cell_luminance(x, y, t, seed, cols, rows, intensity);
+                let v = cell_luminance(x, y, &scene);
                 let level = quantize(v, x, y);
                 if light {
                     LIGHT_TONES[level]

@@ -27,7 +27,12 @@ import {
 import { breakIntoLines } from "./linebreak.ts";
 import { enhanceAboutOrbs } from "./orbs.ts";
 import { enhanceChat } from "./chat.ts";
-import { initDither, setDitherIntensity, setDitherTheme } from "./dither.ts";
+import {
+  initDither,
+  setDitherIntensity,
+  setDitherTheme,
+  syncOrbMasses,
+} from "./dither.ts";
 import { initPanels } from "./panels.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
@@ -395,6 +400,8 @@ function activatePanel(panel: HTMLElement): void {
   reveal(panel);
   const id = panel.id || panel.querySelector("[id]")?.id || "";
   setDitherIntensity(PANEL_INTENSITY[id] ?? 0.35);
+  // Orb halos live only on the panel that holds orbs — empty list clears.
+  syncOrbMasses(panel.querySelectorAll(".about-orb"));
 }
 
 function afterPaint(): void {

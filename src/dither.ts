@@ -25,6 +25,13 @@ type DitherExports = {
     flags: number,
     intensity: number,
   ) => void;
+  set_mass: (
+    slot: number,
+    x: number,
+    y: number,
+    radius: number,
+    strength: number,
+  ) => void;
   frame_ptr: () => number;
   frame_len: () => number;
 };
@@ -198,6 +205,28 @@ export async function initDither(): Promise<boolean> {
     else start();
   });
   globalThis.addEventListener("resize", sizeGrid, { passive: true });
+
+  // The fog feels the cursor: a soft dithered halo trails fine pointers.
+  // Static under reduced motion — no live tracking there.
+  if (matchMedia("(pointer: fine)").matches) {
+    globalThis.addEventListener(
+      "pointermove",
+      (event: PointerEvent) => {
+        if (reducedMotion()) return;
+        setDitherMass(
+          MASS_SLOT_POINTER,
+          event.clientX,
+          event.clientY,
+          110,
+          0.16,
+        );
+      },
+      { passive: true },
+    );
+    document.documentElement.addEventListener("pointerleave", () => {
+      setDitherMass(MASS_SLOT_POINTER, 0, 0, 0, 0);
+    });
+  }
   return true;
 }
 
@@ -206,6 +235,64 @@ export function setDitherTheme(theme: "light" | "dark"): void {
   light = theme === "light";
   // Reduced motion stopped the loop after one frame — redraw once on toggle.
   if (engine && reducedMotion()) start();
+}
+
+/** Pointer halo is slot 0; the About orbs use slots 1.. (MAX_MASSES - 1). */
+export const MASS_SLOT_POINTER = 0;
+export const MASS_SLOT_ORBS = 1;
+export const MASS_SLOTS = 5;
+
+/**
+ * Place (or clear, with radius <= 0) a point mass that locally condenses the
+ * clouds. Viewport pixel coordinates; converted to grid cells here.
+ */
+export function setDitherMass(
+  slot: number,
+  xPx: number,
+  yPx: number,
+  radiusPx: number,
+  strength: number,
+): void {
+  if (!engine || cols === 0) return;
+  const cellsPerPx = cols / globalThis.innerWidth;
+  engine.set_mass(
+    slot,
+    xPx * cellsPerPx,
+    yPx * (rows / globalThis.innerHeight),
+    radiusPx * cellsPerPx,
+    strength,
+  );
+}
+
+/** Clear a contiguous range of mass slots (e.g. the orbs on panel exit). */
+export function clearDitherMasses(from: number, to: number = MASS_SLOTS): void {
+  if (!engine) return;
+  for (let slot = from; slot < to; slot++) {
+    engine.set_mass(slot, 0, 0, 0, 0);
+  }
+}
+
+/**
+ * Mirror the About orbs into mass slots 1.. so the fog condenses around them
+ * (and follows drags). Pass the current orb elements; missing ones clear
+ * their slot, so an empty list clears everything.
+ */
+export function syncOrbMasses(els: ArrayLike<Element>): void {
+  for (let index = 0; index < MASS_SLOTS - MASS_SLOT_ORBS; index++) {
+    const el = els[index];
+    if (!el) {
+      setDitherMass(MASS_SLOT_ORBS + index, 0, 0, 0, 0);
+      continue;
+    }
+    const rect = el.getBoundingClientRect();
+    setDitherMass(
+      MASS_SLOT_ORBS + index,
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+      rect.width * 0.8,
+      0.2,
+    );
+  }
 }
 
 /**

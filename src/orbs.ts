@@ -20,6 +20,7 @@ import {
   prepareWithSegments,
 } from "@chenglou/pretext";
 import { loadHyphenator } from "./linebreak.ts";
+import { syncOrbMasses } from "./dither.ts";
 import { type Lang, translations } from "./translations.ts";
 
 const ORB_H_PAD = 14;
@@ -402,6 +403,18 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
       const el = orbEls[index]!;
       el.style.left = `${Math.round(orb.x - orb.r)}px`;
       el.style.top = `${Math.round(orb.y - orb.r)}px`;
+    }
+
+    // Keep the background's orb halos glued to the orbs while dragging.
+    // Deck-mode only, and only while this panel is the visible one —
+    // inactive panels keep their layout (visibility:hidden), so their
+    // rects would ghost halos onto other panels.
+    const panelEl = stage!.closest(".panel");
+    if (
+      document.documentElement.classList.contains("panels-on") &&
+      panelEl?.classList.contains("is-active")
+    ) {
+      syncOrbMasses(orbEls);
     }
 
     let bottom = lineTop;
