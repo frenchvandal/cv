@@ -30,19 +30,40 @@ const CLICK_TOLERANCE = 5;
 
 type SectionKey = "experience" | "education" | "skills" | "hobbies";
 
-const ORB_DEFS: { key: SectionKey; color: [number, number, number] }[] = [
-  { key: "experience", color: [99, 102, 241] }, // --accent indigo
-  { key: "education", color: [168, 85, 247] }, // --accent-2 purple
-  { key: "skills", color: [34, 197, 94] }, // availability-dot green
-  { key: "hobbies", color: [245, 158, 11] }, // amber
+type RGB = [number, number, number];
+
+/**
+ * Each orb's accent is a custom property of the CSS palette, read at layout
+ * time; the fallbacks mirror the dark palette in [src/styles.css](src/styles.css)
+ * for the day a property is renamed away.
+ */
+const ORB_DEFS: { key: SectionKey; cssVar: string; fallback: RGB }[] = [
+  { key: "experience", cssVar: "--accent", fallback: [99, 102, 241] },
+  { key: "education", cssVar: "--accent-2", fallback: [168, 85, 247] },
+  { key: "skills", cssVar: "--ok", fallback: [34, 197, 94] },
+  { key: "hobbies", cssVar: "--amber", fallback: [245, 158, 11] },
 ];
+
+/** Parse a custom property's color (`#rgb`, `#rrggbb`, `rgb(…)`) into a triplet. */
+function parseRgb(value: string): RGB | null {
+  const text = value.trim();
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text)?.[1];
+  if (hex) {
+    const full = hex.length === 3 ? hex.replace(/./g, "$&$&") : hex;
+    const n = parseInt(full, 16);
+    return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+  }
+  const rgb = /^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(text);
+  if (rgb) return [Number(rgb[1]!), Number(rgb[2]!), Number(rgb[3]!)];
+  return null;
+}
 
 type Interval = { left: number; right: number };
 
 type Orb = {
   key: SectionKey;
   label: string;
-  color: [number, number, number];
+  color: RGB;
   r: number;
   x: number;
   y: number;
@@ -236,9 +257,8 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
   const isNarrow = width < 480;
   const labelFontSize = isNarrow ? 9 : 10.5;
   const labelTracking = labelFontSize * 0.12;
-  const mono =
-    getComputedStyle(document.documentElement).getPropertyValue("--font-mono")
-      .trim() ||
+  const rootStyle = getComputedStyle(document.documentElement);
+  const mono = rootStyle.getPropertyValue("--font-mono").trim() ||
     "ui-monospace, monospace";
   const labelFont = `600 ${labelFontSize}px ${mono}`;
 
@@ -250,7 +270,9 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
     const minR = isNarrow ? 34 : 44;
     const maxR = Math.max(minR, width / 2 - 8);
     const r = clamp(labelWidth / 2 + 14, minR, maxR);
-    return { key: def.key, label, color: def.color, r, x: 0, y: 0 };
+    const color = parseRgb(rootStyle.getPropertyValue(def.cssVar)) ??
+      def.fallback;
+    return { key: def.key, label, color, r, x: 0, y: 0 };
   });
 
   const remembered = savedPositions !== null &&

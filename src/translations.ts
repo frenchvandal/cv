@@ -39,11 +39,15 @@ export const LANG_NAME: Record<Lang, string> = {
   "zh-hant": "繁體中文",
 };
 
-/** Language-invariant profile constants (proper nouns, contact). */
+/** Language-invariant profile constants (proper nouns, contact, structured data). */
 export const PROFILE = {
   fullName: "Philippe Ribeiro",
   chineseName: "李北洛",
   wechat: "frenchvandal",
+  /** JSON-LD PostalAddress fields ([scripts/build.ts](scripts/build.ts)). */
+  address: { locality: "Chengdu", country: "CN" },
+  /** ISO 639-1 codes for the JSON-LD `knowsLanguage`. */
+  knowsLanguage: ["fr", "pt", "en", "es", "zh"],
 } as const;
 
 const en = {

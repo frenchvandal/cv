@@ -18,6 +18,7 @@
 import { readdir, rm } from "node:fs/promises";
 import { langUrl, pageTitle, renderApp } from "../src/render.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
+import { THEME_COLOR } from "../src/config.ts";
 import {
   HTML_LANG,
   type Lang,
@@ -169,10 +170,10 @@ for (const lang of LANGS) {
     url: href(lang),
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Chengdu",
-      addressCountry: "CN",
+      addressLocality: PROFILE.address.locality,
+      addressCountry: PROFILE.address.country,
     },
-    knowsLanguage: ["fr", "pt", "en", "es", "zh"],
+    knowsLanguage: PROFILE.knowsLanguage,
   }).replace(/</g, "\\u003C");
 
   const headExtra = `
@@ -251,7 +252,7 @@ const notFound = `<!doctype html>
     <meta name="robots" content="noindex" />
     <title>404 — ${attr(PROFILE.fullName)}</title>
     <style>
-      body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #f2f2f2;
+      body { font-family: system-ui, sans-serif; background: ${THEME_COLOR.dark}; color: #f2f2f2;
              display: grid; place-items: center; min-height: 100vh; margin: 0; }
       main { text-align: center; }
       a { color: #6366f1; }

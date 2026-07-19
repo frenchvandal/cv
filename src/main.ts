@@ -1,6 +1,7 @@
 import { feature } from "bun:bundle";
-import "./fonts.ts";
+import { FONT_FACES } from "./fonts.ts";
 import "./styles.css";
+import { DISPLAY_FONT, THEME_COLOR, TITLE_FIT } from "./config.ts";
 import { HTML_LANG, type Lang, LANGS, translations } from "./translations.ts";
 import { langUrl, pageTitle, renderApp, type Theme } from "./render.ts";
 import {
@@ -21,10 +22,6 @@ import { enhanceChat } from "./chat.ts";
 document.documentElement.classList.add("js");
 
 const STORAGE_THEME_KEY = "cv-theme";
-const THEME_COLOR: Record<Theme, string> = {
-  dark: "#0a0a0a",
-  light: "#fafafa",
-};
 const root = document.documentElement;
 const app = document.getElementById("app");
 
@@ -79,9 +76,13 @@ function syncThemeToggle(): void {
 function applyTheme(next: Theme): void {
   theme = next;
   root.dataset.theme = next;
+  // The CSS palette (`--bg`) is the source of truth for the browser-chrome
+  // color; the constant only covers a not-yet-applied stylesheet.
+  const bg = getComputedStyle(root).getPropertyValue("--bg").trim() ||
+    THEME_COLOR[next];
   document.querySelector('meta[name="theme-color"]')?.setAttribute(
     "content",
-    THEME_COLOR[next],
+    bg,
   );
   try {
     localStorage.setItem(STORAGE_THEME_KEY, next);
@@ -105,9 +106,6 @@ function syncDocumentMeta(): void {
  * pretext-driven measurement
  * ------------------------------------------------------------------ */
 
-/** Font descriptor for the display type pretext measures (weight 800, -0.03em tracking). */
-const HERO_FONT = { weight: 800, letterSpacingEm: -0.03 } as const;
-
 /**
  * The page's real font stack, so CJK titles are measured with the family they
  * render in (Noto Sans SC on zh, Noto Sans TC on zh-hant).
@@ -127,7 +125,7 @@ function sectionTitleLabel(el: HTMLElement): string {
 /** Fit the hero name to width, and the section titles to their column. */
 function applyMeasuredLayout(): void {
   if (!app) return;
-  const font = { ...HERO_FONT, family: pageFontFamily() };
+  const font = { ...DISPLAY_FONT, family: pageFontFamily() };
 
   const nameEl = app.querySelector<HTMLElement>(".hero__name");
   if (nameEl) fitHeroName(nameEl, { ...font, minPx: 32, maxPx: 160 });
@@ -138,10 +136,7 @@ function applyMeasuredLayout(): void {
   if (titleEls.length > 0) {
     fitSectionTitles(titleEls, {
       ...font,
-      columnRem: 26,
-      maxPx: 72,
-      minPx: 28,
-      desktopMinRem: 56,
+      ...TITLE_FIT,
       label: sectionTitleLabel,
     });
   }
@@ -218,19 +213,22 @@ function auditTitles(): void {
 
   // Both CJK families in one stack: each language's labels resolve to the
   // family they would render with, regardless of the page we audit from.
-  const family =
-    "'Noto Sans', 'Noto Sans SC', 'Noto Sans TC', system-ui, sans-serif";
+  const family = [
+    ...FONT_FACES.map((face) => `'${face.family}'`),
+    "system-ui",
+    "sans-serif",
+  ].join(", ");
   const tight = auditSectionTitles(labelsByLang, {
-    ...HERO_FONT,
+    ...DISPLAY_FONT,
     family,
-    columnRem: 26,
-    maxPx: 72,
+    columnRem: TITLE_FIT.columnRem,
+    maxPx: TITLE_FIT.maxPx,
   })
     .filter((entry) => !entry.fitsAtMax);
 
   if (tight.length > 0) {
     console.groupCollapsed(
-      `[measure] ${tight.length} section title(s) shrink below 72px to fit`,
+      `[measure] ${tight.length} section title(s) shrink below ${TITLE_FIT.maxPx}px to fit`,
     );
     console.table(tight);
     console.groupEnd();
