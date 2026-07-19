@@ -16,8 +16,8 @@
  * hasn't applied.
  */
 export const THEME_COLOR = {
-  dark: "#0a0a0a",
-  light: "#fafafa",
+  dark: "#000000",
+  light: "#ffffff",
 } as const;
 
 /**

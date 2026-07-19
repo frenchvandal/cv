@@ -1,26 +1,40 @@
-/* Portfolio styles. Fonts: self-hosted Noto Sans + Noto Sans SC/TC (subset), declared in
-   src/fonts.ts (imported so Bun emits them as separate files instead of inlining). A named
-   font keeps pretext measurement accurate; see src/measure.ts. */
+/* Portfolio styles — monochrome "dithered" redesign, after careers.kimi.com.
+   Fonts: self-hosted Noto Sans + Noto Sans SC/TC (subset), declared in
+   src/fonts.ts (imported so Bun emits them as separate files instead of
+   inlining). A named font keeps pretext measurement accurate; see
+   src/measure.ts.
+
+   The page is a deck of full-screen panels (src/panels.ts). Without JS, on
+   narrow viewports or under prefers-reduced-motion, panels are plain stacked
+   sections and the document flows normally — every rule that fixes a panel to
+   the viewport lives behind `html.panels-on`. */
 
 :root {
   color-scheme: dark;
 
-  /* Dark palette */
-  --bg: #0a0a0a;
-  --bg-elevated: #111111;
-  --surface: rgba(255, 255, 255, 0.03);
-  --surface-2: rgba(255, 255, 255, 0.06);
+  /* Monochrome dark palette. The accent names are kept because src/orbs.ts
+     reads them as RGB — they are now shades of gray. */
+  --bg: #000000;
+  --bg-elevated: #0d0d0d;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.09);
   --fg: #f2f2f2;
-  --fg-muted: #a1a1aa;
-  --fg-subtle: #52525b;
-  --accent: #6366f1;
-  --accent-2: #a855f7;
-  --ok: #22c55e; /* availability dot, skills orb */
-  --amber: #f59e0b; /* hobbies orb */
-  --accent-dim: rgba(99, 102, 241, 0.12);
-  --glow: rgba(99, 102, 241, 0.35);
-  --border: rgba(255, 255, 255, 0.08);
-  --grid: rgba(255, 255, 255, 0.035);
+  --fg-muted: #a3a3a3;
+  --fg-subtle: #5c5c5c;
+  --accent: #f2f2f2;
+  --accent-2: #c8c8c8;
+  --ok: #9c9c9c;
+  --amber: #707070;
+  --accent-dim: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.45);
+  --shadow-hard: rgba(255, 255, 255, 0.28);
+
+  /* Bayer tiles for the orb fills (white dots at 4 densities). */
+  --tile-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
+  --tile-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
+  --tile-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' y='2' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='2' y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
+  --tile-4: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='6' y='2' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='2' y='6' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
 
   --font: 'Noto Sans', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
@@ -32,8 +46,6 @@
   --space-lg: 2rem;
   --space-xl: 3.5rem;
   --space-2xl: 6rem;
-
-  --radius: 6px;
 
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
@@ -47,21 +59,31 @@
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
+/* Light theme: a strict inversion — black-on-white, same dithering. */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #fafafa;
-  --bg-elevated: #ffffff;
-  --surface: rgba(0, 0, 0, 0.02);
-  --surface-2: rgba(0, 0, 0, 0.04);
-  --fg: #18181b;
+  --bg: #ffffff;
+  --bg-elevated: #fafafa;
+  --surface: rgba(0, 0, 0, 0.03);
+  --surface-2: rgba(0, 0, 0, 0.07);
+  --fg: #0a0a0a;
   --fg-muted: #52525b;
   --fg-subtle: #a1a1aa;
-  --accent: #4f46e5;
-  --accent-2: #9333ea;
-  --accent-dim: rgba(79, 70, 229, 0.1);
-  --glow: rgba(79, 70, 229, 0.25);
-  --border: rgba(0, 0, 0, 0.08);
-  --grid: rgba(0, 0, 0, 0.03);
+  --accent: #0a0a0a;
+  --accent-2: #3a3a3a;
+  --ok: #6a6a6a;
+  --amber: #9a9a9a;
+  --accent-dim: rgba(0, 0, 0, 0.08);
+  --border: rgba(0, 0, 0, 0.18);
+  --border-strong: rgba(0, 0, 0, 0.5);
+  --shadow-hard: rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme='light'] {
+  --tile-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
+  --tile-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
+  --tile-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' y='2' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='2' y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
+  --tile-4: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='6' y='2' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='2' y='6' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
 }
 
 * {
@@ -71,6 +93,17 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+html.panels-on {
+  scroll-behavior: auto;
+}
+
+html.panels-on,
+html.panels-on body {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -97,6 +130,16 @@ body {
   min-height: 100dvh;
 }
 
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
 #app {
   min-height: 100vh;
   min-height: 100dvh;
@@ -109,20 +152,62 @@ body {
 
 .page {
   position: relative;
+  z-index: 1;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
-.page::before {
+/* ------------------------------------------------------------------ *
+ * Dither background (src/dither.ts — Rust/WASM canvas + CSS fallback)
+ * ------------------------------------------------------------------ */
+
+.dither-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* During a panel wipe the canvas rises above the page and the Bayer sweep
+   covers the screen while the active panel swaps underneath. */
+.dither-canvas--wiping {
+  z-index: 60;
+}
+
+/* Wasm unavailable: a plain, quiet gradient keeps the page decent. */
+.dither-fallback body::before {
   content: '';
   position: fixed;
   inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.05), transparent 60%);
   pointer-events: none;
-  background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 4rem 4rem;
-  z-index: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Fixed chrome: brand, controls, dots, hint
+ * ------------------------------------------------------------------ */
+
+.brand {
+  position: fixed;
+  top: var(--space-md);
+  left: var(--space-md);
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--fg);
+  text-decoration: none;
+  padding: 0.4rem 0;
+}
+
+.brand:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .controls {
@@ -131,12 +216,10 @@ body {
   right: var(--space-md);
   z-index: 100;
   display: flex;
-  gap: var(--space-xs);
-  backdrop-filter: blur(8px);
+  gap: 1px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.3rem;
+  backdrop-filter: blur(8px);
 }
 
 .controls button,
@@ -146,84 +229,122 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 0.4rem 0.7rem;
-  border: 1px solid transparent;
+  padding: 0.45rem 0.7rem;
+  border: none;
   background: transparent;
   color: var(--fg-muted);
-  border-radius: 999px;
   cursor: pointer;
   text-decoration: none;
   transition:
-    color 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    background 0.2s var(--ease),
-    transform 0.2s var(--ease);
+    color 0.15s var(--ease),
+    background 0.15s var(--ease);
 }
 
 .controls button:hover,
-.controls a:hover,
-.controls [aria-current] {
+.controls a:hover {
   color: var(--fg);
   background: var(--surface-2);
-  border-color: var(--accent);
 }
 
 .controls [aria-current] {
-  background: var(--accent-dim);
+  color: var(--bg);
+  background: var(--fg);
 }
 
 .controls .controls__theme {
   font-size: 0.9rem;
-  padding: 0.35rem 0.55rem;
+  padding: 0.35rem 0.6rem;
+  border-left: 1px solid var(--border);
 }
 
-.back-to-top {
+/* Progress dots: plain hash anchors, styled as square pips. Only meaningful
+   in panel mode, where the controller marks the active one. */
+.dots {
+  display: none;
+}
+
+.panels-on .dots {
   position: fixed;
-  bottom: var(--space-md);
   right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 100;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  color: var(--fg-muted);
-  text-decoration: none;
-  backdrop-filter: blur(8px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.dots__dot {
+  display: block;
+  padding: 2px;
+}
+
+.dots__dot span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--fg-subtle);
   transition:
-    color 0.2s var(--ease),
-    border-color 0.2s var(--ease),
     background 0.2s var(--ease),
-    opacity 0.3s var(--ease),
-    visibility 0.3s var(--ease),
-    transform 0.3s var(--ease);
+    border-color 0.2s var(--ease),
+    transform 0.2s var(--ease);
 }
 
-.back-to-top:hover,
-.back-to-top:focus-visible {
-  color: var(--fg);
-  background: var(--surface-2);
-  border-color: var(--accent);
+.dots__dot:hover span {
+  border-color: var(--fg);
+  transform: scale(1.25);
 }
 
-/* With JS the link stays hidden until the hero scrolls out (see main.ts);
-   without JS it is simply always available. `visibility` also removes the
-   hidden link from tab order. */
-.js .back-to-top {
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(0.5rem);
+.dots__dot.is-active span {
+  background: var(--fg);
+  border-color: var(--fg);
 }
 
-.js .back-to-top.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
+/* Bottom continue hint — Kimi's "滑动开启探索" marker. */
+.hint {
+  display: none;
+}
+
+.panels-on .hint {
+  position: fixed;
+  bottom: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--fg-muted);
+  pointer-events: none;
+}
+
+.panels-on .hint.is-hidden {
+  display: none;
+}
+
+.hint__arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--fg);
+  animation: hint-bob 1.6s infinite var(--ease);
+}
+
+@keyframes hint-bob {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+
+  50% {
+    transform: translateY(3px);
+  }
 }
 
 .skip-link {
@@ -232,16 +353,19 @@ body {
   top: var(--space-md);
   z-index: 200;
   padding: var(--space-xs) var(--space-sm);
-  background: var(--accent);
+  background: var(--fg);
   color: var(--bg);
   text-decoration: none;
-  border-radius: var(--radius);
   font-weight: 600;
 }
 
 .skip-link:focus {
   left: var(--space-md);
 }
+
+/* ------------------------------------------------------------------ *
+ * Reveal animations (scroll reveals in native mode, panel-enter in deck mode)
+ * ------------------------------------------------------------------ */
 
 @keyframes fade-up {
   from {
@@ -252,16 +376,6 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
   }
 }
 
@@ -307,36 +421,76 @@ body {
   animation-delay: 0.4s;
 }
 
-.hero {
+/* ------------------------------------------------------------------ *
+ * Panels (native mode: stacked sections; deck mode behind .panels-on)
+ * ------------------------------------------------------------------ */
+
+.panel {
   position: relative;
-  min-height: 92vh;
-  min-height: 92dvh;
+  padding: var(--space-2xl) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Non-active panels are hidden with visibility (NOT display) so pretext
+   still measures their geometry, and keyboard/AT skip them natively. */
+.panels-on .panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--space-lg);
+  padding: 5.5rem var(--space-xl) 4.5rem;
+  border-bottom: 0;
+  overflow-y: auto;
+  visibility: hidden;
+  opacity: 0;
+  cursor: crosshair;
+  transition: opacity 0.3s var(--ease);
+}
+
+/* Auto margins center short panels vertically, yet collapse to 0 when the
+   content overflows — so tall panels start under the top bar instead of
+   being clipped by flex centering. */
+.panels-on .panel > :first-child {
+  margin-top: auto;
+}
+
+.panels-on .panel > :last-child {
+  margin-bottom: auto;
+}
+
+.panels-on .panel.is-active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.panels-on .panel a,
+.panels-on .panel button,
+.panels-on .panel .about-orb {
+  cursor: pointer;
+}
+
+.panels-on .panel .section__body,
+.panels-on .panel .hero {
+  cursor: auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * Hero
+ * ------------------------------------------------------------------ */
+
+.hero {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--space-xl) var(--space-lg);
-  border-bottom: 1px solid var(--border);
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 10%;
-  left: -10%;
-  width: 60%;
-  height: 70%;
-  background: radial-gradient(ellipse at center,
-    rgba(99, 102, 241, 0.12) 0%,
-    rgba(168, 85, 247, 0.06) 40%,
-    transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.hero > * {
-  position: relative;
-  z-index: 1;
+.panels-on .hero {
+  min-height: 0;
 }
 
 .hero__eyebrow {
@@ -349,11 +503,10 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: var(--fg);
   margin-bottom: var(--space-md);
   padding: 0.35rem 0.75rem;
-  border: 1px solid var(--accent-dim);
-  border-radius: 999px;
+  border: 1px solid var(--border-strong);
   background: var(--surface);
 }
 
@@ -361,9 +514,7 @@ body {
   content: '';
   width: 7px;
   height: 7px;
-  border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(34, 197, 94, 0.25);
+  background: var(--fg);
   animation: pulse-dot 2s infinite ease-in-out;
 }
 
@@ -372,12 +523,20 @@ body {
   font-weight: 800;
   line-height: 0.92;
   letter-spacing: -0.03em;
-  margin-bottom: var(--space-lg);
 }
 
 .hero__name-line {
   display: block;
   white-space: nowrap;
+}
+
+.hero__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-top: var(--space-xl);
 }
 
 .hero__title {
@@ -390,7 +549,6 @@ body {
 .hero__location {
   font-size: 0.9375rem;
   color: var(--fg-muted);
-  margin-bottom: var(--space-xl);
 }
 
 .hero__actions {
@@ -398,6 +556,10 @@ body {
   gap: var(--space-sm);
   flex-wrap: wrap;
 }
+
+/* ------------------------------------------------------------------ *
+ * Buttons — the Kimi hard-shadow brick
+ * ------------------------------------------------------------------ */
 
 .button {
   display: inline-flex;
@@ -407,48 +569,44 @@ body {
   font-weight: 600;
   text-decoration: none;
   padding: 0.7rem 1.25rem;
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid var(--accent);
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  box-shadow: 4px 4px 0 var(--shadow-hard);
   cursor: pointer;
   transition:
-    transform 0.2s var(--ease),
-    box-shadow 0.2s var(--ease),
-    background 0.2s var(--ease);
+    transform 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
 }
 
 .button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px var(--glow);
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--shadow-hard);
+}
+
+.button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--shadow-hard);
 }
 
 .button--ghost {
   background: transparent;
   color: var(--fg);
-  border-color: var(--border);
+  border-color: var(--border-strong);
+  box-shadow: none;
 }
 
 .button--ghost:hover {
   background: var(--surface);
-  border-color: var(--accent);
-  box-shadow: none;
+  border-color: var(--fg);
+  box-shadow: 4px 4px 0 var(--shadow-hard);
 }
 
-.section {
-  position: relative;
-  display: grid;
-  grid-template-columns: fit-content(26rem) 1fr;
-  gap: var(--space-lg);
-  padding: var(--space-2xl) var(--space-lg);
-  border-bottom: 1px solid var(--border);
-  align-items: start;
-}
+/* ------------------------------------------------------------------ *
+ * Section titles & bodies
+ * ------------------------------------------------------------------ */
 
 .section__title {
-  position: sticky;
-  top: var(--space-lg);
   font-size: clamp(2rem, 5vw, 4.5rem);
   font-weight: 800;
   line-height: 0.95;
@@ -462,7 +620,7 @@ body {
 
 .section__title span {
   display: block;
-  color: var(--accent);
+  color: var(--fg-subtle);
   font-family: var(--font-mono);
   font-size: 0.7rem;
   font-weight: 500;
@@ -481,6 +639,17 @@ body {
   margin-top: var(--space-md);
 }
 
+.section__body--cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-md);
+  max-width: 66rem;
+}
+
+.section__body--cards .card + .card {
+  margin-top: 0;
+}
+
 /* Knuth–Plass justified lines (one span per computed line; last line stays ragged). */
 .kp-line {
   display: block;
@@ -492,7 +661,13 @@ body {
   text-align-last: left;
 }
 
-/* About orbs: pretext-flowed text around draggable section-shortcut circles. */
+/* ------------------------------------------------------------------ *
+ * About orbs: pretext-flowed text around draggable section-shortcut circles.
+ * Monochrome: each orb is told apart by border style and Bayer-tile density,
+ * not by hue. Fills/borders live in the --experience/--education/--skills/
+ * --hobbies modifier classes (src/orbs.ts only sets geometry inline).
+ * ------------------------------------------------------------------ */
+
 .about-stage {
   position: relative;
 }
@@ -510,13 +685,15 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   font-family: var(--font-mono);
   font-weight: 600;
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--fg);
   text-decoration: none;
+  background-color: var(--bg);
+  box-shadow: 4px 4px 0 var(--shadow-hard);
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -528,16 +705,34 @@ body {
 
 .about-orb:hover {
   transform: scale(1.05);
+  box-shadow: 6px 6px 0 var(--shadow-hard);
 }
 
 .about-orb.is-dragging {
   cursor: grabbing;
   transition: none;
+  box-shadow: 0 0 0 var(--shadow-hard);
 }
 
-.about-orb:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.about-orb--experience {
+  border-style: solid;
+  background-image: var(--tile-3);
+}
+
+.about-orb--education {
+  border-style: dashed;
+  background-image: var(--tile-2);
+}
+
+.about-orb--skills {
+  border-style: dotted;
+  background-image: var(--tile-1);
+}
+
+.about-orb--hobbies {
+  border-style: double;
+  border-width: 3px;
+  background-image: var(--tile-4);
 }
 
 .sr-only {
@@ -552,25 +747,24 @@ body {
   border: 0;
 }
 
+/* ------------------------------------------------------------------ *
+ * Cards — flat bordered blocks, no radius, hard shadow on hover
+ * ------------------------------------------------------------------ */
+
 .card {
-  background: var(--bg-elevated);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: var(--space-md);
   transition:
-    transform 0.25s var(--ease),
-    box-shadow 0.25s var(--ease),
-    border-color 0.25s var(--ease);
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease),
+    border-color 0.2s var(--ease);
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-  border-color: rgba(99, 102, 241, 0.35);
-}
-
-:root[data-theme='light'] .card:hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  transform: translate(-2px, -2px);
+  border-color: var(--border-strong);
+  box-shadow: 6px 6px 0 var(--shadow-hard);
 }
 
 .card + .card {
@@ -594,7 +788,7 @@ body {
 .card__meta {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--accent);
+  color: var(--fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
@@ -615,45 +809,55 @@ body {
   margin-top: var(--space-xs);
 }
 
+/* ------------------------------------------------------------------ *
+ * Stats — the giant-numbers scene
+ * ------------------------------------------------------------------ */
+
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: var(--space-md);
-  margin-top: var(--space-lg);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-lg);
+  max-width: 72rem;
+}
+
+/* The stats scene is a Kimi-style giant-number row: four fixed columns. */
+@media (min-width: 56rem) {
+  .section--stats .section__body {
+    max-width: 72rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .stat {
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--space-xs);
-  padding: var(--space-md);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition:
-    transform 0.2s var(--ease),
-    border-color 0.2s var(--ease);
-}
-
-.stat:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 2px solid var(--fg);
 }
 
 .stat__value {
-  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-size: clamp(4rem, 11vw, 9rem);
   font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.03em;
   color: var(--fg);
 }
 
 .stat__label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   color: var(--fg-muted);
 }
+
+/* ------------------------------------------------------------------ *
+ * Tags
+ * ------------------------------------------------------------------ */
 
 .tags {
   display: flex;
@@ -667,28 +871,24 @@ body {
   font-size: 0.78rem;
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   color: var(--fg-muted);
   background: var(--surface);
   transition:
-    color 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    background 0.2s var(--ease),
-    transform 0.2s var(--ease);
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease);
 }
 
 .tag:hover {
   color: var(--fg);
-  border-color: var(--accent);
-  background: var(--accent-dim);
-  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: var(--surface-2);
 }
 
-/*
- * Dialogue: iMessage-style bubbles. The pre-rendered bubbles wrap at the CSS
- * max-width below; src/chat.ts then sets an inline `width` per bubble (the
- * pretext tight-wrap width), which this rule's max-width keeps bounded.
- */
+/* ------------------------------------------------------------------ *
+ * Dialogue — retro terminal window (bubbles tightened by src/chat.ts)
+ * ------------------------------------------------------------------ */
+
 .chat__disclaimer {
   font-family: var(--font-mono);
   font-size: 0.78rem;
@@ -698,11 +898,40 @@ body {
   margin-bottom: var(--space-md);
 }
 
+.term {
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  box-shadow: 6px 6px 0 var(--shadow-hard);
+  max-width: 44rem;
+}
+
+.term__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--fg-muted);
+}
+
+/* Three square "window lights" from one element and two offset shadows. */
+.term__lights {
+  width: 8px;
+  height: 8px;
+  background: var(--fg-subtle);
+  box-shadow:
+    12px 0 0 var(--fg-subtle),
+    24px 0 0 var(--fg-subtle);
+  margin-right: 24px;
+}
+
 .chat {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
-  max-width: 40rem;
+  padding: var(--space-sm) var(--space-md);
 }
 
 .chat__row {
@@ -717,74 +946,73 @@ body {
 .msg {
   max-width: 80%;
   padding: 0.5rem 0.875rem;
-  border-radius: 1.125rem;
-  background: var(--bg-elevated);
+  background: var(--surface);
   border: 1px solid var(--border);
+  border-left-width: 2px;
+  border-left-color: var(--border-strong);
   line-height: 1.45;
   overflow-wrap: break-word;
 }
 
-/* Tail corners: flatten the bottom corner on the speaker's side. */
-.chat__row .msg {
-  border-bottom-left-radius: 0.375rem;
-}
-
 .chat__row--me .msg {
-  border-bottom-left-radius: 1.125rem;
-  border-bottom-right-radius: 0.375rem;
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
 }
 
-/* A little air between speaker turns, like grouped iMessage threads. */
-.chat__row + .chat__row--me,
-.chat__row--me + .chat__row:not(.chat__row--me) {
-  margin-top: var(--space-xs);
+/* ------------------------------------------------------------------ *
+ * Contact & footer
+ * ------------------------------------------------------------------ */
+
+.contact__intro {
+  color: var(--fg-muted);
+  max-width: 50rem;
+  margin-bottom: var(--space-lg);
 }
 
-.contact {
-  padding: var(--space-2xl) var(--space-lg);
+.contact__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xl);
 }
 
-.contact__link {
-  display: inline-block;
-  font-size: clamp(1.25rem, 2.5vw, 2rem);
+.contact__label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.contact__value {
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--accent);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition:
-    border-color 0.2s var(--ease),
-    color 0.2s var(--ease);
-}
-
-.contact__link:hover {
-  border-color: var(--accent);
 }
 
 .footer {
-  padding: var(--space-lg);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
   border-top: 1px solid var(--border);
   color: var(--fg-subtle);
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  text-align: center;
 }
 
+/* ------------------------------------------------------------------ *
+ * Narrow viewports: native stacked flow (the deck stays desktop-only)
+ * ------------------------------------------------------------------ */
+
 @media (max-width: 56rem) {
-  .section {
-    grid-template-columns: 1fr;
+  .panel {
+    padding: var(--space-xl) var(--space-md);
   }
 
   .section__title {
-    position: static;
     white-space: normal;
   }
 
   .hero {
     padding: var(--space-xl) var(--space-md);
-    min-height: auto;
   }
 
   .hero__name-line {
@@ -797,105 +1025,27 @@ body {
     word-break: break-word;
   }
 
+  .hero__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: var(--space-lg);
+  }
+
   .controls {
     top: var(--space-sm);
     right: var(--space-sm);
   }
 
-  .back-to-top {
-    bottom: var(--space-sm);
-    right: var(--space-sm);
+  .brand {
+    top: var(--space-sm);
+    left: var(--space-sm);
   }
 
-  .contact__link {
-    word-break: break-word;
-    font-size: clamp(1.125rem, 5vw, 1.75rem);
-  }
-}
-
-/* ------------------------------------------------------------------ *
- * Print: a CV must print. Force the light palette, reveal everything,
- * drop the fixed/sticky chrome, and keep each card on one page.
- * ------------------------------------------------------------------ */
-@media print {
-  :root,
-  :root[data-theme='dark'] {
-    color-scheme: light;
-    --bg: #ffffff;
-    --bg-elevated: #ffffff;
-    --surface: transparent;
-    --surface-2: transparent;
-    --fg: #000000;
-    --fg-muted: #333333;
-    --fg-subtle: #555555;
-    --accent: #4f46e5;
-    --accent-2: #9333ea;
-    --accent-dim: transparent;
-    --glow: transparent;
-    --border: #d4d4d4;
-    --grid: transparent;
+  .stats {
+    gap: var(--space-md);
   }
 
-  /* Scroll reveals never happen on paper: show everything, statically. */
-  .js .animate {
-    opacity: 1 !important;
-    animation: none !important;
-  }
-
-  .controls,
-  .skip-link,
-  .back-to-top {
-    display: none !important;
-  }
-
-  .page::before,
-  .hero::before {
-    display: none;
-  }
-
-  .hero {
-    min-height: auto;
-    padding: var(--space-lg);
-  }
-
-  /* Inline fitted px sizes are tuned to the screen, not the sheet. */
-  .hero__name {
-    font-size: 3rem !important;
-  }
-
-  .section {
-    display: block;
-  }
-
-  .section__title {
-    position: static;
-    white-space: normal;
-    font-size: 2rem !important;
-    margin-bottom: var(--space-md);
-  }
-
-  .card,
-  .stat {
-    break-inside: avoid;
-  }
-
-  /* The orb layout is a screen toy: print the real paragraphs instead. */
-  .about-stage {
-    height: auto !important;
-  }
-
-  .about-lines,
-  .about-orb {
-    display: none;
-  }
-
-  .about-stage .sr-only {
-    position: static;
-    width: auto;
-    height: auto;
-    margin: 0 0 var(--space-md);
-    overflow: visible;
-    clip-path: none;
-    white-space: normal;
+  .stat__value {
+    font-size: clamp(3rem, 18vw, 5rem);
   }
 }

@@ -4,6 +4,12 @@
  *   - the client ([src/main.ts](src/main.ts)) to (re)render on language change,
  *   - the static build ([scripts/build.ts](scripts/build.ts)) to pre-render each
  *     language page at build time (SEO, link previews, no-JS content).
+ *
+ * The page is a sequence of full-screen panels (`.panel` inside `<main class=
+ * "panels">`). Without JS (or on narrow/reduced-motion viewports) the panels
+ * are plain stacked sections and the document flows normally; [src/panels.ts]
+ * upgrades them into the scroll-jacked scene deck. Every panel is reachable by
+ * a stable hash (`#experience`, …), so deep links work in all modes.
  */
 
 import {
@@ -71,7 +77,7 @@ function controls(t: Translation, lang: Lang, theme: Theme): string {
 
 function hero(t: Translation): string {
   return `
-    <section class="hero" id="top" aria-label="Introduction">
+    <section class="panel hero" id="top" data-panel aria-label="Introduction">
       <div class="hero__eyebrow animate">${escapeHtml(t.hero.greeting)}</div>
       <h1 class="hero__name">
         ${
@@ -85,29 +91,38 @@ function hero(t: Translation): string {
       .join("\n        ")
   }
       </h1>
-      <p class="hero__title animate animate--delayed-3">
-        ${escapeHtml(t.hero.title)}
-      </p>
-      <p class="hero__location animate animate--delayed-4">${
+      <div class="hero__foot">
+        <div class="hero__meta">
+          <p class="hero__title animate animate--delayed-3">
+            ${escapeHtml(t.hero.title)}
+          </p>
+          <p class="hero__location animate animate--delayed-4">${
     escapeHtml(t.hero.location)
   }</p>
-      <div class="hero__actions animate animate--delayed-5">
-        <a class="button" href="#contact">${escapeHtml(t.hero.ctaPrimary)}</a>
-        <a class="button button--ghost" href="#experience">${
+        </div>
+        <div class="hero__actions animate animate--delayed-5">
+          <a class="button" href="#contact">${escapeHtml(t.hero.ctaPrimary)}</a>
+          <a class="button button--ghost" href="#experience">${
     escapeHtml(t.hero.ctaSecondary)
   }</a>
+        </div>
       </div>
     </section>
   `;
 }
 
+/**
+ * Numbered panel heading. `domId` defaults to the nav key; the repeated
+ * Experience panels pass their own so every `id` stays unique and linkable.
+ */
 function sectionTitle(
   t: Translation,
   id: keyof Translation["nav"],
   index: number,
+  domId: string = id,
 ): string {
-  const label = `0${index + 1}`;
-  return `<h2 class="section__title animate" id="${id}" tabindex="-1"><span aria-hidden="true">${label}</span>${
+  const label = String(index + 1).padStart(2, "0");
+  return `<h2 class="section__title animate" id="${domId}" tabindex="-1"><span aria-hidden="true">${label}</span>${
     escapeHtml(t.nav[id])
   }</h2>`;
 }
@@ -122,13 +137,24 @@ const STATS: readonly { value: string; label: (t: Translation) => string }[] = [
 
 function about(t: Translation): string {
   return `
-    <section class="section" aria-labelledby="about">
+    <section class="panel section" data-panel aria-labelledby="about">
       <div>${sectionTitle(t, "about", 0)}</div>
       <div class="section__body animate">
         <p class="kp">${escapeHtml(t.about.p1)}</p>
         <p class="kp">${escapeHtml(t.about.p2)}</p>
         <p class="kp">${escapeHtml(t.about.p3)}</p>
-        <div class="stats animate">
+      </div>
+    </section>
+  `;
+}
+
+/** The Kimi-style giant-numbers scene, split out of About. */
+function stats(t: Translation): string {
+  return `
+    <section class="panel section section--stats" data-panel aria-labelledby="stats">
+      <div>${sectionTitle(t, "stats", 1)}</div>
+      <div class="section__body animate">
+        <div class="stats">
           ${
     STATS.map(
       (stat) => `
@@ -164,14 +190,24 @@ function jobCard(job: {
         </article>`;
 }
 
+/** One panel per position — the deck advances through the career chapter by chapter. */
 function experience(t: Translation): string {
   return `
-    <section class="section" aria-labelledby="experience">
-      <div>${sectionTitle(t, "experience", 1)}</div>
+    <section class="panel section" data-panel aria-labelledby="experience">
+      <div>${sectionTitle(t, "experience", 2)}</div>
       <div class="section__body animate">
         ${jobCard(t.experience.kapia)}
+      </div>
+    </section>
+    <section class="panel section" data-panel aria-labelledby="experience-consulting">
+      <div>${sectionTitle(t, "experience", 3, "experience-consulting")}</div>
+      <div class="section__body animate">
         ${jobCard(t.experience.consulting)}
-
+      </div>
+    </section>
+    <section class="panel section" data-panel aria-labelledby="experience-insurance">
+      <div>${sectionTitle(t, "experience", 4, "experience-insurance")}</div>
+      <div class="section__body animate">
         <article class="card">
           <div class="card__header">
             <h3 class="card__title">${
@@ -193,9 +229,9 @@ function experience(t: Translation): string {
 
 function education(t: Translation): string {
   return `
-    <section class="section" aria-labelledby="education">
-      <div>${sectionTitle(t, "education", 2)}</div>
-      <div class="section__body animate">
+    <section class="panel section" data-panel aria-labelledby="education">
+      <div>${sectionTitle(t, "education", 5)}</div>
+      <div class="section__body section__body--cards animate">
         <article class="card">
           <div class="card__header">
             <h3 class="card__title">${
@@ -244,8 +280,8 @@ function education(t: Translation): string {
 /** Certifications as their own chapter — one card, the section title carries the name. */
 function certifications(t: Translation): string {
   return `
-    <section class="section" aria-labelledby="certifications">
-      <div>${sectionTitle(t, "certifications", 3)}</div>
+    <section class="panel section" data-panel aria-labelledby="certifications">
+      <div>${sectionTitle(t, "certifications", 6)}</div>
       <div class="section__body animate">
         <article class="card">
           <div class="card__header">
@@ -278,9 +314,9 @@ function skills(t: Translation): string {
     t.skills.languages.mandarin,
   ];
   return `
-    <section class="section" aria-labelledby="skills">
-      <div>${sectionTitle(t, "skills", 4)}</div>
-      <div class="section__body animate">
+    <section class="panel section" data-panel aria-labelledby="skills">
+      <div>${sectionTitle(t, "skills", 7)}</div>
+      <div class="section__body section__body--cards animate">
         ${
     groups
       .map(
@@ -326,9 +362,9 @@ function hobbies(t: Translation): string {
     t.hobbies.language,
   ];
   return `
-    <section class="section" aria-labelledby="hobbies">
-      <div>${sectionTitle(t, "hobbies", 5)}</div>
-      <div class="section__body animate">
+    <section class="panel section" data-panel aria-labelledby="hobbies">
+      <div>${sectionTitle(t, "hobbies", 8)}</div>
+      <div class="section__body section__body--cards animate">
         ${
     items
       .map(
@@ -346,33 +382,40 @@ function hobbies(t: Translation): string {
 }
 
 /**
- * The faux visitor interview, as iMessage-style bubbles. The pre-rendered
- * markup wraps at a plain CSS max-width (fine without JS); [src/chat.ts](src/chat.ts)
- * then tightens each bubble to its optimal wrap width with pretext. The bubble
- * text is duplicated into data-text so the enhancement measures exactly the
- * visible text (the .sr-only sender prefix is for screen readers only).
+ * The faux visitor interview, presented as a retro terminal window. The
+ * pre-rendered bubbles wrap at a plain CSS max-width (fine without JS);
+ * [src/chat.ts](src/chat.ts) then tightens each bubble to its optimal wrap
+ * width with pretext. The bubble text is duplicated into data-text so the
+ * enhancement measures exactly the visible text (the .sr-only sender prefix
+ * is for screen readers only).
  */
 function dialogue(t: Translation): string {
   return `
-    <section class="section" aria-labelledby="dialogue">
-      <div>${sectionTitle(t, "dialogue", 6)}</div>
+    <section class="panel section" data-panel aria-labelledby="dialogue">
+      <div>${sectionTitle(t, "dialogue", 9)}</div>
       <div class="section__body animate">
         <p class="chat__disclaimer">${escapeHtml(t.dialogue.disclaimer)}</p>
-        <div class="chat">
-          ${
+        <div class="term">
+          <div class="term__bar" aria-hidden="true">
+            <span class="term__lights"></span>
+            <span class="term__title">${escapeHtml(t.ui.terminalTitle)}</span>
+          </div>
+          <div class="chat">
+            ${
     t.dialogue.messages
       .map(
         (m) => `
-          <div class="chat__row${m.me ? " chat__row--me" : ""}">
-            <div class="msg" data-text="${
+              <div class="chat__row${m.me ? " chat__row--me" : ""}">
+                <div class="msg" data-text="${
           escapeHtml(m.text)
         }"><span class="sr-only">${
           escapeHtml(m.me ? t.dialogue.me : t.dialogue.visitor)
         }: </span>${escapeHtml(m.text)}</div>
-          </div>`,
+              </div>`,
       )
       .join("")
   }
+          </div>
         </div>
       </div>
     </section>
@@ -381,48 +424,72 @@ function dialogue(t: Translation): string {
 
 function contact(t: Translation): string {
   return `
-    <section class="contact" aria-labelledby="contact">
-      <h2 class="section__title animate" id="contact" style="margin-bottom: var(--space-lg)"><span aria-hidden="true">08</span>${
-    escapeHtml(t.nav.contact)
-  }</h2>
-      <p class="animate" style="color: var(--fg-muted); margin-bottom: var(--space-md); max-width: 50rem">${
-    escapeHtml(t.contact.intro)
-  }</p>
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg)">
+    <section class="panel contact" data-panel aria-labelledby="contact">
+      <div>${sectionTitle(t, "contact", 10)}</div>
+      <p class="contact__intro animate">${escapeHtml(t.contact.intro)}</p>
+      <div class="contact__grid animate">
         <div>
-          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${
-    escapeHtml(t.contact.wechatLabel)
-  }</p>
-          <p style="font-size: 1.5rem; font-weight: 700">${PROFILE.wechat}</p>
+          <p class="contact__label">${escapeHtml(t.contact.wechatLabel)}</p>
+          <p class="contact__value">${PROFILE.wechat}</p>
         </div>
         <div>
-          <p style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.1em">${
-    escapeHtml(t.contact.locationLabel)
-  }</p>
-          <p style="font-size: 1.5rem; font-weight: 700">${
-    escapeHtml(t.hero.location)
-  }</p>
+          <p class="contact__label">${escapeHtml(t.contact.locationLabel)}</p>
+          <p class="contact__value">${escapeHtml(t.hero.location)}</p>
         </div>
       </div>
+      <footer class="footer">
+        <p>${escapeHtml(t.contact.footer)}</p>
+      </footer>
     </section>
-    <footer class="footer">
-      <p>${escapeHtml(t.contact.footer)}</p>
-    </footer>
   `;
 }
 
 /**
- * Back-to-top: a plain anchor to the hero (`#top`), so it works without JS —
- * CSS smooth scrolling and native fragment focus handling do the rest. With JS,
- * [src/main.ts](src/main.ts) only toggles its visibility once the hero scrolls out.
+ * The panel sequence, in scroll order: DOM ids the dots link to (and the
+ * panel controller resolves). Labels come from the nav vocabulary; repeated
+ * labels (the three Experience panels) get a numeric suffix.
  */
-function backToTop(t: Translation): string {
+const PANELS: readonly { domId: string; label: (t: Translation) => string }[] =
+  [
+    { domId: "top", label: (t) => t.nav.intro },
+    { domId: "about", label: (t) => t.nav.about },
+    { domId: "stats", label: (t) => t.nav.stats },
+    { domId: "experience", label: (t) => t.nav.experience },
+    { domId: "experience-consulting", label: (t) => t.nav.experience },
+    { domId: "experience-insurance", label: (t) => t.nav.experience },
+    { domId: "education", label: (t) => t.nav.education },
+    { domId: "certifications", label: (t) => t.nav.certifications },
+    { domId: "skills", label: (t) => t.nav.skills },
+    { domId: "hobbies", label: (t) => t.nav.hobbies },
+    { domId: "dialogue", label: (t) => t.nav.dialogue },
+    { domId: "contact", label: (t) => t.nav.contact },
+  ];
+
+/**
+ * Fixed scene chrome: progress dots (plain hash anchors — they navigate even
+ * without JS, the controller animates them via hashchange), the bottom
+ * continue hint, and a polite live region the controller announces panel
+ * changes through.
+ */
+function panelChrome(t: Translation): string {
+  const labels = PANELS.map((panel) => panel.label(t));
+  const dots = PANELS.map((panel, index) => {
+    const base = labels[index]!;
+    const dup = labels.slice(0, index).filter((l) => l === base).length;
+    const label = dup > 0 ? `${base} ${dup + 1}` : base;
+    return `
+      <a class="dots__dot" href="#${panel.domId}" data-dot="${
+      panel.domId
+    }" aria-label="${escapeHtml(label)}"><span aria-hidden="true"></span></a>`;
+  }).join("");
+
   return `
-    <a class="back-to-top" href="#top" data-back-to-top aria-label="${
-    escapeHtml(t.ui.backToTop)
-  }">
-      <span aria-hidden="true">↑</span>
-    </a>
+    <nav class="dots" aria-label="${escapeHtml(t.ui.panelsNav)}">${dots}
+    </nav>
+    <p class="hint" data-hint><span class="hint__arrow" aria-hidden="true"></span>${
+    escapeHtml(t.ui.continue)
+  }</p>
+    <p class="sr-only" role="status" data-panel-live></p>
   `;
 }
 
@@ -432,17 +499,21 @@ export function renderApp(lang: Lang, theme: Theme): string {
   return `
     <div class="page" data-lang="${lang}">
       <a class="skip-link" href="#about">${escapeHtml(t.ui.skipLink)}</a>
+      <a class="brand" href="#top">${escapeHtml(t.name.display)}</a>
       ${controls(t, lang, theme)}
-      ${hero(t)}
-      ${about(t)}
-      ${experience(t)}
-      ${education(t)}
-      ${certifications(t)}
-      ${skills(t)}
-      ${hobbies(t)}
-      ${dialogue(t)}
-      ${contact(t)}
-      ${backToTop(t)}
+      <main class="panels">
+        ${hero(t)}
+        ${about(t)}
+        ${stats(t)}
+        ${experience(t)}
+        ${education(t)}
+        ${certifications(t)}
+        ${skills(t)}
+        ${hobbies(t)}
+        ${dialogue(t)}
+        ${contact(t)}
+      </main>
+      ${panelChrome(t)}
     </div>
   `;
 }

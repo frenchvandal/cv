@@ -30,40 +30,23 @@ const CLICK_TOLERANCE = 5;
 
 type SectionKey = "experience" | "education" | "skills" | "hobbies";
 
-type RGB = [number, number, number];
-
 /**
- * Each orb's accent is a custom property of the CSS palette, read at layout
- * time; the fallbacks mirror the dark palette in [src/styles.css](src/styles.css)
- * for the day a property is renamed away.
+ * Each orb is told apart by border style and Bayer-tile density — the
+ * `about-orb--<key>` modifier classes in [src/styles.css](src/styles.css) —
+ * not by hue: the palette is strictly monochrome.
  */
-const ORB_DEFS: { key: SectionKey; cssVar: string; fallback: RGB }[] = [
-  { key: "experience", cssVar: "--accent", fallback: [99, 102, 241] },
-  { key: "education", cssVar: "--accent-2", fallback: [168, 85, 247] },
-  { key: "skills", cssVar: "--ok", fallback: [34, 197, 94] },
-  { key: "hobbies", cssVar: "--amber", fallback: [245, 158, 11] },
+const ORB_DEFS: { key: SectionKey }[] = [
+  { key: "experience" },
+  { key: "education" },
+  { key: "skills" },
+  { key: "hobbies" },
 ];
-
-/** Parse a custom property's color (`#rgb`, `#rrggbb`, `rgb(…)`) into a triplet. */
-function parseRgb(value: string): RGB | null {
-  const text = value.trim();
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text)?.[1];
-  if (hex) {
-    const full = hex.length === 3 ? hex.replace(/./g, "$&$&") : hex;
-    const n = parseInt(full, 16);
-    return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
-  }
-  const rgb = /^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(text);
-  if (rgb) return [Number(rgb[1]!), Number(rgb[2]!), Number(rgb[3]!)];
-  return null;
-}
 
 type Interval = { left: number; right: number };
 
 type Orb = {
   key: SectionKey;
   label: string;
-  color: RGB;
   r: number;
   x: number;
   y: number;
@@ -270,9 +253,7 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
     const minR = isNarrow ? 34 : 44;
     const maxR = Math.max(minR, width / 2 - 8);
     const r = clamp(labelWidth / 2 + 14, minR, maxR);
-    const color = parseRgb(rootStyle.getPropertyValue(def.cssVar)) ??
-      def.fallback;
-    return { key: def.key, label, color, r, x: 0, y: 0 };
+    return { key: def.key, label, r, x: 0, y: 0 };
   });
 
   const remembered = savedPositions !== null &&
@@ -309,9 +290,8 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
   saveFractions();
 
   const orbEls = orbs.map((orb) => {
-    const [red, green, blue] = orb.color;
     const el = document.createElement("a");
-    el.className = "about-orb";
+    el.className = `about-orb about-orb--${orb.key}`;
     el.href = `#${orb.key}`;
     el.draggable = false;
     el.textContent = orb.label;
@@ -320,11 +300,6 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
     el.style.height = `${orb.r * 2}px`;
     el.style.fontSize = `${labelFontSize}px`;
     el.style.letterSpacing = `${labelTracking}px`;
-    el.style.background =
-      `radial-gradient(circle at 35% 32%, rgba(${red},${green},${blue},0.30), rgba(${red},${green},${blue},0.10) 58%, rgba(${red},${green},${blue},0.03) 78%)`;
-    el.style.borderColor = `rgba(${red},${green},${blue},0.5)`;
-    el.style.boxShadow =
-      `0 0 32px 4px rgba(${red},${green},${blue},0.16), inset 0 0 24px rgba(${red},${green},${blue},0.10)`;
     stage.appendChild(el);
     return el;
   });

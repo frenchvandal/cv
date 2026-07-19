@@ -1,0 +1,19 @@
+# Root workspace so plain `cargo clippy` / `cargo fmt` / `cargo build` work
+# from the repo root. The only member is the dither engine; the shared target
+# dir lives at ./target (gitignored).
+[workspace]
+resolver = "2"
+members = ["wasm/dither"]
+
+# Profiles are honored only at the workspace root — keep the size tuning here
+# (was `[profile.release]` in the member crate, ignored there).
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+strip = true
+
+# The crate is `#![no_std]`: unwinding is unavailable in every profile, so
+# plain `cargo clippy` / `cargo check` (dev) need abort too.
+[profile.dev]
+panic = "abort"

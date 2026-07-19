@@ -29,3 +29,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Rust build artifacts (workspace-shared target dir at the repo root)
+/target/
+wasm/dither/target/

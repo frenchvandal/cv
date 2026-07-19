@@ -14,6 +14,8 @@ import {
 import { breakIntoLines } from "./linebreak.ts";
 import { enhanceAboutOrbs } from "./orbs.ts";
 import { enhanceChat } from "./chat.ts";
+import { initDither, setDitherTheme } from "./dither.ts";
+import { initPanels } from "./panels.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
 // hides content for the reveal animations, so flipping the class any earlier
@@ -89,6 +91,7 @@ function applyTheme(next: Theme): void {
   } catch {
     // storage may be unavailable (private mode) — the attribute on <html> is enough.
   }
+  setDitherTheme(next);
   syncThemeToggle();
 }
 
@@ -335,35 +338,6 @@ function observeSections(): void {
   revealObserver = observer;
 }
 
-let backToTopObserver: IntersectionObserver | null = null;
-
-/**
- * Show the back-to-top link only once the hero has fully scrolled out of view
- * (i.e. the reader is inside a section). The link itself is a plain `#top`
- * anchor — scrolling and focus are native, JS only toggles visibility.
- */
-function observeBackToTop(): void {
-  if (!app) return;
-  backToTopObserver?.disconnect();
-  backToTopObserver = null;
-
-  const link = app.querySelector<HTMLElement>("[data-back-to-top]");
-  if (!link) return;
-
-  const hero = app.querySelector<HTMLElement>(".hero");
-  if (!hero || !("IntersectionObserver" in globalThis)) {
-    link.classList.add("is-visible"); // can't track the hero: keep the link usable
-    return;
-  }
-
-  const observer = new IntersectionObserver(([entry]) => {
-    if (!entry) return;
-    link.classList.toggle("is-visible", !entry.isIntersecting);
-  });
-  observer.observe(hero);
-  backToTopObserver = observer;
-}
-
 /* ------------------------------------------------------------------ *
  * Rendering & navigation
  * ------------------------------------------------------------------ */
@@ -392,8 +366,8 @@ function bindEvents(): void {
 }
 
 function afterPaint(): void {
-  observeSections();
-  observeBackToTop();
+  // Deck mode reveals panels on activation; native mode reveals on scroll.
+  if (!initPanels({ onActivate: reveal })) observeSections();
   whenFontsReady(() => {
     applyMeasuredLayout();
     enhanceChat();
@@ -450,6 +424,9 @@ function init(): void {
   } else {
     render(false); // dev shell (loader) or stale markup
   }
+
+  // The dithered background attaches to <body> and survives re-renders.
+  void initDither();
 
   globalThis.addEventListener("popstate", onPopState);
   globalThis.addEventListener(

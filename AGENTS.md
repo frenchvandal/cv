@@ -16,11 +16,30 @@ has none of them.
     language pages into `dist/`; runs `tsgo --noEmit` concurrently and gates on
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
+  - `bun run wasm:build` → `cargo build --release --target wasm32-unknown-unknown`
+    (root Cargo workspace) and copies the artifact to `src/dither.wasm`. The
+    **compiled .wasm is committed** — CI/deploy stay Bun-only and need no Rust.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
   rendered into `#app` by [src/main.ts](src/main.ts). Content lives in
   [src/translations.ts](src/translations.ts) (EN / FR / zh-Hans / zh-Hant). Text
   measurement/layout is done with `@chenglou/pretext` in
   [src/measure.ts](src/measure.ts).
+- **UI architecture (2026 redesign, after careers.kimi.com):** the page is a
+  deck of full-screen panels. [src/render.ts](src/render.ts) emits plain stacked
+  `<section class="panel">` markup (valid SSG/no-JS flow); on desktop without
+  `prefers-reduced-motion`, [src/panels.ts](src/panels.ts) adds `panels-on` to
+  `<html>` and scroll-jacks between panels (wheel/touch/keyboard/hash, dither
+  wipe transitions, internal-scroll edge guard for overflowing panels).
+  [src/dither.ts](src/dither.ts) drives the background: FBM nebula + Bayer
+  ordered dithering computed in Rust ([wasm/dither/](wasm/dither/), `no_std`,
+  raw exports, no wasm-bindgen), painted to a low-res canvas upscaled with
+  `image-rendering: pixelated`. If the wasm fails, a CSS gradient fallback
+  paints instead — the page never depends on the engine.
+- **Rust:** stable toolchain via rustup (`~/.cargo`). Root `Cargo.toml` is a
+  workspace so `cargo clippy` / `cargo fmt` work at the repo root; build
+  profiles live there (member-crate profiles are ignored). `no_std` needs
+  `panic = "abort"` in every profile (dev included). VS Code: rust-analyzer
+  with clippy-on-save + formatOnSave (see .vscode/settings.json).
 - **Output:** a fully static `dist/` with relative asset paths — deploys to
   GitHub Pages (or any static host) at any base path. CI sets `SITE_URL` for
   absolute SEO URLs.
@@ -131,3 +150,28 @@ this site targets modern browsers only, so don't down-level.
   because CSS `text-align: justify` can only stretch spaces, never shrink them —
   keep that invariant, and keep the small target-width margin, or lines will
   wrap.
+
+## 7. Panel deck & dither conventions (project-specific)
+
+- **Progressive enhancement order.** Markup must stay a readable stacked
+  document without JS; deck styling lives exclusively behind `html.panels-on`
+  in [src/styles.css](src/styles.css). Deck mode = `matchMedia("(min-width:
+  56rem)")` AND NOT reduced-motion — mirrored in [src/panels.ts](src/panels.ts),
+  keep the two in sync.
+- **Hidden panels use `visibility`, never `display`** — pretext measures
+  geometry (orbs stage, hero fit) even on inactive panels.
+- **Re-render wipes DOM.** Language switches replace `#app` innerHTML, so
+  long-lived elements (the dither canvas) attach to `<body>`, and controllers
+  re-query on every `afterPaint` (`initPanels` is idempotent).
+- **Monochrome discipline.** No hue anywhere: interactive states use fg/bg
+  inversion, borders, or the hard offset shadow (`--shadow-hard`). The orbs
+  differ by border style + Bayer-tile density (`--tile-1..4` data-URIs, defined
+  per theme), set in CSS modifier classes — `orbs.ts` only sets geometry inline.
+- **The dither engine contract** (wasm/dither/src/lib.rs): `init/resize(cols,
+  rows) -> 0|-1`, `render(t_ms, mode, blend, flags)` with mode 0 nebula / 1
+  wipe / 2 static, `flags & 1` = light theme, `frame_ptr/frame_len` expose an
+  RGBA buffer over a static arena (max 640×400 cells — keep src/dither.ts's
+  MAX_COLS/MAX_ROWS in sync). `src/dither.wasm` is committed; after editing
+  the crate, run `bun run wasm:build` and commit the new artifact.
+- **No print stylesheet** — the deck is screen-only by design (dropped in the
+  2026 redesign on purpose).

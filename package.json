@@ -11,7 +11,8 @@
     "build": "bun scripts/build.ts",
     "check": "tsgo --noEmit",
     "test": "bun test",
-    "fonts:update": "bun scripts/update-fonts.ts"
+    "fonts:update": "bun scripts/update-fonts.ts",
+    "wasm:build": "cargo build --release --target wasm32-unknown-unknown && cp target/wasm32-unknown-unknown/release/dither.wasm src/dither.wasm"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.8",
