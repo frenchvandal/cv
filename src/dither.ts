@@ -115,17 +115,17 @@ function stop(): void {
 }
 
 /**
- * Fetch the wasm bytes, tolerant of how the bundler spells the URL. Bun's
- * file loader emits a chunk-relative string (`./dither-hash.wasm`) but the
- * browser resolves a bare `fetch()` against the DOCUMENT — fine at the domain
- * root, wrong under a sub-path deploy (the bundler's `naming` puts the file
- * in `assets/` but the string omits it). Retry resolved against the chunk's
- * own URL (`import.meta.url`), which lands in `assets/` in production.
+ * Fetch the wasm bytes. Bun's file loader emits a chunk-relative string
+ * (`./dither-hash.wasm`) but a bare `fetch()` resolves it against the DOCUMENT
+ * — fine at a domain root, wrong under a sub-path deploy (the bundler's
+ * `naming` puts the file in `assets/` but the string omits it). Resolving
+ * against the chunk's own URL (`import.meta.url`, inside `assets/` in
+ * production) is correct in every mode; the raw string is the fallback.
  */
 async function fetchWasmBytes(url: string): Promise<ArrayBuffer> {
-  const first = await fetch(url);
+  const first = await fetch(new URL(url, import.meta.url));
   if (first.ok) return first.arrayBuffer();
-  const retry = await fetch(new URL(url, import.meta.url));
+  const retry = await fetch(url);
   if (!retry.ok) throw new Error(`dither.wasm: HTTP ${first.status}`);
   return retry.arrayBuffer();
 }
