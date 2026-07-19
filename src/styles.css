@@ -944,6 +944,15 @@ body {
   padding: var(--space-sm) var(--space-md);
 }
 
+/* In deck mode the whole conversation can't fit a fixed viewport — scroll it
+   inside the terminal window (like a real terminal) so the last messages
+   never spill under the continue hint. Native-scroll modes keep full flow. */
+html.panels-on .chat {
+  max-height: min(52dvh, 34rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .chat__row {
   display: flex;
   justify-content: flex-start;

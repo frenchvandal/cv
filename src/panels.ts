@@ -93,6 +93,30 @@ function atScrollEdge(panel: HTMLElement, dy: number): boolean {
   return panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 1;
 }
 
+/** True while `el` still has room to scroll in the gesture's direction. */
+function canConsume(el: HTMLElement, dy: number): boolean {
+  if (el.scrollHeight <= el.clientHeight + 1) return false;
+  const overflow = getComputedStyle(el).overflowY;
+  if (overflow !== "auto" && overflow !== "scroll") return false;
+  if (dy < 0) return el.scrollTop > 0;
+  return el.scrollTop + el.clientHeight < el.scrollHeight - 1;
+}
+
+/** A nested scroller (e.g. the Dialogue terminal) between the gesture target
+ * and the panel that should consume the gesture instead of the deck. */
+function nestedScrollerConsumes(
+  target: EventTarget | null,
+  panel: HTMLElement,
+  dy: number,
+): boolean {
+  let el = target instanceof Element ? target : null;
+  while (el && el !== panel) {
+    if (el instanceof HTMLElement && canConsume(el, dy)) return true;
+    el = el.parentElement;
+  }
+  return false;
+}
+
 function applyState(index: number, focus: boolean): void {
   const previous = panels[current];
   if (previous && previous !== panels[index]) {
@@ -164,8 +188,9 @@ function onWheel(event: WheelEvent): void {
   const panel = panels[current];
   const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 800 : 1;
   const dy = event.deltaY * unit;
-  // A scrollable panel consumes the wheel until it reaches the edge.
+  // A scrollable panel or nested scroller consumes the wheel at will.
   if (panel && !atScrollEdge(panel, dy)) return;
+  if (panel && nestedScrollerConsumes(event.target, panel, dy)) return;
   event.preventDefault();
 
   const now = performance.now();
@@ -210,6 +235,11 @@ function onKeydown(event: KeyboardEvent): void {
   }
   const delta = KEY_DELTAS[event.key];
   if (delta !== undefined) {
+    // A focused nested scroller (Dialogue terminal) keeps native key scroll.
+    const panel = panels[current];
+    if (panel && target && nestedScrollerConsumes(target, panel, delta)) {
+      return;
+    }
     event.preventDefault();
     step(delta, true);
   }
@@ -235,6 +265,9 @@ function onTouchEnd(event: TouchEvent): void {
   if (Math.abs(travel) < SWIPE_MIN_PX) return;
   const panel = panels[current];
   if (panel && !atScrollEdge(panel, travel)) return;
+  // Touch target is the element the gesture started on — same nested-scroller
+  // rule as the wheel (e.g. swiping inside the Dialogue terminal scrolls it).
+  if (panel && nestedScrollerConsumes(event.target, panel, travel)) return;
   step(travel > 0 ? 1 : -1);
 }
 

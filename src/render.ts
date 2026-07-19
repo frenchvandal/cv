@@ -392,7 +392,9 @@ function dialogue(t: Translation): string {
             <span class="term__lights"></span>
             <span class="term__title">${escapeHtml(t.ui.terminalTitle)}</span>
           </div>
-          <div class="chat">
+          <div class="chat" tabindex="0" role="group" aria-label="${
+    escapeHtml(t.ui.terminalTitle)
+  }">
             ${
     t.dialogue.messages
       .map(
