@@ -130,6 +130,7 @@ const en = {
       subtitle: "Sichuan University · Wangjiang Campus, Chengdu · Full-time immersion",
       items: [
         "One-year sabbatical from KAPIA-RGI to study Mandarin full-time; program completed in July 2026",
+        "Final results: 3.88 / 4.0 GPA over 39 credits — Comprehensive Chinese 92.8/100, Listening & Speaking 93.9, Written Chinese 92.8, Computer & Internet Applications in Chinese 90.3",
         "Coursework, daily life, and interactions in Mandarin — an inside view of Chinese university life",
         "HSK 4 passed (2023); HSK 5 in preparation",
       ],
@@ -392,6 +393,7 @@ const fr: Translation = {
         "Université du Sichuan · Campus Wangjiang, Chengdu · Temps plein, en immersion",
       items: [
         "Année sabbatique de KAPIA-RGI pour étudier le mandarin à temps plein ; programme achevé en juillet 2026",
+        "Résultats finaux : GPA de 3,88 / 4 sur 39 crédits — chinois intégré 92,8/100, compréhension et expression orales 93,9, expression écrite 92,8, informatique et Internet en chinois 90,3",
         "Cours, vie quotidienne et échanges en mandarin — une connaissance de l'intérieur de l'université chinoise",
         "HSK 4 obtenu (2023) ; HSK 5 en préparation",
       ],
@@ -645,6 +647,7 @@ const zh: Translation = {
       subtitle: "四川大学 · 成都望江校区 · 全日制沉浸式学习",
       items: [
         "从 KAPIA-RGI 停薪留职一年，全日制学习中文；项目于 2026 年 7 月结业",
+        "结业成绩：GPA 3.88 / 4，共 39 学分——中级综合汉语 92.8、汉语听力口语 93.9、汉语写作基础 92.8、中文电脑与网络应用 90.3",
         "课程、日常生活与交流全程使用中文——对中国大学生活有切身了解",
         "已通过 HSK 4（2023），正备考 HSK 5",
       ],
@@ -874,6 +877,7 @@ const zhHant: Translation = {
       subtitle: "四川大學 · 成都望江校區 · 全日制沉浸式學習",
       items: [
         "自 KAPIA-RGI 留職停薪一年，全日制學習中文；課程於 2026 年 7 月結業",
+        "結業成績：GPA 3.88 / 4，共 39 學分——中級綜合漢語 92.8、漢語聽力口語 93.9、漢語寫作基礎 92.8、中文電腦與網路應用 90.3",
         "課程、日常生活與交流全程使用中文——對中國大學生活有第一手了解",
         "已通過 HSK 4（2023），正準備 HSK 5",
       ],
