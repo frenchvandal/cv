@@ -18,7 +18,13 @@ type DitherExports = {
   memory: WebAssembly.Memory;
   init: (cols: number, rows: number, seed: number) => number;
   resize: (cols: number, rows: number) => number;
-  render: (tMs: number, mode: number, blend: number, flags: number) => void;
+  render: (
+    tMs: number,
+    mode: number,
+    blend: number,
+    flags: number,
+    intensity: number,
+  ) => void;
   frame_ptr: () => number;
   frame_len: () => number;
 };
@@ -50,6 +56,11 @@ let light = false;
 let raf = 0;
 let lastFrame = 0;
 let wipeBlend: number | null = null;
+// Cloud drama dial (0..1): the deck raises it on hero/contact, lowers it on
+// dense content panels. Narrow viewports scroll natively over every section
+// at once, so they get a calmer default for body-text readability.
+let intensity = 1;
+let intensityTarget = 1;
 
 function easeInOut(x: number): number {
   return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
@@ -83,11 +94,16 @@ function frame(t: number): void {
 
   const still = reducedMotion();
   const wiping = wipeBlend !== null;
+  const drift = intensityTarget - intensity;
+  intensity = Math.abs(drift) < 0.005
+    ? intensityTarget
+    : intensity + drift * 0.12;
   engine.render(
     still ? 0 : t,
     wiping ? MODE_WIPE : still ? MODE_STATIC : MODE_NEBULA,
     wipeBlend ?? 0,
     light ? FLAG_LIGHT : 0,
+    intensity,
   );
   const src = new Uint8ClampedArray(
     engine.memory.buffer,
@@ -166,6 +182,13 @@ export async function initDither(): Promise<boolean> {
   // and would destroy the canvas with it.
   document.body.prepend(canvas);
 
+  // Narrow viewports never enter deck mode, so nothing modulates the clouds
+  // per panel — start them calmer there so body text stays comfortable.
+  if (!matchMedia("(min-width: 56rem)").matches) {
+    intensity = 0.45;
+    intensityTarget = 0.45;
+  }
+
   sizeGrid();
   start();
   document.addEventListener("visibilitychange", () => {
@@ -181,6 +204,18 @@ export function setDitherTheme(theme: "light" | "dark"): void {
   light = theme === "light";
   // Reduced motion stopped the loop after one frame — redraw once on toggle.
   if (engine && reducedMotion()) start();
+}
+
+/**
+ * Per-panel cloud intensity (0..1). The running loop eases toward the target;
+ * under reduced motion the value snaps and one frame is redrawn.
+ */
+export function setDitherIntensity(target: number): void {
+  intensityTarget = Math.min(1, Math.max(0, target));
+  if (reducedMotion()) {
+    intensity = intensityTarget;
+    if (engine) start();
+  }
 }
 
 /**

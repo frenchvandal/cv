@@ -26,7 +26,7 @@ import {
 import { breakIntoLines } from "./linebreak.ts";
 import { enhanceAboutOrbs } from "./orbs.ts";
 import { enhanceChat } from "./chat.ts";
-import { initDither, setDitherTheme } from "./dither.ts";
+import { initDither, setDitherIntensity, setDitherTheme } from "./dither.ts";
 import { initPanels } from "./panels.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
@@ -361,9 +361,24 @@ function bindEvents(): void {
   });
 }
 
+// Cloud drama per panel (keyed by the panel's hash id, kimi-style: theatrical
+// bookends, calm background behind dense content). Anything unlisted reads.
+const PANEL_INTENSITY: Record<string, number> = {
+  top: 1,
+  about: 0.5,
+  stats: 0.65,
+  contact: 1,
+};
+
+function activatePanel(panel: HTMLElement): void {
+  reveal(panel);
+  const id = panel.id || panel.querySelector("[id]")?.id || "";
+  setDitherIntensity(PANEL_INTENSITY[id] ?? 0.35);
+}
+
 function afterPaint(): void {
   // Deck mode reveals panels on activation; native mode reveals on scroll.
-  if (!initPanels({ onActivate: reveal })) observeSections();
+  if (!initPanels({ onActivate: activatePanel })) observeSections();
   whenFontsReady(() => {
     applyMeasuredLayout();
     enhanceChat();

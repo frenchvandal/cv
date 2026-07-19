@@ -82,7 +82,7 @@ const en = {
     greeting: "Hello, I'm",
     title: "Product Owner · Business Analyst — 20 years in financial software",
     location:
-      "📍 Chengdu, China — mobile nationwide · French national · Available immediately",
+      "Chengdu, China — mobile nationwide · French national · Available immediately",
     ctaPrimary: "Get in Touch",
     ctaSecondary: "Learn More",
   },
@@ -173,7 +173,7 @@ const en = {
   },
   skills: {
     product: {
-      title: "🧭 Product & Methodology",
+      title: "Product & Methodology",
       tags: [
         "Agile / Scrum",
         "Product roadmap & backlog",
@@ -184,7 +184,7 @@ const en = {
       ],
     },
     data: {
-      title: "📊 Databases & Languages",
+      title: "Databases & Languages",
       tags: [
         "SQL (advanced)",
         "PL/SQL (foundation)",
@@ -192,7 +192,7 @@ const en = {
       ],
     },
     interfaces: {
-      title: "🔌 Interfaces & Environments",
+      title: "Interfaces & Environments",
       tags: [
         "REST APIs",
         "SSO (SAML / OIDC)",
@@ -201,7 +201,7 @@ const en = {
       ],
     },
     domains: {
-      title: "🏦 Domains",
+      title: "Domains",
       tags: [
         "Life-insurance core systems",
         "Bancassurance",
@@ -211,7 +211,7 @@ const en = {
       ],
     },
     soft: {
-      title: "🤝 Soft Skills",
+      title: "Soft Skills",
       tags: [
         "Single point of contact",
         "Stakeholder facilitation",
@@ -223,7 +223,7 @@ const en = {
       ],
     },
     languages: {
-      title: "🌍 Languages",
+      title: "Languages",
       french: { name: "French", level: "Native" },
       portuguese: { name: "Portuguese", level: "Native" },
       english: { name: "English", level: "Fluent · professional" },
@@ -350,7 +350,7 @@ const fr: Translation = {
     title:
       "Product Owner · Business Analyst — 20 ans dans le logiciel financier",
     location:
-      "📍 Chengdu, Chine — mobile dans toute la Chine · Nationalité française · Disponible immédiatement",
+      "Chengdu, Chine — mobile dans toute la Chine · Nationalité française · Disponible immédiatement",
     ctaPrimary: "Me contacter",
     ctaSecondary: "En savoir plus",
   },
@@ -441,7 +441,7 @@ const fr: Translation = {
   },
   skills: {
     product: {
-      title: "🧭 Produit & Méthodologie",
+      title: "Produit & Méthodologie",
       tags: [
         "Agile / Scrum",
         "Feuille de route & backlog",
@@ -452,7 +452,7 @@ const fr: Translation = {
       ],
     },
     data: {
-      title: "📊 Bases de données & Langages",
+      title: "Bases de données & Langages",
       tags: [
         "SQL (avancé)",
         "PL/SQL (notions)",
@@ -460,7 +460,7 @@ const fr: Translation = {
       ],
     },
     interfaces: {
-      title: "🔌 Interfaces & Environnements",
+      title: "Interfaces & Environnements",
       tags: [
         "API REST",
         "SSO (SAML / OIDC)",
@@ -469,7 +469,7 @@ const fr: Translation = {
       ],
     },
     domains: {
-      title: "🏦 Domaines",
+      title: "Domaines",
       tags: [
         "Systèmes cœur d'assurance vie",
         "Bancassurance",
@@ -479,7 +479,7 @@ const fr: Translation = {
       ],
     },
     soft: {
-      title: "🤝 Savoir-être",
+      title: "Savoir-être",
       tags: [
         "Interlocuteur unique",
         "Facilitation multi-acteurs",
@@ -491,7 +491,7 @@ const fr: Translation = {
       ],
     },
     languages: {
-      title: "🌍 Langues",
+      title: "Langues",
       french: { name: "Français", level: "Langue maternelle" },
       portuguese: { name: "Portugais", level: "Langue maternelle" },
       english: { name: "Anglais", level: "Courant · professionnel" },
@@ -611,7 +611,7 @@ const zh: Translation = {
   hero: {
     greeting: "你好，我是",
     title: "产品负责人 · 业务分析师 — 二十年金融软件经验",
-    location: "📍 中国成都 · 可在全国范围工作 · 法国籍 · 可随时到岗",
+    location: "中国成都 · 可在全国范围工作 · 法国籍 · 可随时到岗",
     ctaPrimary: "联系我",
     ctaSecondary: "了解更多",
   },
@@ -699,7 +699,7 @@ const zh: Translation = {
   },
   skills: {
     product: {
-      title: "🧭 产品与方法论",
+      title: "产品与方法论",
       tags: [
         "敏捷 / Scrum",
         "产品路线图与待办列表",
@@ -710,7 +710,7 @@ const zh: Translation = {
       ],
     },
     data: {
-      title: "📊 数据库与编程语言",
+      title: "数据库与编程语言",
       tags: [
         "SQL（高级）",
         "PL/SQL（入门）",
@@ -718,7 +718,7 @@ const zh: Translation = {
       ],
     },
     interfaces: {
-      title: "🔌 接口与环境",
+      title: "接口与环境",
       tags: [
         "REST API",
         "单点登录（SAML / OIDC）",
@@ -727,7 +727,7 @@ const zh: Translation = {
       ],
     },
     domains: {
-      title: "🏦 业务领域",
+      title: "业务领域",
       tags: [
         "人寿保险核心系统",
         "银行保险",
@@ -737,7 +737,7 @@ const zh: Translation = {
       ],
     },
     soft: {
-      title: "🤝 软技能",
+      title: "软技能",
       tags: [
         "唯一接口人",
         "多方协调",
@@ -749,7 +749,7 @@ const zh: Translation = {
       ],
     },
     languages: {
-      title: "🌍 语言",
+      title: "语言",
       french: { name: "法语", level: "母语" },
       portuguese: { name: "葡萄牙语", level: "母语" },
       english: { name: "英语", level: "流利 · 工作语言" },
@@ -855,7 +855,7 @@ const zhHant: Translation = {
   hero: {
     greeting: "你好，我是",
     title: "產品負責人 · 商業分析師 — 二十年金融軟體經驗",
-    location: "📍 中國成都 · 可於中國各地工作 · 法國籍 · 可隨時到職",
+    location: "中國成都 · 可於中國各地工作 · 法國籍 · 可隨時到職",
     ctaPrimary: "聯絡我",
     ctaSecondary: "瞭解更多",
   },
@@ -943,7 +943,7 @@ const zhHant: Translation = {
   },
   skills: {
     product: {
-      title: "🧭 產品與方法論",
+      title: "產品與方法論",
       tags: [
         "敏捷 / Scrum",
         "產品路線圖與待辦清單",
@@ -954,7 +954,7 @@ const zhHant: Translation = {
       ],
     },
     data: {
-      title: "📊 資料庫與程式語言",
+      title: "資料庫與程式語言",
       tags: [
         "SQL（進階）",
         "PL/SQL（入門）",
@@ -962,7 +962,7 @@ const zhHant: Translation = {
       ],
     },
     interfaces: {
-      title: "🔌 介面與環境",
+      title: "介面與環境",
       tags: [
         "REST API",
         "單一登入（SAML / OIDC）",
@@ -971,7 +971,7 @@ const zhHant: Translation = {
       ],
     },
     domains: {
-      title: "🏦 業務領域",
+      title: "業務領域",
       tags: [
         "壽險核心系統",
         "銀行保險",
@@ -981,7 +981,7 @@ const zhHant: Translation = {
       ],
     },
     soft: {
-      title: "🤝 軟實力",
+      title: "軟實力",
       tags: [
         "單一窗口",
         "多方協調",
@@ -993,7 +993,7 @@ const zhHant: Translation = {
       ],
     },
     languages: {
-      title: "🌍 語言",
+      title: "語言",
       french: { name: "法語", level: "母語" },
       portuguese: { name: "葡萄牙語", level: "母語" },
       english: { name: "英語", level: "流利 · 工作語言" },

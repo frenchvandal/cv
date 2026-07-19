@@ -48,18 +48,20 @@ const BAYER8: [u8; 64] = [
 ];
 
 /// Quantization levels for the ordered dither.
-const LEVELS: f64 = 4.0;
+const LEVELS: f64 = 5.0;
+const MAX_LEVEL: i32 = 4;
 
-/// Dark theme: near-black bg, dark grays, soft white. Clouds stay in
-/// levels 0..=2 (max #2a2a2a); only stars reach level 3.
-const DARK_TONES: [u8; 4] = [0x05, 0x12, 0x2a, 0xf2]; // #050505 .. #f2f2f2
+/// Dark theme: black bg up to soft white. Cloud cores dither into the top
+/// tones only near the frame edges (see the radial mask in `cell_luminance`),
+/// so the central content zone stays readable.
+const DARK_TONES: [u8; 5] = [0x00, 0x16, 0x3a, 0x8c, 0xf2]; // #000000 .. #f2f2f2
 /// Light theme (flags bit 0): #fafafa bg, dark grays down to #0a0a0a.
-const LIGHT_TONES: [u8; 4] = [0xfa, 0xed, 0xd5, 0x0a]; // #fafafa .. #0a0a0a
+const LIGHT_TONES: [u8; 5] = [0xfa, 0xe6, 0xc4, 0x74, 0x0a]; // #fafafa .. #0a0a0a
 
 const FLAG_LIGHT: u32 = 1;
 
-/// Noise feature size: ~42 cells per lattice step.
-const SCALE: f64 = 1.0 / 42.0;
+/// Noise feature size: ~58 cells per lattice step (big billowing masses).
+const SCALE: f64 = 1.0 / 58.0;
 /// Cloud drift per millisecond (x fast, y slower, different rate).
 const DRIFT_X: f64 = 0.00002;
 const DRIFT_Y: f64 = 0.000013;
@@ -91,6 +93,12 @@ fn tri(x: f64) -> f64 {
     } else {
         2.0 - f * 2.0
     }
+}
+
+/// Hermite smoothstep between edges `a` and `b` (pure arithmetic, no sqrt).
+fn smoothstep(a: f64, b: f64, x: f64) -> f64 {
+    let s = clamp01((x - a) / (b - a));
+    s * s * (3.0 - 2.0 * s)
 }
 
 // ---------------------------------------------------------------------------
@@ -151,13 +159,36 @@ fn fbm4(x: f64, y: f64, seed: u32) -> f64 {
 // ---------------------------------------------------------------------------
 
 /// Continuous luminance in [0,1] for one cell: FBM clouds + sparse stars.
-fn cell_luminance(x: i32, y: i32, t_ms: f64, seed: u32) -> f64 {
+///
+/// Composition mirrors the Moonshot/Kimi hero: bold cloud masses hug the
+/// frame edges and corners while the center stays a readable void. `edge`
+/// is a radial mask on the aspect-normalized distance² from center (no sqrt
+/// in `core`), and `intensity` (0..1) is the per-panel drama dial — the deck
+/// turns it up on the hero/contact panels and down on dense content.
+fn cell_luminance(
+    x: i32,
+    y: i32,
+    t_ms: f64,
+    seed: u32,
+    cols: i32,
+    rows: i32,
+    intensity: f64,
+) -> f64 {
     let px = x as f64 * SCALE + t_ms * DRIFT_X;
     let py = y as f64 * SCALE + t_ms * DRIFT_Y;
-    // Cap clouds at 0.62 so even the brightest threshold never pushes them
-    // into level 3 (cloud max tone stays #2a2a2a / light equivalent).
-    let raw = fbm4(px, py, seed) * 0.66;
-    let cloud = if raw > 0.62 { 0.62 } else { raw };
+    let raw = fbm4(px, py, seed);
+
+    // 0 at center, 1 at edge midpoints, 2 in the corners.
+    let nx = (x as f64 + 0.5) * 2.0 / cols as f64 - 1.0;
+    let ny = (y as f64 + 0.5) * 2.0 / rows as f64 - 1.0;
+    let edge = smoothstep(0.30, 1.30, nx * nx + ny * ny);
+
+    // Faint wisps texture the whole frame; contrast-curved billows carry the
+    // drama, gated to the edges and scaled by the panel intensity.
+    let wisp = raw * 0.30;
+    let gain = intensity * (0.18 + 0.82 * edge);
+    let mass = smoothstep(0.42, 0.80, raw) * gain;
+    let cloud = if wisp > mass { wisp } else { mass };
 
     // Sparse static starfield: ~0.7% of cells.
     let sh = hash01(x, y, seed ^ 0xA511_E9B3);
@@ -180,8 +211,8 @@ fn quantize(v: f64, x: i32, y: i32) -> usize {
     let l = floor(q * LEVELS) as i32;
     if l < 0 {
         0
-    } else if l > 3 {
-        3
+    } else if l > MAX_LEVEL {
+        MAX_LEVEL as usize
     } else {
         l as usize
     }
@@ -234,8 +265,9 @@ pub extern "C" fn resize(cols: i32, rows: i32) -> i32 {
 /// mode 1: wipe (fullscreen Bayer transition mask, flat fg/bg colors)
 /// mode 2: static (nebula frozen at t = 0)
 /// flags bit 0: light theme (inverted palette)
+/// intensity 0..1: cloud drama dial (per-panel; stars are unaffected)
 #[no_mangle]
-pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32) {
+pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32, intensity: f64) {
     let cols = unsafe { COLS };
     let rows = unsafe { ROWS };
     let seed = unsafe { SEED };
@@ -245,6 +277,7 @@ pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32) {
     let light = (flags & FLAG_LIGHT) != 0;
     let t = if mode == 2 { 0.0 } else { t_ms };
     let blend = clamp01(blend);
+    let intensity = clamp01(intensity);
     let ptr = frame_ptr_mut();
 
     let mut idx = 0usize;
@@ -260,7 +293,7 @@ pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32) {
                     (true, false) => 0xfa,  // light bg #fafafa
                 }
             } else {
-                let v = cell_luminance(x, y, t, seed);
+                let v = cell_luminance(x, y, t, seed, cols, rows, intensity);
                 let level = quantize(v, x, y);
                 if light {
                     LIGHT_TONES[level]
