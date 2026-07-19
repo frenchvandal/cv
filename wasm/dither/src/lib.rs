@@ -59,6 +59,12 @@ const DARK_TONES: [u8; 5] = [0x00, 0x16, 0x3a, 0x8c, 0xf2]; // #000000 .. #f2f2f
 const LIGHT_TONES: [u8; 5] = [0xfa, 0xe6, 0xc4, 0x74, 0x0a]; // #fafafa .. #0a0a0a
 
 const FLAG_LIGHT: u32 = 1;
+/// Wipe (mode 1) only: the curtain sweeps upward (forward deck navigation);
+/// unset, it falls downward (backward navigation).
+const FLAG_WIPE_UP: u32 = 2;
+
+/// Vertical spread of the wipe's dithered fringe, as a fraction of `blend`.
+const WIPE_SPREAD: f64 = 0.45;
 
 /// Noise feature size: ~58 cells per lattice step (big billowing masses).
 const SCALE: f64 = 1.0 / 58.0;
@@ -265,6 +271,7 @@ pub extern "C" fn resize(cols: i32, rows: i32) -> i32 {
 /// mode 1: wipe (fullscreen Bayer transition mask, flat fg/bg colors)
 /// mode 2: static (nebula frozen at t = 0)
 /// flags bit 0: light theme (inverted palette)
+/// flags bit 1: wipe sweeps upward (forward navigation) instead of downward
 /// intensity 0..1: cloud drama dial (per-panel; stars are unaffected)
 #[no_mangle]
 pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32, intensity: f64) {
@@ -275,6 +282,7 @@ pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32, intensity
         return;
     }
     let light = (flags & FLAG_LIGHT) != 0;
+    let wipe_up = (flags & FLAG_WIPE_UP) != 0;
     let t = if mode == 2 { 0.0 } else { t_ms };
     let blend = clamp01(blend);
     let intensity = clamp01(intensity);
@@ -285,7 +293,12 @@ pub extern "C" fn render(t_ms: f64, mode: i32, blend: f64, flags: u32, intensity
         for x in 0..cols {
             let gray = if mode == 1 {
                 let b = BAYER8[(((y & 7) << 3) | (x & 7)) as usize] as f64;
-                let on = b * (1.0 / 64.0) < blend;
+                // Directional curtain: rows near the leading edge flip first,
+                // the Bayer matrix dissolves the travelling fringe.
+                let t_row = (y as f64 + 0.5) / rows as f64;
+                let lead = if wipe_up { 1.0 - t_row } else { t_row };
+                let local = blend * (1.0 + WIPE_SPREAD) - lead * WIPE_SPREAD;
+                let on = b * (1.0 / 64.0) < local;
                 match (light, on) {
                     (false, true) => 0xf2,  // dark fg #f2f2f2
                     (false, false) => 0x00, // dark bg #000000

@@ -167,7 +167,7 @@ function activate(
   }
   if (animating) return;
   animating = true;
-  wipeTransition(() => applyState(index, opts.focus ?? false));
+  wipeTransition(() => applyState(index, opts.focus ?? false), index > current);
   setTimeout(() => {
     animating = false;
   }, ANIMATION_MS);

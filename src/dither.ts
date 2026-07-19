@@ -34,6 +34,7 @@ const MODE_NEBULA = 0;
 const MODE_WIPE = 1;
 const MODE_STATIC = 2;
 const FLAG_LIGHT = 1;
+const FLAG_WIPE_UP = 2;
 const MAX_COLS = 640;
 const MAX_ROWS = 400;
 
@@ -56,6 +57,7 @@ let light = false;
 let raf = 0;
 let lastFrame = 0;
 let wipeBlend: number | null = null;
+let wipeUp = false;
 // Cloud drama dial (0..1): the deck raises it on hero/contact, lowers it on
 // dense content panels. Narrow viewports scroll natively over every section
 // at once, so they get a calmer default for body-text readability.
@@ -102,7 +104,7 @@ function frame(t: number): void {
     still ? 0 : t,
     wiping ? MODE_WIPE : still ? MODE_STATIC : MODE_NEBULA,
     wipeBlend ?? 0,
-    light ? FLAG_LIGHT : 0,
+    (light ? FLAG_LIGHT : 0) | (wipeUp ? FLAG_WIPE_UP : 0),
     intensity,
   );
   const src = new Uint8ClampedArray(
@@ -221,14 +223,16 @@ export function setDitherIntensity(target: number): void {
 /**
  * Bayer-sweep transition: the dither canvas rises above the page, covers the
  * screen cell by cell (blend 0→1), `swap` exchanges the content underneath,
- * then the sweep recedes. Instant (and wipe-less) when the engine is absent
- * or motion is reduced.
+ * then the sweep recedes. `up` orients the curtain: true sweeps upward
+ * (forward deck navigation), false falls downward (backward). Instant (and
+ * wipe-less) when the engine is absent or motion is reduced.
  */
-export function wipeTransition(swap: () => void): void {
+export function wipeTransition(swap: () => void, up = false): void {
   if (!engine || reducedMotion() || wipeBlend !== null) {
     swap();
     return;
   }
+  wipeUp = up;
   canvas?.classList.add("dither-canvas--wiping");
   start(); // a stopped static loop must run for the wipe
 
