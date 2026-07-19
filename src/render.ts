@@ -15,7 +15,7 @@ import {
   PROFILE,
   type Translation,
   translations,
-} from "./translations";
+} from "./translations.ts";
 
 export type Theme = "light" | "dark";
 

@@ -5,7 +5,7 @@
  */
 
 import { expect, test } from "bun:test";
-import { breakIntoLines, type MeasureFn } from "./linebreak";
+import { breakIntoLines, type MeasureFn } from "./linebreak.ts";
 
 /** Every character 10px wide, whatever the font. */
 const CHAR = 10;

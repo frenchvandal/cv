@@ -18,7 +18,7 @@
  */
 
 import { measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext";
-import type { Lang } from "./translations";
+import type { Lang } from "./translations.ts";
 
 const SOFT_HYPHEN = "­";
 const INF = 10000;

@@ -19,8 +19,8 @@ import {
   type PreparedTextWithSegments,
   prepareWithSegments,
 } from "@chenglou/pretext";
-import { loadHyphenator } from "./linebreak";
-import { type Lang, translations } from "./translations";
+import { loadHyphenator } from "./linebreak.ts";
+import { type Lang, translations } from "./translations.ts";
 
 const ORB_H_PAD = 14;
 const ORB_V_PAD = 4;

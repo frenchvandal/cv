@@ -1,18 +1,18 @@
 import { feature } from "bun:bundle";
-import "./fonts";
+import "./fonts.ts";
 import "./styles.css";
-import { HTML_LANG, type Lang, LANGS, translations } from "./translations";
-import { langUrl, pageTitle, renderApp, type Theme } from "./render";
+import { HTML_LANG, type Lang, LANGS, translations } from "./translations.ts";
+import { langUrl, pageTitle, renderApp, type Theme } from "./render.ts";
 import {
   auditSectionTitles,
   debounce,
   fitHeroName,
   fitSectionTitles,
   whenFontsReady,
-} from "./measure";
-import { breakIntoLines } from "./linebreak";
-import { enhanceAboutOrbs } from "./orbs";
-import { enhanceChat } from "./chat";
+} from "./measure.ts";
+import { breakIntoLines } from "./linebreak.ts";
+import { enhanceAboutOrbs } from "./orbs.ts";
+import { enhanceChat } from "./chat.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
 // hides content for the reveal animations, so flipping the class any earlier
