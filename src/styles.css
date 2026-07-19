@@ -526,6 +526,9 @@ body {
   font-weight: 800;
   line-height: 0.92;
   letter-spacing: -0.03em;
+  /* Same focus-outline hug as .section__title (deck nav focuses h1 too). */
+  width: fit-content;
+  outline-offset: 6px;
 }
 
 .hero__name-line {
@@ -619,6 +622,10 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  /* Deck navigation focuses headings; a block-level h2 would draw its focus
+     outline across the whole panel — hug the text instead. */
+  width: fit-content;
+  outline-offset: 6px;
 }
 
 .section__title span {
