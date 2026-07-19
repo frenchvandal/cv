@@ -162,6 +162,10 @@ export async function enhanceAboutOrbs(lang: Lang): Promise<boolean> {
   // Load patterns first: everything after this line runs in one sync pass.
   const hyphenate = await loadHyphenator(lang);
 
+  // The page may have switched language while the patterns loaded; the enhance
+  // pass for the new language owns the DOM now, so report handled and leave it.
+  if (document.documentElement.dataset.lang !== lang) return true;
+
   const body = document
     .getElementById("about")
     ?.closest(".section")

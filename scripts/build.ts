@@ -27,7 +27,28 @@ import {
 } from "../src/translations.ts";
 
 const OUT = "dist";
-const SITE = (process.env.SITE_URL ?? "").replace(/\/+$/, "");
+
+/**
+ * SITE_URL, validated and normalized (origin + path, no trailing slash). A
+ * malformed value would silently bake broken canonical/og/sitemap URLs into
+ * every page, so reject it at build time instead.
+ */
+function siteBase(): string {
+  const raw = process.env.SITE_URL;
+  if (!raw) return "";
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error(`SITE_URL is not an absolute URL: ${JSON.stringify(raw)}`);
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    throw new Error(`SITE_URL must be http(s): ${JSON.stringify(raw)}`);
+  }
+  return `${url.origin}${url.pathname}`.replace(/\/+$/, "");
+}
+
+const SITE = siteBase();
 
 /** Open Graph wants underscore locales, not BCP-47 tags. */
 const OG_LOCALE: Record<Lang, string> = {
@@ -167,12 +188,12 @@ for (const lang of LANGS) {
     <meta property="og:locale" content="${OG_LOCALE[lang]}" />${
     SITE
       ? `
-    <meta property="og:image" content="${SITE}/${OG_IMAGE}" />
+    <meta property="og:image" content="${attr(`${SITE}/${OG_IMAGE}`)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${attr(title)}" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="${SITE}/${OG_IMAGE}" />`
+    <meta name="twitter:image" content="${attr(`${SITE}/${OG_IMAGE}`)}" />`
       : `
     <meta name="twitter:card" content="summary" />`
   }
