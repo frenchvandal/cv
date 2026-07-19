@@ -72,6 +72,14 @@ const SCALE: f64 = 1.0 / 58.0;
 const DRIFT_X: f64 = 0.00002;
 const DRIFT_Y: f64 = 0.000013;
 
+/// Domain warp: a second, lower-frequency noise field bends the FBM sample
+/// coordinates and slowly evolves, so the masses billow and morph instead of
+/// sliding across the screen as a rigid sheet.
+const WARP_FREQ: f64 = 0.5;
+const WARP_AMP: f64 = 0.9;
+/// Warp evolution per millisecond (~one feature every 30 s).
+const WARP_T: f64 = 0.00005;
+
 // ---------------------------------------------------------------------------
 // Math helpers (pure core, no std float methods)
 // ---------------------------------------------------------------------------
@@ -182,7 +190,11 @@ fn cell_luminance(
 ) -> f64 {
     let px = x as f64 * SCALE + t_ms * DRIFT_X;
     let py = y as f64 * SCALE + t_ms * DRIFT_Y;
-    let raw = fbm4(px, py, seed);
+    // Slowly-evolving domain warp — the "breathing" of the cloud masses.
+    let wt = t_ms * WARP_T;
+    let wx = value_noise(px * WARP_FREQ + wt, py * WARP_FREQ, seed ^ 0x517C_C1B7) - 0.5;
+    let wy = value_noise(px * WARP_FREQ, py * WARP_FREQ + wt, seed ^ 0x2545_F491) - 0.5;
+    let raw = fbm4(px + wx * WARP_AMP, py + wy * WARP_AMP, seed);
 
     // 0 at center, 1 at edge midpoints, 2 in the corners.
     let nx = (x as f64 + 0.5) * 2.0 / cols as f64 - 1.0;
