@@ -63,6 +63,10 @@
 
   /* Content column: Apple's 980px measure. */
   --wrap: 61.25rem;
+  /* Reading measure — the width of a line of prose, ~75 characters at the body
+     size. The page has these two widths and no third: text runs to --measure,
+     anything with an edge the reader can see runs to --wrap. */
+  --measure: 46rem;
   --nav-h: 3rem;
 
   /* The system's own deceleration curve — motion that settles rather than stops. */
@@ -499,11 +503,18 @@ a:hover {
 
 .section__body {
   color: var(--fg-secondary);
-  max-width: 46rem;
 }
 
-/* The About paragraphs only. Scoped to direct children so it never reaches the
+/* The measure sits on the text, not on this container — that is what lets one
+   section hold both widths at once. About is the case that needs it: the
+   paragraphs read at --measure while the stats strip below them keeps the full
+   column, so its right edge lands on the nav's and the footer's rather than
+   stopping short of them. Scoped to direct children, so it never reaches the
    tight, deliberately-spaced stacks inside a card or a timeline event. */
+.section__body > p {
+  max-width: var(--measure);
+}
+
 .section__body > p + p {
   margin-top: var(--space-md);
 }
@@ -512,7 +523,6 @@ a:hover {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
   gap: var(--space-md);
-  max-width: none;
 }
 
 /* Knuth–Plass justified lines (one span per computed line; last line stays ragged). */
@@ -616,12 +626,6 @@ a:hover {
  * still running. Deference: the content sits directly on the page, unboxed, so
  * the rail is the only structure the reader has to parse.
  * ------------------------------------------------------------------ */
-
-/* Wider than the prose measure: the date column is charged to the section, not
-   to the text, so the events keep a comfortable line length beside it. */
-.section__body--timeline {
-  max-width: 54rem;
-}
 
 .timeline {
   list-style: none;
@@ -934,9 +938,9 @@ a:hover {
  * Contact & footer
  * ------------------------------------------------------------------ */
 
+/* The measure comes from `.section__body > p`; this only spaces it. */
 .contact__intro {
   color: var(--fg-secondary);
-  max-width: 46rem;
   margin-bottom: var(--space-lg);
 }
 

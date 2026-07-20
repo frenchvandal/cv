@@ -287,7 +287,7 @@ function experience(t: Translation): string {
         desc: insurance.desc,
       },
     ]),
-    "section__body section__body--timeline",
+    "section__body",
   );
 }
 
@@ -326,7 +326,7 @@ function education(t: Translation): string {
         desc: edc.desc,
       },
     ], " timeline--marks"),
-    "section__body section__body--timeline",
+    "section__body",
   );
 }
 
