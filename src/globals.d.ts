@@ -8,6 +8,13 @@ declare module "*.woff2" {
   export default url;
 }
 
+declare module "*.svg" {
+  // Imported with `type: "text"` (see src/logos.ts): the markup itself, inlined
+  // into the page rather than emitted as a separate asset.
+  const markup: string;
+  export default markup;
+}
+
 // Compile-time feature flags (`bun:bundle`). "PROD" is only set by the
 // scripts/build.ts bundle; flags are always false under the dev server.
 declare module "bun:bundle" {

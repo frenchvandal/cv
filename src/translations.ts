@@ -135,10 +135,10 @@ const en = {
   },
   education: {
     sichuan: {
+      school: "Sichuan University",
       title: "Chinese Language Program",
       date: "2025 – 2026",
-      subtitle:
-        "Sichuan University · Wangjiang Campus, Chengdu · Full-time immersion",
+      subtitle: "Wangjiang Campus, Chengdu · Full-time immersion",
       items: [
         "One-year sabbatical from KAPIA-RGI to study Mandarin full-time; program completed in July 2026",
         "Final results: 3.88 / 4.0 GPA over 39 credits — Comprehensive Chinese 92.8/100, Listening & Speaking 93.9, Written Chinese 92.8, Computer & Internet Applications in Chinese 90.3",
@@ -147,17 +147,19 @@ const en = {
       ],
     },
     master: {
+      school: "Université de Cergy-Pontoise",
       title: "Master's, Financial Instruments Management",
       date: "2005",
-      subtitle: "Université de Cergy-Pontoise (now CY Cergy Paris Université)",
+      subtitle: "Now CY Cergy Paris Université",
       desc:
         "Financial engineering and instruments management — the quantitative grounding behind twenty years in financial software.",
     },
     edc: {
-      title: "Business Degree",
+      school: "EDC Paris Business School",
+      title: "Business Degree — Finance Major",
       date: "2004",
-      subtitle: "EDC Paris Business School",
-      desc: "General business and management education.",
+      subtitle: "",
+      desc: "Business and management, specialising in finance.",
     },
   },
   certifications: {
@@ -400,10 +402,10 @@ const fr: Translation = {
   },
   education: {
     sichuan: {
+      school: "Université du Sichuan",
       title: "Programme de langue chinoise",
       date: "2025 – 2026",
-      subtitle:
-        "Université du Sichuan · Campus Wangjiang, Chengdu · Temps plein, en immersion",
+      subtitle: "Campus Wangjiang, Chengdu · Temps plein, en immersion",
       items: [
         "Année sabbatique de KAPIA-RGI pour étudier le mandarin à temps plein ; programme achevé en juillet 2026",
         "Résultats finaux : GPA de 3,88 / 4 sur 39 crédits — chinois intégré 92,8/100, compréhension et expression orales 93,9, expression écrite 92,8, informatique et Internet en chinois 90,3",
@@ -412,17 +414,19 @@ const fr: Translation = {
       ],
     },
     master: {
+      school: "Université de Cergy-Pontoise",
       title: "Master, Gestion des instruments financiers",
       date: "2005",
-      subtitle: "Université de Cergy-Pontoise (auj. CY Cergy Paris Université)",
+      subtitle: "Aujourd'hui CY Cergy Paris Université",
       desc:
         "Ingénierie financière et gestion d'instruments — le socle quantitatif de vingt ans dans le logiciel financier.",
     },
     edc: {
-      title: "Diplôme d'école de commerce",
+      school: "EDC Paris Business School",
+      title: "Diplôme d'école de commerce — Majeure Finance",
       date: "2004",
-      subtitle: "EDC Paris Business School",
-      desc: "Formation générale en commerce et gestion.",
+      subtitle: "",
+      desc: "Commerce et gestion, avec une spécialisation en finance.",
     },
   },
   certifications: {
@@ -657,9 +661,10 @@ const zh: Translation = {
   },
   education: {
     sichuan: {
+      school: "四川大学",
       title: "汉语进修项目",
       date: "2025 – 2026",
-      subtitle: "四川大学 · 成都望江校区 · 全日制沉浸式学习",
+      subtitle: "成都望江校区 · 全日制沉浸式学习",
       items: [
         "从 KAPIA-RGI 停薪留职一年，全日制学习中文；项目于 2026 年 7 月结业",
         "结业成绩：GPA 3.88 / 4，共 39 学分——中级综合汉语 92.8、汉语听力口语 93.9、汉语写作基础 92.8、中文电脑与网络应用 90.3",
@@ -668,16 +673,18 @@ const zh: Translation = {
       ],
     },
     master: {
+      school: "塞尔吉-蓬图瓦兹大学",
       title: "金融工具管理硕士",
       date: "2005",
-      subtitle: "塞尔吉-蓬图瓦兹大学（现 CY 塞尔吉巴黎大学）",
+      subtitle: "现 CY 塞尔吉巴黎大学",
       desc: "金融工程与金融工具管理——二十年金融软件生涯的量化根基。",
     },
     edc: {
-      title: "商科学位",
+      school: "EDC 巴黎商学院",
+      title: "商科学位——金融方向",
       date: "2004",
-      subtitle: "EDC 巴黎商学院",
-      desc: "商业与管理通识教育。",
+      subtitle: "",
+      desc: "商业与管理教育，主修金融。",
     },
   },
   certifications: {
@@ -898,9 +905,10 @@ const zhHant: Translation = {
   },
   education: {
     sichuan: {
+      school: "四川大學",
       title: "華語進修課程",
       date: "2025 – 2026",
-      subtitle: "四川大學 · 成都望江校區 · 全日制沉浸式學習",
+      subtitle: "成都望江校區 · 全日制沉浸式學習",
       items: [
         "自 KAPIA-RGI 留職停薪一年，全日制學習中文；課程於 2026 年 7 月結業",
         "結業成績：GPA 3.88 / 4，共 39 學分——中級綜合漢語 92.8、漢語聽力口語 93.9、漢語寫作基礎 92.8、中文電腦與網路應用 90.3",
@@ -909,16 +917,18 @@ const zhHant: Translation = {
       ],
     },
     master: {
+      school: "塞吉-蓬多瓦茲大學",
       title: "金融工具管理碩士",
       date: "2005",
-      subtitle: "塞吉-蓬多瓦茲大學（現 CY 塞吉巴黎大學）",
+      subtitle: "現 CY 塞吉巴黎大學",
       desc: "金融工程與金融工具管理——二十年金融軟體生涯的量化根基。",
     },
     edc: {
-      title: "商學學位",
+      school: "EDC 巴黎商學院",
+      title: "商學學位——金融方向",
       date: "2004",
-      subtitle: "EDC 巴黎商學院",
-      desc: "商業與管理通識教育。",
+      subtitle: "",
+      desc: "商業與管理教育，主修金融。",
     },
   },
   certifications: {

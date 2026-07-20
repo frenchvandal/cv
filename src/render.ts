@@ -23,6 +23,7 @@ import {
   translations,
 } from "./translations.ts";
 import { escapeHtml } from "./dom.ts";
+import { LOGOS } from "./logos.ts";
 
 export type Theme = "light" | "dark";
 
@@ -216,40 +217,61 @@ function experience(t: Translation): string {
   );
 }
 
+/**
+ * One card per institution: its logo, its name, then the diploma earned there.
+ *
+ * `logo` is trusted static markup from [src/logos.ts](src/logos.ts) and is
+ * inlined unescaped; it is decorative here, since the heading right under it
+ * already names the school, so the wrapper hides it from assistive tech rather
+ * than letting the SVG's own label announce the name a second time.
+ *
+ * A school with no logo still gets the (empty) slot: the cards sit in one grid
+ * row, so dropping the box would lift that card's heading above the others.
+ */
+function schoolCard(logo: string | null, school: {
+  school: string;
+  title: string;
+  date: string;
+  subtitle: string;
+  items?: readonly string[];
+  desc?: string;
+}): string {
+  const detail = school.items
+    ? `<ul class="card__list">${
+      school.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
+    }</ul>`
+    : school.desc
+    ? `<p class="card__text">${escapeHtml(school.desc)}</p>`
+    : "";
+
+  return `
+        <article class="card card--school">
+          <div class="card__logo" aria-hidden="true">${logo ?? ""}</div>
+          <div class="card__header">
+            <h3 class="card__title">${escapeHtml(school.school)}</h3>
+            <span class="card__meta">${escapeHtml(school.date)}</span>
+          </div>
+          <p class="card__subtitle">${escapeHtml(school.title)}</p>
+          ${
+    school.subtitle
+      ? `<p class="card__note">${escapeHtml(school.subtitle)}</p>`
+      : ""
+  }
+          ${detail}
+        </article>`;
+}
+
 function education(t: Translation): string {
   const { sichuan, master, edc } = t.education;
   return section(
     t,
     "education",
-    `
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(sichuan.title)}</h3>
-            <span class="card__meta">${escapeHtml(sichuan.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(sichuan.subtitle)}</p>
-          <ul class="card__list">${
-      sichuan.items.map((c) => `<li>${escapeHtml(c)}</li>`).join("")
-    }</ul>
-        </article>
-
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(master.title)}</h3>
-            <span class="card__meta">${escapeHtml(master.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(master.subtitle)}</p>
-          <p class="card__text">${escapeHtml(master.desc)}</p>
-        </article>
-
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(edc.title)}</h3>
-            <span class="card__meta">${escapeHtml(edc.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(edc.subtitle)}</p>
-          <p class="card__text">${escapeHtml(edc.desc)}</p>
-        </article>`,
+    [
+      schoolCard(LOGOS.sichuan, sichuan),
+      schoolCard(LOGOS.master, master),
+      // No EDC vector yet — see the note in src/logos.ts.
+      schoolCard(null, edc),
+    ].join("\n"),
     "section__body section__body--cards",
   );
 }

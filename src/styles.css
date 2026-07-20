@@ -620,6 +620,38 @@ a:hover {
   color: var(--fg-secondary);
 }
 
+/* A secondary line under the role/diploma — the same size as .card__meta, for
+   the aside that neither the title nor the subtitle should carry. */
+.card__note {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
+}
+
+/* ------------------------------------------------------------------ *
+ * School cards — the education section leads with the institution's mark
+ * ------------------------------------------------------------------ */
+
+/* The logos are inlined single-colour SVGs (src/logos.ts), so they inherit the
+   text colour and re-balance with the rest of the page in dark mode.
+
+   Sizing is by height, but wide wordmarks are also capped by width: without it
+   a 3:1 lockup would carry several times the visual weight of a round seal at
+   the same height. `preserveAspectRatio` in each file keeps them left-aligned
+   when the width cap is the binding constraint. */
+.card--school .card__logo {
+  height: 3.25rem;
+  margin-bottom: var(--space-md);
+  color: var(--fg);
+}
+
+.card--school .card__logo svg {
+  height: 100%;
+  width: auto;
+  max-width: min(100%, 8.5rem);
+  display: block;
+}
+
 /* ------------------------------------------------------------------ *
  * Stats — one surface, hairline-divided, like a spec strip
  * ------------------------------------------------------------------ */
