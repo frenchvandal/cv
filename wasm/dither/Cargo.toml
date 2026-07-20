@@ -1,9 +1,0 @@
-[package]
-name = "dither"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib"]
-
-# Build profiles live in the workspace root (/Cargo.toml) — Cargo ignores them here.

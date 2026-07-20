@@ -1,54 +1,74 @@
-/* Portfolio styles — monochrome "dithered" redesign, after careers.kimi.com.
+/* Portfolio styles — sober, in the spirit of the Apple Human Interface
+   Guidelines (developer.apple.com/design/human-interface-guidelines).
+
+   The three HIG principles drive every decision here:
+     - Clarity   — text is legible at every size, icons are precise, negative
+                   space and color carry the hierarchy. No decoration competes
+                   with the content.
+     - Deference — the UI never fights the content: the document scrolls the way
+                   the browser scrolls it, chrome is a translucent hairline, and
+                   motion only confirms what the reader already did.
+     - Depth     — layering and a single translucent material give the page its
+                   sense of order; no drop shadows, no borders where a hairline
+                   separator or a gray surface already reads.
+
+   Practically that means: one neutral gray ramp, one accent (the system blue)
+   used only for actions and links, continuous-looking rounded corners, and the
+   system-appearance-aware light/dark pair — light is the default, `data-theme`
+   on <html> is set before first paint from localStorage or the OS preference.
+
    Fonts: self-hosted Noto Sans + Noto Sans SC/TC (subset), declared in
    src/fonts.ts (imported so Bun emits them as separate files instead of
    inlining). A named font keeps pretext measurement accurate; see
-   src/measure.ts.
-
-   The page is a deck of full-screen panels (src/panels.ts). Without JS, on
-   narrow viewports or under prefers-reduced-motion, panels are plain stacked
-   sections and the document flows normally — every rule that fixes a panel to
-   the viewport lives behind `html.panels-on`. */
+   src/measure.ts. */
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Monochrome dark palette. The accent names are kept because src/orbs.ts
-     reads them as RGB — they are now shades of gray. */
-  --bg: #000000;
-  --bg-elevated: #0d0d0d;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-2: rgba(255, 255, 255, 0.09);
-  --fg: #f2f2f2;
-  --fg-muted: #a3a3a3;
-  --fg-subtle: #5c5c5c;
-  --accent: #f2f2f2;
-  --accent-2: #c8c8c8;
-  --ok: #9c9c9c;
-  --amber: #707070;
-  --accent-dim: rgba(255, 255, 255, 0.1);
-  --border: rgba(255, 255, 255, 0.16);
-  --border-strong: rgba(255, 255, 255, 0.45);
-  --shadow-hard: rgba(255, 255, 255, 0.28);
+  /* Neutral ramp. Text tokens stay >= 4.5:1 on their background; --fg-tertiary
+     is reserved for non-essential text (footer, captions) at >= 4.5:1 too. */
+  --bg: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-elevated: #ffffff;
+  --fg: #1d1d1f;
+  --fg-secondary: #4b4b50; /* 8.6:1 */
+  --fg-tertiary: #6e6e73; /* 5.6:1 */
 
-  /* Bayer tiles for the orb fills (white dots at 4 densities). */
-  --tile-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
-  --tile-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
-  --tile-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' y='2' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='2' y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
-  --tile-4: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='6' y='2' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='2' y='6' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23fff' fill-opacity='.5'/%3E%3C/svg%3E");
+  /* One accent, two roles: --accent fills controls, --link tints text (the
+     darker of the pair, so blue-on-white text clears 4.5:1). */
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-fg: #ffffff;
+  --link: #0066cc; /* 5.3:1 on --bg */
+
+  /* Hairline separators and the neutral fill behind pills/bubbles. */
+  --separator: rgba(0, 0, 0, 0.12);
+  --fill: rgba(118, 118, 128, 0.12);
+  --fill-strong: rgba(118, 118, 128, 0.2);
 
   --font: 'Noto Sans', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Radii. Large values read as the continuous corners HIG asks for; the pill
+     is Apple's own button radius. */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 980px;
 
   --space-xs: 0.5rem;
   --space-sm: 0.75rem;
   --space-md: 1.25rem;
   --space-lg: 2rem;
   --space-xl: 3.5rem;
-  --space-2xl: 6rem;
+  --space-2xl: 6.5rem;
 
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  /* Content column: Apple's 980px measure. */
+  --wrap: 61.25rem;
+  --nav-h: 3rem;
+
+  /* The system's own deceleration curve — motion that settles rather than stops. */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* The Traditional Chinese page uses Noto Sans TC: codepoints shared with Simplified
@@ -59,31 +79,24 @@
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
-/* Light theme: a strict inversion — black-on-white, same dithering. */
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg: #ffffff;
-  --bg-elevated: #fafafa;
-  --surface: rgba(0, 0, 0, 0.03);
-  --surface-2: rgba(0, 0, 0, 0.07);
-  --fg: #0a0a0a;
-  --fg-muted: #52525b;
-  --fg-subtle: #a1a1aa;
-  --accent: #0a0a0a;
-  --accent-2: #3a3a3a;
-  --ok: #6a6a6a;
-  --amber: #9a9a9a;
-  --accent-dim: rgba(0, 0, 0, 0.08);
-  --border: rgba(0, 0, 0, 0.18);
-  --border-strong: rgba(0, 0, 0, 0.5);
-  --shadow-hard: rgba(0, 0, 0, 0.3);
-}
-
-:root[data-theme='light'] {
-  --tile-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
-  --tile-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
-  --tile-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' y='2' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='2' y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
-  --tile-4: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='6' y='2' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='4' y='4' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='2' y='6' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3Crect x='6' y='6' width='2' height='2' fill='%23000' fill-opacity='.5'/%3E%3C/svg%3E");
+/* Dark appearance: not an inversion — a re-balance. Pure black ground so the
+   content surfaces read as raised, and a brighter blue, since the light-mode
+   blue turns muddy against black. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --bg-secondary: #1d1d1f;
+  --bg-elevated: #1d1d1f;
+  --fg: #f5f5f7;
+  --fg-secondary: #b0b0b6; /* 9.4:1 */
+  --fg-tertiary: #86868b; /* 5.6:1 */
+  --accent: #0a84ff;
+  --accent-hover: #3b9dff;
+  --accent-fg: #ffffff;
+  --link: #2997ff; /* 6.6:1 on --bg */
+  --separator: rgba(255, 255, 255, 0.16);
+  --fill: rgba(118, 118, 128, 0.24);
+  --fill-strong: rgba(118, 118, 128, 0.36);
 }
 
 * {
@@ -95,15 +108,9 @@ html {
   scroll-behavior: smooth;
 }
 
-html.panels-on {
-  scroll-behavior: auto;
-}
-
-html.panels-on,
-html.panels-on body {
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+/* Anchored headings must clear the sticky bar, not hide under it. */
+[id] {
+  scroll-margin-top: calc(var(--nav-h) + var(--space-md));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -122,22 +129,37 @@ html.panels-on body {
 
 body {
   font-family: var(--font);
+  font-size: 1.0625rem; /* 17px — the HIG body size */
+  line-height: 1.55;
   background: var(--bg);
   color: var(--fg);
-  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   min-height: 100vh;
   min-height: 100dvh;
 }
 
 ::selection {
-  background: var(--fg);
-  color: var(--bg);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
+/* One focus ring for the whole page: the accent, offset so it never crowds
+   the control it belongs to. */
 :focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: 2px;
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 #app {
@@ -152,646 +174,11 @@ body {
   opacity: 0;
 }
 
-.page {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-/* ------------------------------------------------------------------ *
- * Dither background (src/dither.ts — Rust/WASM canvas + CSS fallback)
- * ------------------------------------------------------------------ */
-
-.dither-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
+.wrap {
   width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
-/* During a panel wipe the canvas rises above the page and the Bayer sweep
-   covers the screen while the active panel swaps underneath. */
-.dither-canvas--wiping {
-  z-index: 60;
-}
-
-/* Wasm unavailable: a plain, quiet gradient keeps the page decent. */
-.dither-fallback body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.05),
-    transparent 60%);
-  pointer-events: none;
-}
-
-/* ------------------------------------------------------------------ *
- * Fixed chrome: brand, controls, dots, hint
- * ------------------------------------------------------------------ */
-
-.brand {
-  position: fixed;
-  top: var(--space-md);
-  left: var(--space-md);
-  z-index: 100;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--fg);
-  text-decoration: none;
-  padding: 0.4rem 0;
-}
-
-.brand:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.controls {
-  position: fixed;
-  top: var(--space-md);
-  right: var(--space-md);
-  z-index: 100;
-  display: flex;
-  gap: 1px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(8px);
-}
-
-.controls button,
-.controls a {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.45rem 0.7rem;
-  border: none;
-  background: transparent;
-  color: var(--fg-muted);
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    color 0.15s var(--ease),
-    background 0.15s var(--ease);
-}
-
-.controls button:hover,
-.controls a:hover {
-  color: var(--fg);
-  background: var(--surface-2);
-}
-
-.controls [aria-current] {
-  color: var(--bg);
-  background: var(--fg);
-}
-
-.controls .controls__theme {
-  font-size: 0.9rem;
-  padding: 0.35rem 0.6rem;
-  border-left: 1px solid var(--border);
-}
-
-/* Progress dots: plain hash anchors, styled as square pips. Only meaningful
-   in panel mode, where the controller marks the active one. */
-.dots {
-  display: none;
-}
-
-.panels-on .dots {
-  position: fixed;
-  right: var(--space-md);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-.dots__dot {
-  display: block;
-  padding: 2px;
-}
-
-.dots__dot span {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--fg-subtle);
-  transition:
-    background 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    transform 0.2s var(--ease);
-}
-
-.dots__dot:hover span {
-  border-color: var(--fg);
-  transform: scale(1.25);
-}
-
-.dots__dot.is-active span {
-  background: var(--fg);
-  border-color: var(--fg);
-}
-
-/* Bottom continue hint — Kimi's "滑动开启探索" marker. */
-.hint {
-  display: none;
-}
-
-.panels-on .hint {
-  position: fixed;
-  bottom: var(--space-md);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-xs);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--fg-muted);
-  pointer-events: none;
-}
-
-.panels-on .hint.is-hidden {
-  display: none;
-}
-
-.hint__arrow {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid var(--fg);
-  animation: hint-bob 1.6s infinite var(--ease);
-}
-
-@keyframes hint-bob {
-  0%,
-  100% {
-    transform: translateY(-2px);
-  }
-
-  50% {
-    transform: translateY(3px);
-  }
-}
-
-.skip-link {
-  position: absolute;
-  left: -9999px;
-  top: var(--space-md);
-  z-index: 200;
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--fg);
-  color: var(--bg);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.skip-link:focus {
-  left: var(--space-md);
-}
-
-/* ------------------------------------------------------------------ *
- * Reveal animations (scroll reveals in native mode, panel-enter in deck mode)
- * ------------------------------------------------------------------ */
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Deck-mode variant: the reveal assembles in quantized jumps — the motion
-   equivalent of the Bayer dither. */
-@keyframes fade-up-steps {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(0.8);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-/* Only hide-then-reveal when JS is present; without it the pre-rendered content stays visible. */
-.js .animate {
-  opacity: 0;
-}
-
-.js .animate.is-revealed {
-  animation: fade-up 0.7s var(--ease-out) forwards;
-}
-
-.animate--delayed-1.is-revealed {
-  animation-delay: 0.08s;
-}
-
-.animate--delayed-2.is-revealed {
-  animation-delay: 0.16s;
-}
-
-.animate--delayed-3.is-revealed {
-  animation-delay: 0.24s;
-}
-
-.animate--delayed-4.is-revealed {
-  animation-delay: 0.32s;
-}
-
-.animate--delayed-5.is-revealed {
-  animation-delay: 0.4s;
-}
-
-/* Deck mode: stepped entrance, choreographed number → title → content.
-   Longhand properties on purpose — the animation shorthand would reset the
-   .animate--delayed-* stagger used inside panels (hero lines, contact). */
-.js.panels-on .animate.is-revealed {
-  animation-name: fade-up-steps;
-  animation-duration: 0.45s;
-  animation-timing-function: steps(5, end);
-}
-
-.js.panels-on .section__title.is-revealed {
-  animation-delay: 0.05s;
-}
-
-.js.panels-on .section__body.is-revealed {
-  animation-delay: 0.16s;
-}
-
-/* ------------------------------------------------------------------ *
- * Panels (native mode: stacked sections; deck mode behind .panels-on)
- * ------------------------------------------------------------------ */
-
-.panel {
-  position: relative;
-  padding: var(--space-2xl) var(--space-lg);
-  border-bottom: 1px solid var(--border);
-}
-
-/* Non-active panels are hidden with visibility (NOT display) so pretext
-   still measures their geometry, and keyboard/AT skip them natively. */
-.panels-on .panel {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--space-lg);
-  padding: 5.5rem var(--space-xl) 4.5rem;
-  border-bottom: 0;
-  overflow-y: auto;
-  visibility: hidden;
-  opacity: 0;
-  cursor: crosshair;
-  transition: opacity 0.3s var(--ease);
-}
-
-/* Auto margins center short panels vertically, yet collapse to 0 when the
-   content overflows — so tall panels start under the top bar instead of
-   being clipped by flex centering. */
-.panels-on .panel > :first-child {
-  margin-top: auto;
-}
-
-.panels-on .panel > :last-child {
-  margin-bottom: auto;
-}
-
-.panels-on .panel.is-active {
-  visibility: visible;
-  opacity: 1;
-}
-
-.panels-on .panel a,
-.panels-on .panel button,
-.panels-on .panel .about-orb {
-  cursor: pointer;
-}
-
-.panels-on .panel .section__body,
-.panels-on .panel .hero {
-  cursor: auto;
-}
-
-/* ------------------------------------------------------------------ *
- * Hero
- * ------------------------------------------------------------------ */
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-.panels-on .hero {
-  min-height: 0;
-}
-
-.hero__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  width: fit-content;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--fg);
-  margin-bottom: var(--space-md);
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--border-strong);
-  background: var(--surface);
-}
-
-.hero__eyebrow::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  background: var(--fg);
-  animation: pulse-dot 2s infinite ease-in-out;
-}
-
-.hero__name {
-  font-size: clamp(2.75rem, 10vw, 8rem);
-  font-weight: 800;
-  line-height: 0.92;
-  letter-spacing: -0.03em;
-  /* Same focus-outline hug as .section__title (deck nav focuses h1 too). */
-  width: fit-content;
-  outline-offset: 6px;
-}
-
-.hero__name-line {
-  display: block;
-  white-space: nowrap;
-}
-
-.hero__foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: var(--space-lg);
-  flex-wrap: wrap;
-  margin-top: var(--space-xl);
-}
-
-.hero__title {
-  font-size: clamp(1rem, 1.4vw, 1.35rem);
-  color: var(--fg-muted);
-  max-width: 46rem;
-  margin-bottom: var(--space-md);
-}
-
-.hero__location {
-  font-size: 0.9375rem;
-  color: var(--fg-muted);
-}
-
-.hero__actions {
-  display: flex;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
-}
-
-/* ------------------------------------------------------------------ *
- * Buttons — the Kimi hard-shadow brick
- * ------------------------------------------------------------------ */
-
-.button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 0.7rem 1.25rem;
-  background: var(--fg);
-  color: var(--bg);
-  border: 1px solid var(--fg);
-  box-shadow: 4px 4px 0 var(--shadow-hard);
-  cursor: pointer;
-  transition:
-    transform 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
-}
-
-.button:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--shadow-hard);
-}
-
-.button:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0 0 0 var(--shadow-hard);
-}
-
-.button--ghost {
-  background: transparent;
-  color: var(--fg);
-  border-color: var(--border-strong);
-  box-shadow: none;
-}
-
-.button--ghost:hover {
-  background: var(--surface);
-  border-color: var(--fg);
-  box-shadow: 4px 4px 0 var(--shadow-hard);
-}
-
-/* Contact closer: bigger brick, and a pressed/inverted "copied" state. */
-.button--copy {
-  margin-top: var(--space-lg);
-  font-size: 1rem;
-  padding: 0.9rem 1.8rem;
-  /* Direct grid child of the contact panel — don't stretch to full width. */
-  justify-self: start;
-  width: fit-content;
-}
-
-.button--copy.is-copied,
-.button--copy.is-copied:hover {
-  background: var(--bg);
-  color: var(--fg);
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 var(--shadow-hard);
-}
-
-/* ------------------------------------------------------------------ *
- * Section titles & bodies
- * ------------------------------------------------------------------ */
-
-.section__title {
-  font-size: clamp(2rem, 5vw, 4.5rem);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
-  color: var(--fg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  /* Deck navigation focuses headings; a block-level h2 would draw its focus
-     outline across the whole panel — hug the text instead. */
-  width: fit-content;
-  outline-offset: 6px;
-}
-
-.section__title span {
-  display: block;
-  color: var(--fg-muted);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  margin-bottom: var(--space-xs);
-}
-
-.section__body {
-  color: var(--fg-muted);
-  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
-  max-width: 55rem;
-}
-
-.section__body p + p {
-  margin-top: var(--space-md);
-}
-
-.section__body--cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: var(--space-md);
-  max-width: 66rem;
-}
-
-.section__body--cards .card + .card {
-  margin-top: 0;
-}
-
-/* Knuth–Plass justified lines (one span per computed line; last line stays ragged). */
-.kp-line {
-  display: block;
-  text-align: justify;
-  text-align-last: justify;
-}
-
-.kp-line:last-child {
-  text-align-last: left;
-}
-
-/* ------------------------------------------------------------------ *
- * About orbs: pretext-flowed text around draggable section-shortcut circles.
- * Monochrome: each orb is told apart by border style and Bayer-tile density,
- * not by hue. Fills/borders live in the --experience/--education/--skills/
- * --hobbies modifier classes (src/orbs.ts only sets geometry inline).
- * ------------------------------------------------------------------ */
-
-.about-stage {
-  position: relative;
-}
-
-.about-line {
-  position: absolute;
-  white-space: pre;
-  z-index: 1;
-}
-
-.about-orb {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  font-family: var(--font-mono);
-  font-weight: 600;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--fg);
-  text-decoration: none;
-  background-color: var(--bg);
-  box-shadow: 4px 4px 0 var(--shadow-hard);
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  transition:
-    transform 0.2s var(--ease),
-    box-shadow 0.2s var(--ease);
-}
-
-.about-orb:hover {
-  transform: scale(1.05);
-  box-shadow: 6px 6px 0 var(--shadow-hard);
-}
-
-.about-orb.is-dragging {
-  cursor: grabbing;
-  transition: none;
-  box-shadow: 0 0 0 var(--shadow-hard);
-}
-
-.about-orb--experience {
-  border-style: solid;
-  background-image: var(--tile-3);
-}
-
-.about-orb--education {
-  border-style: dashed;
-  background-image: var(--tile-2);
-}
-
-.about-orb--skills {
-  border-style: dotted;
-  background-image: var(--tile-1);
-}
-
-.about-orb--hobbies {
-  border-style: double;
-  border-width: 3px;
-  background-image: var(--tile-4);
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding-inline: var(--space-md);
 }
 
 .sr-only {
@@ -806,171 +193,468 @@ body {
   border: 0;
 }
 
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: var(--space-xs);
+  z-index: 200;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.skip-link:focus {
+  left: var(--space-md);
+}
+
 /* ------------------------------------------------------------------ *
- * Cards — flat bordered blocks, no radius, hard shadow on hover
+ * Navigation bar — the page's one translucent material
+ * ------------------------------------------------------------------ */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--separator);
+  /* Deference: the bar lets the content show through instead of covering it.
+     Falls back to the opaque --bg where backdrop-filter is unsupported. */
+  background: var(--bg);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .nav {
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+}
+
+.nav__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  height: var(--nav-h);
+}
+
+.nav__brand {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.nav__brand:hover {
+  text-decoration: none;
+  color: var(--fg-secondary);
+}
+
+/* Section links: the deck's progress dots, replaced by plain labelled anchors.
+   Hidden on narrow viewports — the document scrolls, so they are a shortcut,
+   never the only way through. */
+.nav__links {
+  display: none;
+  flex: 1;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+@media (min-width: 56rem) {
+  .nav__links {
+    display: flex;
+  }
+}
+
+.nav__link {
+  font-size: 0.8125rem;
+  color: var(--fg-secondary);
+  white-space: nowrap;
+  transition: color 0.2s var(--ease);
+}
+
+.nav__link:hover {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.nav__actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.nav__langs {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.nav__actions a,
+.nav__actions button {
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 0.3rem 0.5rem;
+  border: none;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition:
+    color 0.2s var(--ease),
+    background 0.2s var(--ease);
+}
+
+.nav__actions a:hover,
+.nav__actions button:hover {
+  color: var(--fg);
+  background: var(--fill);
+  text-decoration: none;
+}
+
+.nav__actions [aria-current] {
+  color: var(--fg);
+  background: var(--fill);
+}
+
+.nav__theme {
+  margin-left: var(--space-xs);
+  font-size: 0.9375rem;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reveal on scroll — a confirmation, not an entrance
+ * ------------------------------------------------------------------ */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Only hide-then-reveal when JS is present; without it the pre-rendered content stays visible. */
+.js .animate {
+  opacity: 0;
+}
+
+.js .animate.is-revealed {
+  animation: fade-up 0.7s var(--ease) forwards;
+}
+
+.animate--delayed-1.is-revealed {
+  animation-delay: 0.05s;
+}
+
+.animate--delayed-2.is-revealed {
+  animation-delay: 0.1s;
+}
+
+.animate--delayed-3.is-revealed {
+  animation-delay: 0.15s;
+}
+
+.animate--delayed-4.is-revealed {
+  animation-delay: 0.2s;
+}
+
+.animate--delayed-5.is-revealed {
+  animation-delay: 0.25s;
+}
+
+/* ------------------------------------------------------------------ *
+ * Hero
+ * ------------------------------------------------------------------ */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-md);
+  min-height: min(80vh, 44rem);
+  padding-block: var(--space-2xl) var(--space-xl);
+}
+
+.hero__eyebrow {
+  font-size: 1.0625rem;
+  color: var(--link);
+}
+
+.hero__name {
+  /* Sized by pretext (src/measure.ts) so the longest line fills the column in
+     every language; the clamp is the pre-measurement value. */
+  font-size: clamp(2.75rem, 9vw, 5.5rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  width: 100%;
+}
+
+.hero__name-line {
+  display: block;
+  white-space: nowrap;
+}
+
+.hero__title {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--fg-secondary);
+  max-width: 40rem;
+}
+
+.hero__location {
+  font-size: 0.9375rem;
+  color: var(--fg-tertiary);
+  max-width: 34rem;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-xs);
+}
+
+/* ------------------------------------------------------------------ *
+ * Buttons — filled pill for the primary action, plain text for the rest
+ * ------------------------------------------------------------------ */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.2;
+  padding: 0.75rem 1.375rem;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+  transition: background 0.2s var(--ease);
+}
+
+.button:hover {
+  background: var(--accent-hover);
+  color: var(--accent-fg);
+  text-decoration: none;
+}
+
+/* The secondary action is a link with a chevron, never a second filled pill —
+   two equal-weight buttons would leave the reader with no primary path. */
+.button--plain {
+  padding: 0.75rem 0;
+  background: transparent;
+  color: var(--link);
+}
+
+.button--plain::after {
+  content: '\203A'; /* › */
+  margin-left: 0.3em;
+  transition: transform 0.2s var(--ease);
+}
+
+.button--plain:hover {
+  background: transparent;
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Sections
+ * ------------------------------------------------------------------ */
+
+.section {
+  padding-block: var(--space-2xl);
+  border-top: 1px solid var(--separator);
+}
+
+.section__title {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-lg);
+  /* pretext gives every title one uniform size (src/measure.ts); nowrap +
+     ellipsis is the pre-measurement guard, lifted on narrow viewports below. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* A block-level h2 would draw its focus ring across the whole column. */
+  width: fit-content;
+  max-width: 100%;
+}
+
+.section__body {
+  color: var(--fg-secondary);
+  max-width: 46rem;
+}
+
+.section__body p + p {
+  margin-top: var(--space-md);
+}
+
+.section__body--cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--space-md);
+  max-width: none;
+}
+
+/* Knuth–Plass justified lines (one span per computed line; last line stays ragged). */
+.kp-line {
+  display: block;
+  text-align: justify;
+  text-align-last: justify;
+}
+
+.kp-line:last-child {
+  text-align-last: left;
+}
+
+/* ------------------------------------------------------------------ *
+ * Cards — a raised surface, no border and no shadow
  * ------------------------------------------------------------------ */
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: var(--space-md);
-  transition:
-    transform 0.2s var(--ease),
-    box-shadow 0.2s var(--ease),
-    border-color 0.2s var(--ease);
-}
-
-.card:hover {
-  transform: translate(-2px, -2px);
-  border-color: var(--border-strong);
-  box-shadow: 6px 6px 0 var(--shadow-hard);
+  background: var(--bg-secondary);
+  border-radius: var(--r-lg);
+  padding: var(--space-lg);
 }
 
 .card + .card {
   margin-top: var(--space-md);
 }
 
+.section__body--cards .card + .card {
+  margin-top: 0;
+}
+
+/* The date stays pinned to the top-right on one line; the title wraps inside
+   its own track instead. Wrapping the row would drop the date onto a line of
+   its own — above the role — and the cards would each align differently. */
 .card__header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-sm);
+  gap: var(--space-md);
 }
 
 .card__title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
   color: var(--fg);
+  min-width: 0;
 }
 
 .card__meta {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--fg-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Too narrow to hold both: the date moves under the title, before the role. */
+@media (max-width: 40rem) {
+  .card__header {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 }
 
 .card__subtitle {
-  font-size: 0.9rem;
-  color: var(--fg-muted);
-  margin-bottom: var(--space-sm);
+  font-size: 0.9375rem;
+  color: var(--fg-secondary);
+  margin-top: 0.25rem;
 }
 
 .card__list {
   list-style: none;
-  padding-left: 1.1rem;
-  color: var(--fg-muted);
+  padding: 0;
+  margin-top: var(--space-md);
+  color: var(--fg-secondary);
 }
 
 .card__list li {
   position: relative;
+  padding-left: 1.15rem;
+  font-size: 0.9375rem;
 }
 
-/* Square 1-bit bullet (drawn, not a glyph — no font subset dependency). */
+/* Small round bullet, drawn rather than a glyph — no font-subset dependency. */
 .card__list li::before {
-  content: "";
+  content: '';
   position: absolute;
-  left: -1.1rem;
-  top: 0.55em;
-  width: 6px;
-  height: 6px;
-  background: var(--fg-subtle);
+  left: 0.15rem;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg-tertiary);
 }
 
 .card__list li + li {
   margin-top: var(--space-xs);
 }
 
+.card__text {
+  margin-top: var(--space-md);
+  font-size: 0.9375rem;
+  color: var(--fg-secondary);
+}
+
 /* ------------------------------------------------------------------ *
- * Stats — the giant-numbers scene
+ * Stats — one surface, hairline-divided, like a spec strip
  * ------------------------------------------------------------------ */
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: var(--space-lg);
-  max-width: 72rem;
-}
-
-/* The stats scene is a Kimi-style giant-number row: four fixed columns. */
-@media (min-width: 56rem) {
-  .section--stats .section__body {
-    max-width: 72rem;
-  }
-
-  .stats {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1px; /* the gap IS the separator, painted by the container below */
+  background: var(--separator);
+  border-radius: var(--r-lg);
+  overflow: hidden;
 }
 
 .stat {
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--space-sm);
-  padding-top: var(--space-md);
-  position: relative;
-}
-
-/* The top rule is drawn left-to-right in Bayer-ish steps on reveal; without
-   JS it is simply there (no .js scaleX(0) baseline applies). */
-.stat::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--fg);
-  transform-origin: left;
-}
-
-.js .section--stats .section__body:not(.is-revealed) .stat::before {
-  transform: scaleX(0);
-}
-
-.js .section--stats .section__body.is-revealed .stat::before {
-  animation: draw-rule 0.7s steps(8, end) forwards;
-}
-
-.js .section--stats .section__body.is-revealed .stat:nth-child(2)::before {
-  animation-delay: 0.1s;
-}
-
-.js .section--stats .section__body.is-revealed .stat:nth-child(3)::before {
-  animation-delay: 0.2s;
-}
-
-.js .section--stats .section__body.is-revealed .stat:nth-child(4)::before {
-  animation-delay: 0.3s;
-}
-
-@keyframes draw-rule {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
+  gap: var(--space-xs);
+  padding: var(--space-lg) var(--space-md);
+  background: var(--bg-secondary);
+  text-align: center;
 }
 
 .stat__value {
-  font-size: clamp(4rem, 11vw, 9rem);
-  font-weight: 800;
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--fg);
+  font-variant-numeric: tabular-nums;
 }
 
 .stat__label {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--fg-muted);
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
+  text-wrap: balance;
 }
 
 /* ------------------------------------------------------------------ *
@@ -981,106 +665,35 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xs);
-  margin-top: var(--space-sm);
+  margin-top: var(--space-md);
 }
 
+/* A rounded rect, not a pill: several labels wrap to two lines, and a 980px
+   radius turns those into lozenges. */
 .tag {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  padding: 0.3rem 0.65rem;
-  border: 1px solid var(--border);
-  color: var(--fg-muted);
-  background: var(--surface);
-  transition:
-    color 0.15s var(--ease),
-    border-color 0.15s var(--ease),
-    background 0.15s var(--ease);
-}
-
-.tag:hover {
-  color: var(--fg);
-  border-color: var(--border-strong);
-  background: var(--surface-2);
+  font-size: 0.875rem;
+  line-height: 1.35;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--r-sm);
+  background: var(--fill);
+  color: var(--fg-secondary);
 }
 
 /* ------------------------------------------------------------------ *
- * Dialogue — retro terminal window (bubbles tightened by src/chat.ts)
+ * Dialogue — a message thread, read the way the platform draws one
  * ------------------------------------------------------------------ */
 
 .chat__disclaimer {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--fg-subtle);
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
   margin-bottom: var(--space-md);
-}
-
-.term {
-  border: 1px solid var(--border-strong);
-  background: var(--bg);
-  box-shadow: 6px 6px 0 var(--shadow-hard);
-  max-width: 44rem;
-}
-
-.term__bar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 0.45rem 0.75rem;
-  border-bottom: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--fg-muted);
-}
-
-/* Three square "window lights" from one element and two offset shadows. */
-.term__lights {
-  width: 8px;
-  height: 8px;
-  background: var(--fg-subtle);
-  box-shadow:
-    12px 0 0 var(--fg-subtle),
-    24px 0 0 var(--fg-subtle);
-  margin-right: 24px;
 }
 
 .chat {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  padding: var(--space-sm) var(--space-md);
-}
-
-/* In deck mode the whole conversation can't fit a fixed viewport — scroll it
-   inside the terminal window (like a real terminal) so the last messages
-   never spill under the continue hint. Native-scroll modes keep full flow. */
-html.panels-on .chat {
-  max-height: min(52dvh, 34rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* Thin square monochrome scrollbars on the internal scrollers. */
-.panel,
-.chat {
-  scrollbar-width: thin;
-  scrollbar-color: var(--fg-subtle) transparent;
-}
-
-.panel::-webkit-scrollbar,
-.chat::-webkit-scrollbar {
-  width: 8px;
-}
-
-.panel::-webkit-scrollbar-thumb,
-.chat::-webkit-scrollbar-thumb {
-  background: var(--fg-subtle);
-}
-
-.panel::-webkit-scrollbar-track,
-.chat::-webkit-scrollbar-track {
-  background: transparent;
+  gap: 0.25rem;
+  max-width: 34rem;
 }
 
 .chat__row {
@@ -1092,21 +705,21 @@ html.panels-on .chat {
   justify-content: flex-end;
 }
 
+/* A bubble tail would need per-corner radii on a box src/chat.ts resizes;
+   the alignment and fill already say who is speaking. */
 .msg {
   max-width: 80%;
   padding: 0.5rem 0.875rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left-width: 2px;
-  border-left-color: var(--border-strong);
-  line-height: 1.45;
+  border-radius: var(--r-lg);
+  background: var(--fill);
+  color: var(--fg);
+  line-height: 1.4;
   overflow-wrap: break-word;
 }
 
 .chat__row--me .msg {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+  background: var(--accent);
+  color: var(--accent-fg);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1114,8 +727,8 @@ html.panels-on .chat {
  * ------------------------------------------------------------------ */
 
 .contact__intro {
-  color: var(--fg-muted);
-  max-width: 50rem;
+  color: var(--fg-secondary);
+  max-width: 46rem;
   margin-bottom: var(--space-lg);
 }
 
@@ -1123,45 +736,50 @@ html.panels-on .chat {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xl);
+  margin-bottom: var(--space-lg);
 }
 
 .contact__label {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--fg-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
 }
 
 .contact__value {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+/* The copied state is a state change, not a shape change: the label swaps and
+   the fill goes neutral, so the button never moves under the pointer. */
+.button--copy.is-copied,
+.button--copy.is-copied:hover {
+  background: var(--fill-strong);
+  color: var(--fg);
 }
 
 .footer {
-  margin-top: var(--space-xl);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--border);
-  color: var(--fg-subtle);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--separator);
+  color: var(--fg-tertiary);
+  font-size: 0.8125rem;
 }
 
 /* ------------------------------------------------------------------ *
- * Narrow viewports: native stacked flow (the deck stays desktop-only)
+ * Narrow viewports
  * ------------------------------------------------------------------ */
 
 @media (max-width: 56rem) {
-  .panel {
-    padding: var(--space-xl) var(--space-md);
+  :root {
+    --space-2xl: 4.5rem;
   }
 
+  /* Below the fitter's threshold (TITLE_FIT.desktopMinRem) titles wrap
+     normally — src/measure.ts clears the inline size to match. */
   .section__title {
     white-space: normal;
-  }
-
-  .hero {
-    padding: var(--space-xl) var(--space-md);
+    overflow: visible;
   }
 
   .hero__name-line {
@@ -1169,32 +787,12 @@ html.panels-on .chat {
     word-break: break-word;
   }
 
-  .hero__title {
-    white-space: normal;
-    word-break: break-word;
+  .hero {
+    min-height: 0;
+    padding-block: var(--space-xl);
   }
 
-  .hero__foot {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: var(--space-lg);
-  }
-
-  .controls {
-    top: var(--space-sm);
-    right: var(--space-sm);
-  }
-
-  .brand {
-    top: var(--space-sm);
-    left: var(--space-sm);
-  }
-
-  .stats {
-    gap: var(--space-md);
-  }
-
-  .stat__value {
-    font-size: clamp(3rem, 18vw, 5rem);
+  .contact__grid {
+    gap: var(--space-lg);
   }
 }

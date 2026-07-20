@@ -8,13 +8,6 @@ declare module "*.woff2" {
   export default url;
 }
 
-declare module "*.wasm" {
-  // Same `file` loader treatment as the fonts: emitted asset URL, instantiated
-  // by src/dither.ts with WebAssembly.instantiate (never executed by the bundler).
-  const url: string;
-  export default url;
-}
-
 // Compile-time feature flags (`bun:bundle`). "PROD" is only set by the
 // scripts/build.ts bundle; flags are always false under the dev server.
 declare module "bun:bundle" {

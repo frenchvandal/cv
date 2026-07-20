@@ -152,7 +152,9 @@ for (const lang of LANGS) {
   const t = translations[lang];
   const title = pageTitle(t);
   const description = t.meta.description;
-  const content = renderApp(lang, "dark");
+  // Light is the no-JS default (see src/styles.css); the inline <head> script
+  // switches to dark before first paint when the visitor or the OS asks.
+  const content = renderApp(lang, "light");
 
   const alternates = LANGS.map(
     (l) =>
@@ -252,10 +254,19 @@ const notFound = `<!doctype html>
     <meta name="robots" content="noindex" />
     <title>404 — ${attr(PROFILE.fullName)}</title>
     <style>
-      body { font-family: system-ui, sans-serif; background: ${THEME_COLOR.dark}; color: #f2f2f2;
-             display: grid; place-items: center; min-height: 100vh; margin: 0; }
+      :root { color-scheme: light dark; }
+      body { font-family: system-ui, -apple-system, sans-serif;
+             background: ${THEME_COLOR.light}; color: #1d1d1f;
+             display: grid; place-items: center; min-height: 100vh; margin: 0;
+             -webkit-font-smoothing: antialiased; }
       main { text-align: center; }
-      a { color: #6366f1; }
+      h1 { font-size: 3rem; font-weight: 600; letter-spacing: -0.02em; }
+      a { color: #0066cc; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      @media (prefers-color-scheme: dark) {
+        body { background: ${THEME_COLOR.dark}; color: #f5f5f7; }
+        a { color: #2997ff; }
+      }
     </style>
   </head>
   <body>

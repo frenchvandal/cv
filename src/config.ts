@@ -23,19 +23,33 @@ export const THEME_COLOR = {
 /**
  * Font descriptor for the display type pretext measures (hero name, section
  * titles). Must match the CSS `.hero__name` / `.section__title` rules
- * (weight 800, -0.03em tracking).
+ * (weight 600, -0.02em tracking).
  */
-export const DISPLAY_FONT = { weight: 800, letterSpacingEm: -0.03 } as const;
+export const DISPLAY_FONT = { weight: 600, letterSpacingEm: -0.02 } as const;
+
+/**
+ * Hero-name fitting contract. The name scales with the column, but `maxPx`
+ * caps it well below the width it *could* fill: at full width it would be the
+ * loudest thing on the page, which is exactly what the sober direction is
+ * not. `fill` leaves air on both sides so the name never touches the edge.
+ */
+export const HERO_FIT = {
+  maxPx: 76,
+  minPx: 34,
+  fill: 0.92,
+} as const;
 
 /**
  * Section-title fitting contract, shared by the live fitter and the dev-only
- * audit. `columnRem` mirrors the `fit-content(26rem)` title column of the CSS
- * `.section` grid; `desktopMinRem` its single-column breakpoint.
+ * audit. `columnRem` is the width a title may occupy inside the `--wrap`
+ * content column of [src/styles.css](src/styles.css) (61.25rem, minus its
+ * padding and a margin for the longest localized label); `desktopMinRem`
+ * mirrors the breakpoint below which titles wrap instead of being fitted.
  */
 export const TITLE_FIT = {
-  columnRem: 26,
-  maxPx: 72,
-  minPx: 28,
+  columnRem: 44,
+  maxPx: 44,
+  minPx: 24,
   desktopMinRem: 56,
 } as const;
 

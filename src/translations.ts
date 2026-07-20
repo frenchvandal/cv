@@ -60,16 +60,14 @@ const en = {
     /** Display name for the page title and headings on this language's page. */
     display: "Philippe Ribeiro",
     /** Hero name, one entry per line. */
-    lines: ["PHILIPPE", "RIBEIRO"],
+    lines: ["Philippe Ribeiro"],
   },
   meta: {
     description:
       "Philippe Ribeiro — Product Owner and Business Analyst with 20 years in financial-services software: insurance core systems, bancassurance, public finance. Based in Chengdu, China, available immediately.",
   },
   nav: {
-    intro: "Intro",
     about: "About",
-    stats: "Numbers",
     experience: "Experience",
     education: "Education",
     certifications: "Certifications",
@@ -306,12 +304,9 @@ const en = {
   ui: {
     skipLink: "Skip to content",
     languageNav: "Language",
-    panelsNav: "Sections",
-    continue: "Scroll to explore",
-    terminalTitle: "philippe@cv: ~/interview.log",
+    sectionsNav: "Sections",
     copyWechat: "Copy WeChat ID",
     copied: "Copied",
-    progressAnnouncement: "Section {current} of {total}: {label}",
     theme: {
       light: "Theme: light",
       dark: "Theme: dark",
@@ -329,16 +324,14 @@ export type Translation = typeof en;
 const fr: Translation = {
   name: {
     display: "Philippe Ribeiro",
-    lines: ["PHILIPPE", "RIBEIRO"],
+    lines: ["Philippe Ribeiro"],
   },
   meta: {
     description:
       "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine, disponible immédiatement.",
   },
   nav: {
-    intro: "Intro",
     about: "À propos",
-    stats: "Chiffres",
     experience: "Expérience",
     education: "Formation",
     certifications: "Certifications",
@@ -578,12 +571,9 @@ const fr: Translation = {
   ui: {
     skipLink: "Aller au contenu",
     languageNav: "Langue",
-    panelsNav: "Sections",
-    continue: "Faire défiler pour explorer",
-    terminalTitle: "philippe@cv: ~/interview.log",
+    sectionsNav: "Sections",
     copyWechat: "Copier l'ID WeChat",
     copied: "Copié",
-    progressAnnouncement: "Section {current} sur {total} : {label}",
     theme: {
       light: "Thème : clair",
       dark: "Thème : sombre",
@@ -601,9 +591,7 @@ const zh: Translation = {
       "李北洛（Philippe Ribeiro）— 产品负责人 / 业务分析师，二十年金融软件经验：人寿保险核心系统、银行保险、公共财政。现居中国成都，可随时到岗。",
   },
   nav: {
-    intro: "简介",
     about: "关于我",
-    stats: "数字",
     experience: "经历",
     education: "教育",
     certifications: "认证",
@@ -824,12 +812,9 @@ const zh: Translation = {
   ui: {
     skipLink: "跳到内容",
     languageNav: "语言",
-    panelsNav: "章节",
-    continue: "滑动开启探索",
-    terminalTitle: "philippe@cv: ~/interview.log",
+    sectionsNav: "章节",
     copyWechat: "复制微信号",
     copied: "已复制",
-    progressAnnouncement: "第 {current} 屏，共 {total} 屏：{label}",
     theme: {
       light: "主题：浅色",
       dark: "主题：深色",
@@ -847,9 +832,7 @@ const zhHant: Translation = {
       "李北洛（Philippe Ribeiro）— 產品負責人 / 商業分析師，二十年金融軟體經驗：壽險核心系統、銀行保險、公共財政。現居中國成都，可隨時到職。",
   },
   nav: {
-    intro: "簡介",
     about: "關於我",
-    stats: "數字",
     experience: "經歷",
     education: "學歷",
     certifications: "認證",
@@ -1070,12 +1053,9 @@ const zhHant: Translation = {
   ui: {
     skipLink: "跳至內容",
     languageNav: "語言",
-    panelsNav: "章節",
-    continue: "滑動開啟探索",
-    terminalTitle: "philippe@cv: ~/interview.log",
+    sectionsNav: "章節",
     copyWechat: "複製微信號",
     copied: "已複製",
-    progressAnnouncement: "第 {current} 屏，共 {total} 屏：{label}",
     theme: {
       light: "主題：淺色",
       dark: "主題：深色",

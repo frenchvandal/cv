@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,33 +8,41 @@
     <title>Philippe Ribeiro</title>
 
     <link rel="icon" type="image/svg+xml" href="./public/favicon.svg" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffffff" />
 
     <script>
-    // Apply the saved theme before first paint. (The `js` class that gates the
-    // reveal animations is added by src/main.ts itself, NOT here: adding it
-    // before the bundle runs would hide the pre-rendered content.)
+    // Resolve the appearance before first paint: an explicit choice wins,
+    // otherwise the page follows the OS. Without this the light default would
+    // flash before src/main.ts runs. (The `js` class that gates the reveal
+    // animations is added by src/main.ts itself, NOT here: adding it before the
+    // bundle runs would hide the pre-rendered content.)
     try {
-      const saved = localStorage.getItem("cv-theme");
-      if (saved === "light" || saved === "dark") {
-        document.documentElement.dataset.theme = saved;
+      let saved = null;
+      try {
+        saved = localStorage.getItem("cv-theme");
+      } catch {}
+      if (saved !== "light" && saved !== "dark") {
+        saved = matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
       }
+      document.documentElement.dataset.theme = saved;
     } catch {}
     </script>
 
     <style>
-    /* Minimal base styles available instantly, before any JS/CSS loads. */
+    /* Minimal base styles available instantly, before any JS/CSS loads.
+       Mirrors the --bg/--fg anchors of src/styles.css so the loader and the
+       real stylesheet agree and first paint never flashes. */
     :root {
-      --loader-bg: #000000;
-      --loader-fg: #f2f2f2;
-      --loader-muted: #737373;
-      --loader-accent: #f2f2f2;
-    }
-    :root[data-theme='light'] {
       --loader-bg: #ffffff;
-      --loader-fg: #0a0a0a;
-      --loader-muted: #525252;
-      --loader-accent: #0a0a0a;
+      --loader-fg: #1d1d1f;
+      --loader-muted: #6e6e73;
+    }
+    :root[data-theme='dark'] {
+      --loader-bg: #000000;
+      --loader-fg: #f5f5f7;
+      --loader-muted: #86868b;
     }
     html,
     body {
@@ -65,16 +73,14 @@
       transition: opacity 0.4s ease, visibility 0.4s ease;
     }
     .loader__name {
-      font-size: clamp(2rem, 8vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 0.95;
+      font-size: clamp(2rem, 7vw, 3.5rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
       text-align: center;
     }
     .loader__status {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
+      font-size: 0.8125rem;
       color: var(--loader-muted);
       display: flex;
       align-items: center;
@@ -84,7 +90,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--loader-accent);
+      background: var(--loader-muted);
       animation: loader-pulse 1.2s infinite ease-in-out;
     }
     .loader__dot:nth-child(2) {
@@ -110,7 +116,7 @@
   <body>
     <div id="app">
       <div class="loader" id="loader">
-        <div class="loader__name">PHILIPPE<br />RIBEIRO</div>
+        <div class="loader__name">Philippe Ribeiro</div>
         <div class="loader__status">
           <span>Loading</span>
           <span class="loader__dot" aria-hidden="true"></span>

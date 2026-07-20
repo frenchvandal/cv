@@ -3,6 +3,7 @@ import { FONT_FACES } from "./fonts.ts";
 import "./styles.css";
 import {
   DISPLAY_FONT,
+  HERO_FIT,
   PAGE_SWAP_MS,
   THEME_COLOR,
   TITLE_FIT,
@@ -25,15 +26,7 @@ import {
   whenFontsReady,
 } from "./measure.ts";
 import { breakIntoLines } from "./linebreak.ts";
-import { enhanceAboutOrbs } from "./orbs.ts";
 import { enhanceChat } from "./chat.ts";
-import {
-  initDither,
-  setDitherIntensity,
-  setDitherTheme,
-  syncOrbMasses,
-} from "./dither.ts";
-import { initPanels } from "./panels.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
 // hides content for the reveal animations, so flipping the class any earlier
@@ -46,7 +39,7 @@ const root = document.documentElement;
 const app = document.getElementById("app");
 
 let currentLang: Lang = "en";
-let theme: Theme = "dark";
+let theme: Theme = "light";
 
 /** Language of the current page, from the pre-rendered `<html data-lang>` or the URL. */
 function pageLang(): Lang {
@@ -66,13 +59,20 @@ function setLang(next: Lang): void {
   root.dataset.lang = next;
 }
 
-function getStoredTheme(): Theme {
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+/** The OS appearance, which the page follows until the visitor overrides it. */
+function systemTheme(): Theme {
+  return globalThis.matchMedia?.(DARK_QUERY).matches ? "dark" : "light";
+}
+
+/** An explicit choice made by the visitor, if there is one. */
+function storedTheme(): Theme | null {
   try {
-    return localStorage.getItem(STORAGE_THEME_KEY) === "light"
-      ? "light"
-      : "dark";
+    const saved = localStorage.getItem(STORAGE_THEME_KEY);
+    return saved === "light" || saved === "dark" ? saved : null;
   } catch {
-    return "dark";
+    return null;
   }
 }
 
@@ -89,7 +89,12 @@ function syncThemeToggle(): void {
   );
 }
 
-function applyTheme(next: Theme): void {
+/**
+ * `persist` separates the two ways the appearance can change: the visitor
+ * flipping the toggle (remembered) versus the page following the OS (not — so
+ * a later system change still lands).
+ */
+function applyTheme(next: Theme, persist: boolean): void {
   theme = next;
   root.dataset.theme = next;
   // The CSS palette (`--bg`) is the source of truth for the browser-chrome
@@ -100,12 +105,13 @@ function applyTheme(next: Theme): void {
     "content",
     bg,
   );
-  try {
-    localStorage.setItem(STORAGE_THEME_KEY, next);
-  } catch {
-    // storage may be unavailable (private mode) — the attribute on <html> is enough.
+  if (persist) {
+    try {
+      localStorage.setItem(STORAGE_THEME_KEY, next);
+    } catch {
+      // storage may be unavailable (private mode) — the attribute on <html> is enough.
+    }
   }
-  setDitherTheme(next);
   syncThemeToggle();
 }
 
@@ -145,7 +151,7 @@ function applyMeasuredLayout(): void {
   const font = { ...DISPLAY_FONT, family: pageFontFamily() };
 
   const nameEl = app.querySelector<HTMLElement>(".hero__name");
-  if (nameEl) fitHeroName(nameEl, font); // minPx/maxPx: the measure.ts defaults
+  if (nameEl) fitHeroName(nameEl, { ...font, ...HERO_FIT });
 
   const titleEls = Array.from(
     app.querySelectorAll<HTMLElement>(".section .section__title"),
@@ -160,10 +166,16 @@ function applyMeasuredLayout(): void {
 }
 
 /**
+ * Narrowest column worth justifying. Below it a stretched line opens rivers of
+ * white space, and ragged-right is both more legible and what the platform
+ * itself does — so narrow viewports keep the plain paragraph.
+ */
+const KP_MIN_WIDTH_PX = 460;
+
+/**
  * Re-typeset the About paragraphs with Knuth–Plass optimal line breaking and
  * syllable hyphenation (Latin languages only; Chinese wraps natively). A pure
- * progressive enhancement over the plain, pre-rendered paragraph — and itself
- * the fallback when the orb layout (enhanceAboutOrbs) can't run.
+ * progressive enhancement over the plain, pre-rendered paragraph.
  */
 async function enhanceAboutKp(): Promise<void> {
   if (!app || currentLang.startsWith("zh")) return;
@@ -181,6 +193,13 @@ async function enhanceAboutKp(): Promise<void> {
       (parseFloat(style.paddingLeft) || 0) -
       (parseFloat(style.paddingRight) || 0);
 
+    // Also the undo path: a resize down from a wide column must drop the
+    // per-line spans, not leave the last justified layout behind.
+    if (width < KP_MIN_WIDTH_PX) {
+      p.textContent = text;
+      continue;
+    }
+
     // Small safety margin: keep KP lines just inside the box so canvas-vs-DOM
     // rounding never makes the browser wrap a line that justify then can't fill.
     const lines = await breakIntoLines(text, font, width - 6, lang);
@@ -194,12 +213,6 @@ async function enhanceAboutKp(): Promise<void> {
       `<span class="kp-line">${escapeHtml(line)}</span>`
     ).join("");
   }
-}
-
-/** Orb-aware flow layout when possible, Knuth–Plass justification otherwise. */
-async function enhanceAbout(): Promise<void> {
-  if (await enhanceAboutOrbs(currentLang)) return;
-  await enhanceAboutKp();
 }
 
 /** Dev-only, pretext-powered QA: warn if any section title must shrink to fit in any language. */
@@ -218,6 +231,7 @@ function auditTitles(): void {
       nav.skills,
       nav.hobbies,
       nav.dialogue,
+      nav.contact,
     ];
   }
 
@@ -338,7 +352,7 @@ function observeSections(): void {
     },
     { threshold: 0.05, rootMargin: "0px 0px -24px 0px" },
   );
-  app.querySelectorAll(".section, .contact").forEach((section) =>
+  app.querySelectorAll(".section").forEach((section) =>
     observer.observe(section)
   );
   revealObserver = observer;
@@ -367,7 +381,7 @@ function bindEvents(): void {
 
   // Theme is pure CSS (`data-theme` on <html>): no re-render, just the icon sync.
   app?.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
-    applyTheme(theme === "light" ? "dark" : "light");
+    applyTheme(theme === "light" ? "dark" : "light", true);
   });
 
   // Contact closer: copy the WeChat id, flash the copied label on the button.
@@ -387,30 +401,12 @@ function bindEvents(): void {
   });
 }
 
-// Cloud drama per panel (keyed by the panel's hash id, kimi-style: theatrical
-// bookends, calm background behind dense content). Anything unlisted reads.
-const PANEL_INTENSITY: Record<string, number> = {
-  top: 1,
-  about: 0.5,
-  stats: 0.65,
-  contact: 1,
-};
-
-function activatePanel(panel: HTMLElement): void {
-  reveal(panel);
-  const id = panel.id || panel.querySelector("[id]")?.id || "";
-  setDitherIntensity(PANEL_INTENSITY[id] ?? 0.35);
-  // Orb halos live only on the panel that holds orbs — empty list clears.
-  syncOrbMasses(panel.querySelectorAll(".about-orb"));
-}
-
 function afterPaint(): void {
-  // Deck mode reveals panels on activation; native mode reveals on scroll.
-  if (!initPanels({ onActivate: activatePanel })) observeSections();
+  observeSections();
   whenFontsReady(() => {
     applyMeasuredLayout();
     enhanceChat();
-    void enhanceAbout();
+    void enhanceAboutKp();
   });
 }
 
@@ -438,7 +434,7 @@ function render(transition: boolean): void {
 /**
  * First load of a pre-rendered page: the markup is already exactly what
  * `renderApp` would produce, so don't rebuild it — just bind events, sync the
- * theme toggle (pre-rendered as dark) and start the enhancements.
+ * theme toggle (pre-rendered as light) and start the enhancements.
  */
 function hydrate(): void {
   bindEvents();
@@ -455,7 +451,8 @@ function onPopState(): void {
 
 function init(): void {
   setLang(pageLang());
-  applyTheme(getStoredTheme());
+  const chosen = storedTheme();
+  applyTheme(chosen ?? systemTheme(), false);
 
   const prerendered = app?.querySelector<HTMLElement>(".page");
   if (prerendered && prerendered.dataset.lang === currentLang) {
@@ -464,8 +461,11 @@ function init(): void {
     render(false); // dev shell (loader) or stale markup
   }
 
-  // The dithered background attaches to <body> and survives re-renders.
-  void initDither();
+  // Follow the OS appearance for as long as the visitor hasn't overridden it.
+  globalThis.matchMedia?.(DARK_QUERY).addEventListener("change", (event) => {
+    if (storedTheme()) return;
+    applyTheme(event.matches ? "dark" : "light", false);
+  });
 
   globalThis.addEventListener("popstate", onPopState);
   globalThis.addEventListener(
@@ -473,7 +473,7 @@ function init(): void {
     debounce(() => {
       applyMeasuredLayout();
       enhanceChat();
-      void enhanceAbout();
+      void enhanceAboutKp();
     }, 150),
     { passive: true },
   );

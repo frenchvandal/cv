@@ -1,4 +1,0 @@
-# Stable rustfmt options only (this repo builds with the stable toolchain).
-edition = "2021"
-max_width = 100
-newline_style = "Unix"

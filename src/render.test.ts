@@ -47,20 +47,24 @@ test.each([...LANGS])(
     const html = renderApp(lang, "dark");
     const ids = new Set(idsOf(html));
     const hrefs = [...html.matchAll(/ href="#([^"]+)"/g)].map((m) => m[1]!);
-    // Dots, skip-link, brand, hero CTAs, orb-less fallback links…
+    // Skip-link, brand, nav shortcuts, hero CTAs.
     expect(hrefs.length).toBeGreaterThan(0);
     for (const href of hrefs) expect(ids.has(href)).toBe(true);
   },
 );
 
-test.each([...LANGS])("renderApp(%s): one nav dot per panel", (lang) => {
-  const html = renderApp(lang, "dark");
-  // `data-panel` marks the scenes; `[data-panel-live]` must not match.
-  const panels = html.match(/ data-panel(?=[\s>])/g)?.length ?? 0;
-  const dots = html.match(/ data-dot="/g)?.length ?? 0;
-  expect(panels).toBeGreaterThan(0);
-  expect(dots).toBe(panels);
-});
+test.each([...LANGS])(
+  "renderApp(%s): every section is labelled by a heading that exists",
+  (lang) => {
+    const html = renderApp(lang, "dark");
+    const ids = new Set(idsOf(html));
+    const labelledBy = [...html.matchAll(/ aria-labelledby="([^"]+)"/g)].map(
+      (m) => m[1]!,
+    );
+    expect(labelledBy.length).toBeGreaterThan(0);
+    for (const id of labelledBy) expect(ids.has(id)).toBe(true);
+  },
+);
 
 test.each([...LANGS])(
   "renderApp(%s): translated content lands escaped in the markup",
