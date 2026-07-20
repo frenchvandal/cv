@@ -166,11 +166,19 @@ function applyMeasuredLayout(): void {
 }
 
 /**
- * Narrowest column worth justifying. Below it a stretched line opens rivers of
- * white space, and ragged-right is both more legible and what the platform
- * itself does — so narrow viewports keep the plain paragraph.
+ * Narrowest column worth justifying. Phones sit around 280–390px here, which is
+ * a ~40-character measure — tight, but paperbacks justify at that width all the
+ * time, and with hyphenation on it holds up (measured: spaces stretch ~2x on a
+ * phone against ~1.3x on desktop, no line overflowing its column).
+ *
+ * This used to be 460, which skipped every phone. The rivers that motivated it
+ * were real, but their cause was a missing break opportunity, not the narrow
+ * measure: nothing could break `customer-facing` at its own hyphen, so whole
+ * paragraphs had no tight layout available (see splitOnHardBreaks in
+ * linebreak.ts). Below 280 the paragraph stays plain — there ragged-right
+ * really is more legible.
  */
-const KP_MIN_WIDTH_PX = 460;
+const KP_MIN_WIDTH_PX = 280;
 
 /**
  * Re-typeset the About paragraphs with Knuth–Plass optimal line breaking and

@@ -68,6 +68,34 @@ export function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
   return loading;
 }
 
+/**
+ * Split a word at the break opportunities it already carries: after an existing
+ * hyphen (`customer-facing`, `cross-company`, `full-time`). The Liang patterns
+ * never offer these — `hyphen` turns `customer-facing` into `cus-tomer-fac-ing`
+ * and leaves the hard hyphen itself unbreakable — yet they are the cheapest
+ * breaks available, since the character is already printed. The hyphen stays on
+ * the left fragment, so nothing extra is drawn.
+ *
+ * Slashes are deliberately *not* break points: in prose they nearly always join
+ * an acronym pair (`SAML/OIDC`, `TCP/IP`), and splitting those over two lines
+ * reads far worse than a loose line does.
+ *
+ * A one-character fragment is never worth a line end, so both sides need two.
+ */
+function splitOnHardBreaks(word: string): string[] {
+  const parts: string[] = [];
+  let start = 0;
+  for (let i = 0; i < word.length - 1; i++) {
+    if (word[i] !== "-") continue;
+    if (i + 1 - start < 2) continue; // too little before the break
+    if (word.length - (i + 1) < 2) continue; // too little after it
+    parts.push(word.slice(start, i + 1));
+    start = i + 1;
+  }
+  parts.push(word.slice(start));
+  return parts;
+}
+
 /** Build the Knuth–Plass box/glue/penalty stream for one paragraph. */
 function buildItems(
   text: string,
@@ -83,21 +111,30 @@ function buildItems(
   const items: BreakItem[] = [];
 
   words.forEach((word, wordIndex) => {
-    const fragments = hyphenate(word).split(SOFT_HYPHEN);
-    fragments.forEach((fragment, fragmentIndex) => {
-      if (fragmentIndex > 0) {
-        items.push({
-          type: "penalty",
-          width: hyphenWidth,
-          penalty: 50,
-          flagged: true,
-        });
+    splitOnHardBreaks(word).forEach((segment, segmentIndex) => {
+      if (segmentIndex > 0) {
+        // Free break, and unflagged: the hyphen is already on the line above,
+        // so this costs no extra glyph and two in a row are not the "two
+        // hyphenated lines in succession" that TeX penalises.
+        items.push({ type: "penalty", width: 0, penalty: 25, flagged: false });
       }
-      items.push({
-        type: "box",
-        width: measure(fragment, font),
-        text: fragment,
-      });
+      hyphenate(segment).split(SOFT_HYPHEN).forEach(
+        (fragment, fragmentIndex) => {
+          if (fragmentIndex > 0) {
+            items.push({
+              type: "penalty",
+              width: hyphenWidth,
+              penalty: 50,
+              flagged: true,
+            });
+          }
+          items.push({
+            type: "box",
+            width: measure(fragment, font),
+            text: fragment,
+          });
+        },
+      );
     });
     if (wordIndex < words.length - 1) {
       // shrink: 0 — CSS `text-align: justify` can only stretch spaces, never
@@ -319,6 +356,8 @@ export async function breakIntoLines(
   if (!hyphenate) return null;
   const items = buildItems(text, font, hyphenate, measure);
   // Prefer tight lines; loosen tolerance only if no feasible layout is found.
+  // (Raising the ceiling never *buys* looseness: badness goes as ratio³, so the
+  // optimiser still picks the tight layout whenever one exists.)
   const breaks = optimalBreaks(items, lineWidth, 3) ??
     optimalBreaks(items, lineWidth, 12);
   if (!breaks || breaks.length === 0) return null;

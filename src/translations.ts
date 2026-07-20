@@ -330,7 +330,7 @@ const fr: Translation = {
   },
   meta: {
     description:
-      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine, disponible immédiatement.",
+      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine, disponible immédiatement.",
   },
   nav: {
     about: "À propos",
@@ -353,9 +353,9 @@ const fr: Translation = {
   },
   about: {
     p1:
-      "Product Owner et Business Analyst, vingt ans dans le logiciel pour services financiers — systèmes cœur d'assurance vie, bancassurance et finances publiques. J'ai travaillé des deux côtés du métier : consultant en régie livrant des projets pour des clients de secteurs variés, puis responsable de produit chez un éditeur, aux commandes d'un progiciel.",
+      "Product Owner et Business Analyst, vingt ans dans le logiciel pour services financiers — systèmes cœur d'assurance vie, bancassurance et finances publiques. J'ai travaillé des deux côtés du métier : consultant en régie livrant des projets pour des clients de secteurs variés, puis responsable de produit chez un éditeur, aux commandes d'un progiciel.",
     p2:
-      "Chez KAPIA-RGI, je porte K4U, un portail web d'assurance destiné aux clients finaux de plusieurs compagnies, de bout en bout : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes. J'ai piloté le déploiement transverse de l'authentification unique (SAML/OIDC), je fonde les décisions sur les retours utilisateurs et l'analyse SQL avancée, et je ne livre que des incréments testés et conformes — testeur certifié ISTQB, formé PSPO.",
+      "Chez KAPIA-RGI, je porte K4U, un portail web d'assurance destiné aux clients finaux de plusieurs compagnies, de bout en bout : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes. J'ai piloté le déploiement transverse de l'authentification unique (SAML/OIDC), je fonde les décisions sur les retours utilisateurs et l'analyse SQL avancée, et je ne livre que des incréments testés et conformes — testeur certifié ISTQB, formé PSPO.",
     p3:
       "Installé à Chengdu depuis 2025 après une année de mandarin à temps plein à l'Université du Sichuan — le quotidien se vit en mandarin (HSK 4, HSK 5 en préparation). Français et portugais langues maternelles, anglais courant, espagnol professionnel. Disponible immédiatement, mobile dans toute la Chine.",
     stats: {
@@ -372,13 +372,13 @@ const fr: Translation = {
         "KAPIA-RGI — éditeur de systèmes cœur d'assurance vie (KELIA / K4U / KARMA)",
       date: "2011 – 2014 · 2019 – aujourd'hui",
       items: [
-        "Product Owner de K4U, portail web d'assurance packagé servant les clients finaux de plusieurs compagnies : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes",
+        "Product Owner de K4U, portail web d'assurance packagé servant les clients finaux de plusieurs compagnies : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes",
         "Animation de toutes les cérémonies agiles (refinement, sprint planning, revues, rétrospectives) comme interlocuteur unique entre le métier et la technique — travaux et anomalies suivis dans Jira",
-        "Pilotage du déploiement transverse de l'authentification unique (SAML/OIDC) ; interfaçage du back-end KELIA avec les systèmes externes via KARMA, le catalogue d'API REST de l'éditeur",
-        "Décisions fondées sur les retours utilisateurs, l'analyse des anomalies et le SQL avancé ; des démonstrations produit aux décideurs ont contribué à la signature de trois nouveaux clients",
+        "Pilotage du déploiement transverse de l'authentification unique (SAML/OIDC) ; interfaçage du back-end KELIA avec les systèmes externes via KARMA, le catalogue d'API REST de l'éditeur",
+        "Décisions fondées sur les retours utilisateurs, l'analyse des anomalies et le SQL avancé ; des démonstrations produit aux décideurs ont contribué à la signature de trois nouveaux clients",
         "Nommé AI Ambassador lors du déploiement interne de l'IA — promotion de l'adoption auprès des équipes métier et techniques",
-        "Comme Business Analyst, produits de prévoyance sur KELIA (capital décès, rentes, exonération des primes) : besoins, spécifications fonctionnelles, tests d'intégration et recette",
-        "Réduction d'environ 75 % du stock d'anomalies ouvertes d'un client en douze mois ; pilotage d'une montée de version majeure sans interruption d'activité",
+        "Comme Business Analyst, produits de prévoyance sur KELIA (capital décès, rentes, exonération des primes) : besoins, spécifications fonctionnelles, tests d'intégration et recette",
+        "Réduction d'environ 75 % du stock d'anomalies ouvertes d'un client en douze mois ; pilotage d'une montée de version majeure sans interruption d'activité",
       ],
     },
     consulting: {
@@ -386,10 +386,10 @@ const fr: Translation = {
       company: "Groupe Open & Adneom Technologies — conseil en régie",
       date: "2008 – 2011 · 2014 – 2019",
       items: [
-        "DGFIP, ministère des Finances (2018–2019) : concepteur fonctionnel du projet RPA « Assistants digitaux » — environ 57 % de temps de traitement en moins (≈ 1 000 heures/an) sur un processus, 7 ETP/an économisés sur l'autre",
-        "SNCF (2016–2018) : référent fonctionnel de BREHAT, le système des horaires réels et des indicateurs de régularité — point d'entrée unique du chef de projet client, devis, pilotage d'un à trois consultants",
-        "Groupama Gan Vie (2014–2016) : expertise des bases de données avales de la Direction financière — suivi de production, contrôles de cohérence, coordination des recettes",
-        "Missions antérieures (2008–2011) : BNP Paribas Cardif (bancassurance), Accenture (gestion déléguée d'assurance vie), Linedata (logiciels financiers)",
+        "DGFIP, ministère des Finances (2018–2019) : concepteur fonctionnel du projet RPA « Assistants digitaux » — environ 57 % de temps de traitement en moins (≈ 1 000 heures/an) sur un processus, 7 ETP/an économisés sur l'autre",
+        "SNCF (2016–2018) : référent fonctionnel de BREHAT, le système des horaires réels et des indicateurs de régularité — point d'entrée unique du chef de projet client, devis, pilotage d'un à trois consultants",
+        "Groupama Gan Vie (2014–2016) : expertise des bases de données avales de la Direction financière — suivi de production, contrôles de cohérence, coordination des recettes",
+        "Missions antérieures (2008–2011) : BNP Paribas Cardif (bancassurance), Accenture (gestion déléguée d'assurance vie), Linedata (logiciels financiers)",
       ],
     },
     insurance: {
@@ -407,10 +407,10 @@ const fr: Translation = {
       date: "2025 – 2026",
       subtitle: "Campus Wangjiang, Chengdu · Temps plein, en immersion",
       items: [
-        "Année sabbatique de KAPIA-RGI pour étudier le mandarin à temps plein ; programme achevé en juillet 2026",
-        "Résultats finaux : GPA de 3,88 / 4 sur 39 crédits — chinois intégré 92,8/100, compréhension et expression orales 93,9, expression écrite 92,8, informatique et Internet en chinois 90,3",
+        "Année sabbatique de KAPIA-RGI pour étudier le mandarin à temps plein ; programme achevé en juillet 2026",
+        "Résultats finaux : GPA de 3,88 / 4 sur 39 crédits — chinois intégré 92,8/100, compréhension et expression orales 93,9, expression écrite 92,8, informatique et Internet en chinois 90,3",
         "Cours, vie quotidienne et échanges en mandarin — une connaissance de l'intérieur de l'université chinoise",
-        "HSK 4 obtenu (2023) ; HSK 5 en préparation",
+        "HSK 4 obtenu (2023) ; HSK 5 en préparation",
       ],
     },
     master: {
@@ -520,7 +520,7 @@ const fr: Translation = {
     language: {
       title: "Apprentissage des langues",
       desc:
-        "Le mandarin au quotidien : cours, démarches et critiques littéraires — cap sur le HSK 5.",
+        "Le mandarin au quotidien : cours, démarches et critiques littéraires — cap sur le HSK 5.",
     },
   },
   dialogue: {
@@ -529,40 +529,40 @@ const fr: Translation = {
     disclaimer:
       "Transcription à peine romancée d'une conversation authentique.",
     messages: [
-      { me: false, text: "Vous êtes vraiment disponible immédiatement ?" },
+      { me: false, text: "Vous êtes vraiment disponible immédiatement ?" },
       {
         me: true,
         text:
-          "Oui. Mon backlog personnel est vide : tout est priorisé, testé, livré.",
+          "Oui. Mon backlog personnel est vide : tout est priorisé, testé, livré.",
       },
       {
         me: false,
-        text: "Vingt ans dans l'assurance vie… ce n'est pas un peu monotone ?",
+        text: "Vingt ans dans l'assurance vie… ce n'est pas un peu monotone ?",
       },
       {
         me: true,
         text:
           "Capital décès, rentes, exonération des primes — le suspense est permanent.",
       },
-      { me: false, text: "Pourquoi Chengdu ?" },
+      { me: false, text: "Pourquoi Chengdu ?" },
       {
         me: true,
         text:
           "Je suis venu pour le mandarin. Le hotpot m'a convaincu de prolonger.",
       },
-      { me: false, text: "Votre niveau de piment ?" },
+      { me: false, text: "Votre niveau de piment ?" },
       { me: true, text: "微辣 — doux. J'ai dit adaptable, pas téméraire." },
-      { me: false, text: "Un ultramarathon, sérieusement ?" },
+      { me: false, text: "Un ultramarathon, sérieusement ?" },
       {
         me: true,
         text:
-          "C'est comme une montée de version majeure : long, douloureux, sans interruption d'activité.",
+          "C'est comme une montée de version majeure : long, douloureux, sans interruption d'activité.",
       },
       {
         me: false,
-        text: "Et je vous contacte comment ? Il n'y a même pas d'e-mail…",
+        text: "Et je vous contacte comment ? Il n'y a même pas d'e-mail…",
       },
-      { me: true, text: "WeChat : frenchvandal. On est en 2026." },
+      { me: true, text: "WeChat : frenchvandal. On est en 2026." },
     ],
   },
   contact: {
@@ -579,8 +579,8 @@ const fr: Translation = {
     copyWechat: "Copier l'ID WeChat",
     copied: "Copié",
     theme: {
-      light: "Thème : clair",
-      dark: "Thème : sombre",
+      light: "Thème : clair",
+      dark: "Thème : sombre",
     },
   },
 };

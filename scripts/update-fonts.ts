@@ -17,7 +17,7 @@
  * (SC = PRC forms, TC = Taiwan MOE).
  */
 
-import { translations } from "../src/translations.ts";
+import { LANG_LABEL, LANG_NAME, translations } from "../src/translations.ts";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
@@ -51,9 +51,19 @@ const isCjk = (cp: number, ch: string): boolean =>
   (cp >= 0xff00 && cp <= 0xffef) || // fullwidth forms（？！：，）
   "—·".includes(ch);
 
+/*
+ * The language switcher renders every language's own label and name (简 / 繁,
+ * 简体中文 / 繁體中文), so both Chinese pages show Simplified AND Traditional
+ * glyphs regardless of which one they are written in. These live outside the
+ * per-language translation objects, so scanning those alone missed them and the
+ * switcher fell back to a system font mid-line.
+ */
+const switcher = Object.values(LANG_LABEL).join("") +
+  Object.values(LANG_NAME).join("");
+
 const latin = unique(sources, (cp) => isLatin(cp));
-const sc = unique(JSON.stringify(translations.zh), isCjk);
-const tc = unique(JSON.stringify(translations["zh-hant"]), isCjk);
+const sc = unique(JSON.stringify(translations.zh) + switcher, isCjk);
+const tc = unique(JSON.stringify(translations["zh-hant"]) + switcher, isCjk);
 
 console.log(
   `Glyphs — Latin: ${latin.length}, SC: ${sc.length}, TC: ${tc.length}`,
@@ -120,19 +130,22 @@ const fontsTs = `/*
  * A named font (not \`system-ui\`) is required for accurate pretext measurement.
  */
 
-import latinUrl from './fonts/noto-sans-latin.woff2';
-import scUrl from './fonts/noto-sans-sc.woff2';
-import tcUrl from './fonts/noto-sans-tc.woff2';
+import latinUrl from "./fonts/noto-sans-latin.woff2";
+import scUrl from "./fonts/noto-sans-sc.woff2";
+import tcUrl from "./fonts/noto-sans-tc.woff2";
 
-const LATIN_RANGE = '${latinFont.range}';
-const SC_RANGE = '${scFont.range}';
-const TC_RANGE = '${tcFont.range}';
+const LATIN_RANGE =
+  "${latinFont.range}";
+const SC_RANGE =
+  "${scFont.range}";
+const TC_RANGE =
+  "${tcFont.range}";
 
 /** The three subsets with their build-emitted URLs and unicode ranges. */
 export const FONT_FACES = [
-  { family: 'Noto Sans', url: latinUrl, range: LATIN_RANGE },
-  { family: 'Noto Sans SC', url: scUrl, range: SC_RANGE },
-  { family: 'Noto Sans TC', url: tcUrl, range: TC_RANGE },
+  { family: "Noto Sans", url: latinUrl, range: LATIN_RANGE },
+  { family: "Noto Sans SC", url: scUrl, range: SC_RANGE },
+  { family: "Noto Sans TC", url: tcUrl, range: TC_RANGE },
 ] as const;
 
 /** @font-face rules for the given subset URLs (SSG passes its own hashed paths). */
@@ -144,18 +157,25 @@ export function fontFaceCss(
       (f) =>
         \`@font-face{font-family:'\${f.family}';font-style:normal;font-weight:400 800;font-display:swap;src:url(\${f.url}) format('woff2');unicode-range:\${f.range};}\`,
     )
-    .join('');
+    .join("");
 }
 
 // Runtime fallback for the dev shell; pre-rendered pages already carry the rules.
-if (typeof document !== 'undefined' && !document.querySelector('style[data-fonts]')) {
-  const style = document.createElement('style');
-  style.dataset.fonts = 'runtime';
+if (
+  typeof document !== "undefined" &&
+  !document.querySelector("style[data-fonts]")
+) {
+  const style = document.createElement("style");
+  style.dataset.fonts = "runtime";
   style.textContent = fontFaceCss(FONT_FACES);
   document.head.appendChild(style);
 }
 `;
 
 await Bun.write("src/fonts.ts", fontsTs);
+// The template above is written pre-formatted, but the ranges vary in length
+// from run to run — let the project's formatter have the last word so a
+// regeneration never shows up as style churn in the diff.
+await Bun.$`deno fmt --quiet src/fonts.ts`.nothrow();
 console.log("  wrote src/fonts.ts");
 console.log("\n✓ Fonts regenerated. Rebuild with `bun run build`.");

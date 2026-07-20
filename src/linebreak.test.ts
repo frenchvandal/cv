@@ -66,6 +66,32 @@ test("hyphenates long words across lines with a visible hyphen", async () => {
   expect(lines!.some((line) => line.endsWith("-"))).toBe(true);
 });
 
+test("breaks after an existing hyphen without drawing a second one", async () => {
+  // "cross-company" is 13 chars = 130px, too wide for the column, and the Liang
+  // patterns never offer the hard hyphen itself as a break point.
+  const lines = await breakIntoLines(
+    "aaaa cross-company bbbb",
+    FONT,
+    120,
+    "en",
+    mono,
+  );
+  expect(lines).toEqual(["aaaa cross-", "company bbbb"]);
+});
+
+test("never splits a slash-joined acronym pair", async () => {
+  const text =
+    "rollout of single sign-on using SAML/OIDC across every client company today";
+  for (const width of [150, 200, 250]) {
+    const lines = await breakIntoLines(text, FONT, width, "en", mono);
+    expect(lines).not.toBeNull();
+    // Split over two lines it would read as "SAML/" then "OIDC" — worse than a
+    // loose line, so the slash is deliberately not a break point.
+    expect(lines!.some((line) => line.includes("SAML/OIDC"))).toBe(true);
+    expect(lines!.some((line) => line.endsWith("/"))).toBe(false);
+  }
+});
+
 test("treats NBSP as unbreakable (French typographic spaces)", async () => {
   // With a plain space the pair splits over two lines...
   expect(await breakIntoLines("aaaa bbbb", FONT, 40, "fr", mono)).toEqual([
