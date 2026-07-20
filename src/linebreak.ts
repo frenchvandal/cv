@@ -55,7 +55,7 @@ const hyphenators = new Map<Lang, Promise<Hyphenate | null>>();
  * Lazily load the hyphenation patterns for `lang`; resolves to null where
  * hyphenation doesn't apply (Chinese wraps per character). Cached per language.
  */
-export function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
+function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
   let loading = hyphenators.get(lang);
   if (!loading) {
     loading = (lang === "en"

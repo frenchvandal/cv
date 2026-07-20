@@ -128,7 +128,8 @@ const fontsStyle = `<style data-fonts="ssg">${
 }</style>`;
 // Only the Latin subset is preloaded: every page needs it, while the CJK
 // subsets stay lazy behind their unicode-range.
-const latinFace = distFontFaces.find((face) => face.family === "Noto Sans")!;
+const latinFace = distFontFaces.find((face) => face.family === "Noto Sans");
+if (!latinFace) throw new Error('No emitted asset for the "Noto Sans" face');
 const fontPreload = `<link rel="preload" href="${
   escapeHtml(latinFace.url)
 }" as="font" type="font/woff2" crossorigin />`;

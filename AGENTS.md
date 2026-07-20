@@ -85,7 +85,15 @@ flags below (enabled — keep them on; each catches a real class of bug):
 
 - **`noUncheckedIndexedAccess`** — array/record access returns `T | undefined`.
   This code indexes `translations[lang]`, `nav[id]`, `lines[i]` — this flag
-  forces the guards that prevent runtime `undefined` surprises.
+  forces the guards that prevent runtime `undefined` surprises. The one
+  sanctioned escape is a `!` on an index the surrounding loop has already
+  bounded (`items[i]!` inside `for (i < items.length)`, throughout
+  [src/linebreak.ts](src/linebreak.ts)): the guard would be unreachable, and the
+  Knuth–Plass inner loops run per line per resize, so a branch that can never be
+  taken is noise in the hot path. Everywhere else — anything indexed by a value
+  from the DOM, the URL, or a lookup that can legitimately miss — narrow it or
+  throw a named error, as `distFontUrl` does in
+  [scripts/build.ts](scripts/build.ts).
 - **`exactOptionalPropertyTypes`** — distinguishes "key absent" from "key =
   undefined" (matters for the optional fields in `FitFont`/fit options in
   `measure.ts`).

@@ -161,9 +161,9 @@ const STATS: readonly { value: string; label: (t: Translation) => string }[] = [
 function about(t: Translation): string {
   const stats = STATS.map(
     (stat) => `
-          <div class="stat" data-count="${stat.value}">
+          <div class="stat" data-count="${escapeHtml(stat.value)}">
             <div class="stat__label">${escapeHtml(stat.label(t))}</div>
-            <div class="stat__value">${stat.value}</div>
+            <div class="stat__value">${escapeHtml(stat.value)}</div>
           </div>`,
   ).join("");
 
