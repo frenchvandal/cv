@@ -187,3 +187,37 @@ this site targets modern browsers only, so don't down-level.
   `if (false)` and tree-shakes it out. Use the same gate for any new diagnostic
   rather than a `NODE_ENV` check.
 - **No print stylesheet** — screen-only by design.
+
+## 8. `experiments/` — proven work that is not wired in
+
+A place for code that has been built and tested but deliberately not adopted, so
+the reasoning survives instead of being rediscovered. It is **not** a scratch
+directory: nothing lands here unless it is typechecked, tested, and carries a
+`README.md` stating what it proves and what adoption would cost.
+
+- **It is inside the gates.** `experiments/**/*.ts` is in the tsconfig `include`
+  and its tests run under plain `bun test`. An experiment that cannot survive
+  `bun run check` is not kept — a rotting prototype is worse than no prototype,
+  because it reads as a working option.
+- **Nothing in `src/` may import it.** The dependency arrow points one way:
+  experiments read the shipping modules, never the reverse. Adopting one means
+  moving the code into `src/` and deleting it from here, not adding an import.
+- **Prefer an equivalence test to a prose claim.** Where an experiment forks a
+  shipping module, assert the fork still matches it on the original's inputs
+  (see the last test in
+  [experiments/rich-linebreak](experiments/rich-linebreak/README.md)). That is
+  what keeps a fork from silently drifting away from the module it must
+  eventually replace.
+- **Delete on resolution.** When an experiment is adopted or ruled out for good,
+  remove it and record the outcome in its commit message. The directory holds
+  open questions, not history.
+
+Current occupant:
+[**rich-linebreak**](experiments/rich-linebreak/README.md) — a run-aware
+Knuth–Plass fork that lets a justified paragraph carry inline markup. The
+shipping breaker takes one font and returns flat strings, so inline styles are
+both mis-measured (+8.1% for a monospace span, against a 6px margin) and erased.
+Not adopted: the CV's prose is flat text, and italic — the one style it might
+want — measures identically in Noto Sans. Also records why
+`@chenglou/pretext/rich-inline` is *not* the answer: it is a greedy breaker, so
+it would trade the optimal line breaking away to get rich text.
