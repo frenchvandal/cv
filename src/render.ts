@@ -59,7 +59,9 @@ function nav(t: Translation, lang: Lang, theme: Theme): string {
 
   const languages = LANGS.map(
     (code) => `
-        <a href="${langUrl(code)}" hreflang="${HTML_LANG[code]}" data-lang="${code}"${
+        <a href="${langUrl(code)}" hreflang="${
+      HTML_LANG[code]
+    }" data-lang="${code}"${
       lang === code ? ' aria-current="page"' : ""
     } aria-label="${escapeHtml(LANG_NAME[code])}">
           <span lang="${HTML_LANG[code]}">${LANG_LABEL[code]}</span>
@@ -70,7 +72,9 @@ function nav(t: Translation, lang: Lang, theme: Theme): string {
     <header class="nav">
       <div class="wrap nav__inner">
         <a class="nav__brand" href="#top">${escapeHtml(t.name.display)}</a>
-        <nav class="nav__links" aria-label="${escapeHtml(t.ui.sectionsNav)}">${links}</nav>
+        <nav class="nav__links" aria-label="${
+    escapeHtml(t.ui.sectionsNav)
+  }">${links}</nav>
         <div class="nav__actions">
           <nav class="nav__langs" aria-label="${
     escapeHtml(t.ui.languageNav)
@@ -130,7 +134,9 @@ function section(
   return `
     <section class="section" aria-labelledby="${id}">
       <div class="wrap">
-        <h2 class="section__title animate" id="${id}">${escapeHtml(t.nav[id])}</h2>
+        <h2 class="section__title animate" id="${id}">${
+    escapeHtml(t.nav[id])
+  }</h2>
         <div class="${bodyClass} animate animate--delayed-1">${body}</div>
       </div>
     </section>
@@ -299,7 +305,9 @@ function skills(t: Translation): string {
           <h3 class="card__title">${escapeHtml(t.skills.languages.title)}</h3>
           <div class="tags">${
       languages.map((l) =>
-        `<span class="tag">${escapeHtml(l.name)} · ${escapeHtml(l.level)}</span>`
+        `<span class="tag">${escapeHtml(l.name)} · ${
+          escapeHtml(l.level)
+        }</span>`
       ).join("")
     }</div>
         </div>`,
@@ -340,7 +348,9 @@ function dialogue(t: Translation): string {
   const rows = t.dialogue.messages.map(
     (m) => `
           <div class="chat__row${m.me ? " chat__row--me" : ""}">
-            <div class="msg" data-text="${escapeHtml(m.text)}"><span class="sr-only">${
+            <div class="msg" data-text="${
+      escapeHtml(m.text)
+    }"><span class="sr-only">${
       escapeHtml(m.me ? t.dialogue.me : t.dialogue.visitor)
     }: </span>${escapeHtml(m.text)}</div>
           </div>`,
