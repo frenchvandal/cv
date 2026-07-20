@@ -269,8 +269,7 @@ function education(t: Translation): string {
     [
       schoolCard(LOGOS.sichuan, sichuan),
       schoolCard(LOGOS.master, master),
-      // No EDC vector yet — see the note in src/logos.ts.
-      schoolCard(null, edc),
+      schoolCard(LOGOS.edc, edc),
     ].join("\n"),
     "section__body section__body--cards",
   );
