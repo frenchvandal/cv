@@ -42,9 +42,10 @@ export const HERO_FIT = {
 /**
  * Section-title fitting contract, shared by the live fitter and the dev-only
  * audit. `columnRem` is the width a title may occupy inside the `--wrap`
- * content column of [src/styles.css](src/styles.css) (61.25rem, minus its
- * padding and a margin for the longest localized label); `desktopMinRem`
- * mirrors the breakpoint below which titles wrap instead of being fitted.
+ * content column of [src/styles.css](src/styles.css): 48.5rem less its 2.5rem
+ * of padding leaves 46rem, less a 2rem margin for the longest localized label.
+ * `desktopMinRem` mirrors the breakpoint below which titles wrap instead of
+ * being fitted.
  */
 export const TITLE_FIT = {
   columnRem: 44,

@@ -61,12 +61,15 @@
   --space-xl: 3.5rem;
   --space-2xl: 6.5rem;
 
-  /* Content column: Apple's 980px measure. */
-  --wrap: 61.25rem;
-  /* Reading measure — the width of a line of prose, ~75 characters at the body
-     size. The page has these two widths and no third: text runs to --measure,
-     anything with an edge the reader can see runs to --wrap. */
-  --measure: 46rem;
+  /* The one content width on the page, sized from the text rather than from the
+     window: 46rem of prose — the reading measure, ~85 characters at the body
+     size — plus `.wrap`'s padding on each side. Nav, hero, prose, cards, the
+     timeline, the stats strip and the footer all share it, so every block lines
+     up on the same two edges and there is no second width to keep in sync.
+     Widening this past the measure is what pulls the page apart: the prose has
+     to stop at ~46rem to stay readable, so anything wider strands it short of
+     every surface beside it. */
+  --wrap: 48.5rem;
   --nav-h: 3rem;
 
   /* The system's own deceleration curve — motion that settles rather than stops. */
@@ -505,16 +508,8 @@ a:hover {
   color: var(--fg-secondary);
 }
 
-/* The measure sits on the text, not on this container — that is what lets one
-   section hold both widths at once. About is the case that needs it: the
-   paragraphs read at --measure while the stats strip below them keeps the full
-   column, so its right edge lands on the nav's and the footer's rather than
-   stopping short of them. Scoped to direct children, so it never reaches the
+/* The About paragraphs only. Scoped to direct children so it never reaches the
    tight, deliberately-spaced stacks inside a card or a timeline event. */
-.section__body > p {
-  max-width: var(--measure);
-}
-
 .section__body > p + p {
   margin-top: var(--space-md);
 }
