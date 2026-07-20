@@ -505,7 +505,9 @@ a:hover {
   max-width: 46rem;
 }
 
-.section__body p + p {
+/* The About paragraphs only. Scoped to direct children so it never reaches the
+   tight, deliberately-spaced stacks inside a card or a timeline event. */
+.section__body > p + p {
   margin-top: var(--space-md);
 }
 
@@ -535,14 +537,6 @@ a:hover {
   background: var(--bg-secondary);
   border-radius: var(--r-lg);
   padding: var(--space-lg);
-}
-
-.card + .card {
-  margin-top: var(--space-md);
-}
-
-.section__body--cards .card + .card {
-  margin-top: 0;
 }
 
 /* The date stays pinned to the top-right on one line; the title wraps inside
@@ -577,12 +571,6 @@ a:hover {
     flex-direction: column;
     gap: 0.25rem;
   }
-}
-
-.card__subtitle {
-  font-size: 0.9375rem;
-  color: var(--fg-secondary);
-  margin-top: 0.25rem;
 }
 
 .card__list {
@@ -620,17 +608,124 @@ a:hover {
   color: var(--fg-secondary);
 }
 
-/* A secondary line under the role/diploma — the same size as .card__meta, for
-   the aside that neither the title nor the subtitle should carry. */
-.card__note {
-  margin-top: 0.25rem;
-  font-size: 0.8125rem;
-  color: var(--fg-tertiary);
+/* ------------------------------------------------------------------ *
+ * Timeline — Ant Design's Timeline, re-read through the HIG
+ *
+ * Ant's structure survives: a vertical rail, one node per event, the event's
+ * content beside it, and — on wide viewports — the dates in a column of their
+ * own (Ant's `label` mode). Everything decorative is the HIG's: the rail is a
+ * hairline separator, the node a small ring in the neutral ramp, and the one
+ * filled accent node is spent on the single fact it can carry — which role is
+ * still running. Deference: the content sits directly on the page, unboxed, so
+ * the rail is the only structure the reader has to parse.
+ * ------------------------------------------------------------------ */
+
+/* Wider than the prose measure: the date column is charged to the section, not
+   to the text, so the events keep a comfortable line length beside it. */
+.section__body--timeline {
+  max-width: 54rem;
 }
 
-/* ------------------------------------------------------------------ *
- * School cards — the education section leads with the institution's mark
- * ------------------------------------------------------------------ */
+.timeline {
+  list-style: none;
+  padding: 0;
+
+  /* Height of an event's first line box. The heading and the date share it, so
+     both centre on the node without a per-element magic offset. */
+  --tl-lead: 1.55rem;
+  /* The node's centre, from the top of the event. Narrow viewports open with
+     the date, whose line box is the body's — half of it puts the node on the
+     date's optical centre. */
+  --tl-node-y: 0.63rem;
+  --tl-node: 0.5625rem;
+  --tl-rail-col: 1.5rem;
+  /* Wide enough to hold the longest date on one line in every language — the
+     dual ranges ("2011 – 2014 · 2019 – aujourd'hui", the widest at 196px).
+     Narrower and they wrap after the separator, leaving it dangling. */
+  --tl-date-col: 13rem;
+  --tl-logo: 2.25rem;
+  --tl-gap: var(--space-xl);
+}
+
+/* Narrow: two columns, the rail spanning both rows, the date sitting above the
+   content the way a card's meta line would. */
+.timeline__item {
+  display: grid;
+  grid-template-columns: var(--tl-rail-col) minmax(0, 1fr);
+  grid-template-areas:
+    'rail date'
+    'rail body';
+  column-gap: var(--space-sm);
+  padding-bottom: var(--tl-gap);
+}
+
+.timeline__item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline__date {
+  grid-area: date;
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+}
+
+.timeline__rail {
+  grid-area: rail;
+  position: relative;
+}
+
+/* The line has to run the full height of the event *including* the gap below
+   it, or the rail breaks between events — a grid track stops at the content
+   edge, and the spacing is the item's padding. Hence the negative `bottom`:
+   it carries the line across the padding to meet the next event's. The first
+   event's line starts at its node and the last one's ends there, so the rail
+   has two ends rather than two stubs. */
+.timeline__rail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: calc(-1 * var(--tl-gap));
+  left: 50%;
+  width: 1px;
+  translate: -50% 0;
+  background: var(--separator);
+}
+
+.timeline__item:first-child .timeline__rail::before {
+  top: var(--tl-node-y);
+}
+
+.timeline__item:last-child .timeline__rail::before {
+  bottom: auto;
+  height: var(--tl-node-y);
+}
+
+/* A ring, not a disc: a finished event is structure, so it stays in the
+   neutral ramp. The opaque centre is what breaks the rail behind it. */
+.timeline__node {
+  position: absolute;
+  top: var(--tl-node-y);
+  left: 50%;
+  translate: -50% -50%;
+  width: var(--tl-node);
+  height: var(--tl-node);
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1.5px var(--fg-tertiary);
+}
+
+/* The event still running: filled and haloed with the accent, which is the
+   same job the accent does everywhere else on the page — state, never decor. */
+.timeline__item--current .timeline__node {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.timeline__body {
+  grid-area: body;
+}
 
 /* The logos are inlined single-colour SVGs (src/logos.ts), so they inherit the
    text colour and re-balance with the rest of the page in dark mode.
@@ -639,17 +734,101 @@ a:hover {
    a 3:1 lockup would carry several times the visual weight of a round seal at
    the same height. `preserveAspectRatio` in each file keeps them left-aligned
    when the width cap is the binding constraint. */
-.card--school .card__logo {
-  height: 3.25rem;
-  margin-bottom: var(--space-md);
+.timeline__logo {
+  height: var(--tl-logo);
+  margin-bottom: var(--space-sm);
   color: var(--fg);
 }
 
-.card--school .card__logo svg {
+.timeline__logo svg {
   height: 100%;
   width: auto;
-  max-width: min(100%, 8.5rem);
+  max-width: min(100%, 7rem);
   display: block;
+}
+
+.timeline__org {
+  font-size: 1.1875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: var(--tl-lead);
+  color: var(--fg);
+}
+
+.timeline__role {
+  margin-top: 0.125rem;
+  font-size: 0.9375rem;
+  color: var(--fg-secondary);
+}
+
+.timeline__note {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
+}
+
+.timeline__text {
+  margin-top: var(--space-sm);
+  font-size: 0.9375rem;
+  color: var(--fg-secondary);
+}
+
+.timeline__list {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-sm);
+  color: var(--fg-secondary);
+}
+
+.timeline__list li {
+  position: relative;
+  padding-left: 1.15rem;
+  font-size: 0.9375rem;
+}
+
+/* Small round bullet, drawn rather than a glyph — no font-subset dependency. */
+.timeline__list li::before {
+  content: '';
+  position: absolute;
+  left: 0.15rem;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg-tertiary);
+}
+
+.timeline__list li + li {
+  margin-top: var(--space-xs);
+}
+
+/* Wide enough for the dates to leave the content column: Ant's `label` mode.
+   Every event then opens on one line — date, node, heading — and the reader
+   scans the years down one edge. */
+@media (min-width: 52rem) {
+  .timeline__item {
+    grid-template-columns: var(--tl-date-col) var(--tl-rail-col) minmax(0, 1fr);
+    grid-template-areas: 'date rail body';
+  }
+
+  .timeline {
+    --tl-node-y: calc(var(--tl-lead) / 2);
+  }
+
+  .timeline__date {
+    text-align: right;
+    line-height: var(--tl-lead);
+  }
+
+  /* Education opens on the institution's mark, which is taller than a line of
+     text: the node and the date move down to its centre instead. */
+  .timeline--marks {
+    --tl-node-y: calc(var(--tl-logo) / 2);
+  }
+
+  .timeline--marks .timeline__date {
+    line-height: var(--tl-logo);
+  }
 }
 
 /* ------------------------------------------------------------------ *

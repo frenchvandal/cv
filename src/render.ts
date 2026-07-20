@@ -178,100 +178,155 @@ function about(t: Translation): string {
   );
 }
 
-/** A position: header, role, and either bullets or a paragraph. */
-function jobCard(job: {
-  title: string;
-  company: string;
+/**
+ * One event on a timeline: when it happened, where, in what role, and what came
+ * of it. Careers and studies are both sequences, so they share the shape.
+ */
+type TimelineEntry = {
+  /** Free text, not a machine date — the ranges read "2011 – 2014 · 2019 – Present". */
   date: string;
+  /** The employer or the institution — the event's heading. */
+  org: string;
+  /** The role held, or the diploma earned. */
+  role: string;
+  /** An aside neither the heading nor the role should carry. */
+  note?: string;
+  /** Trusted inline SVG from [src/logos.ts](src/logos.ts); see `timelineItem`. */
+  logo?: string;
   items?: readonly string[];
   desc?: string;
-}): string {
-  const detail = job.items
-    ? `<ul class="card__list">${
-      job.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
+  /** The one event still running — the only node drawn in the accent. */
+  current?: boolean;
+};
+
+/**
+ * An event, rendered as Ant Design's Timeline item read through the HIG.
+ *
+ * Ant's structure survives — a rail, one node per event, the content beside it,
+ * dates in their own column (Ant's `label` mode, on wide viewports only). Its
+ * decoration does not: the node is a hairline ring in the neutral ramp, the
+ * filled accent node is spent on the single fact it can carry (which role is
+ * still running), and the content sits on the page instead of in a card, so
+ * the rail is the only structure the reader has to parse.
+ *
+ * `logo` is trusted static markup and is inlined unescaped; it is decorative,
+ * since the heading right under it already names the school, so the wrapper
+ * hides it from assistive tech rather than letting the SVG's own label announce
+ * the name a second time.
+ *
+ * `index` only staggers the reveal, reusing the shared `animate--delayed-*`
+ * steps — the events fade in top to bottom, the way the rail is read.
+ */
+function timelineItem(entry: TimelineEntry, index: number): string {
+  const detail = entry.items
+    ? `<ul class="timeline__list">${
+      entry.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
     }</ul>`
-    : job.desc
-    ? `<p class="card__text">${escapeHtml(job.desc)}</p>`
+    : entry.desc
+    ? `<p class="timeline__text">${escapeHtml(entry.desc)}</p>`
     : "";
 
   return `
-        <article class="card">
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(job.company)}</h3>
-            <span class="card__meta">${escapeHtml(job.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(job.title)}</p>
-          ${detail}
-        </article>`;
+          <li class="timeline__item${
+    entry.current ? " timeline__item--current" : ""
+  } animate animate--delayed-${index + 1}">
+            <span class="timeline__date">${escapeHtml(entry.date)}</span>
+            <div class="timeline__rail" aria-hidden="true"><span class="timeline__node"></span></div>
+            <div class="timeline__body">
+              ${
+    entry.logo
+      ? `<div class="timeline__logo" aria-hidden="true">${entry.logo}</div>`
+      : ""
+  }
+              <h3 class="timeline__org">${escapeHtml(entry.org)}</h3>
+              <p class="timeline__role">${escapeHtml(entry.role)}</p>
+              ${
+    entry.note ? `<p class="timeline__note">${escapeHtml(entry.note)}</p>` : ""
+  }
+              ${detail}
+            </div>
+          </li>`;
+}
+
+/**
+ * The rail itself. `role="list"` restores the semantics that `list-style: none`
+ * strips in Safari/VoiceOver, and the ordering is meaningful — an `<ol>`.
+ */
+function timeline(entries: readonly TimelineEntry[], modifier = ""): string {
+  return `
+        <ol class="timeline${modifier}" role="list">${
+    entries.map(timelineItem).join("")
+  }
+        </ol>`;
 }
 
 function experience(t: Translation): string {
+  const { kapia, consulting, insurance } = t.experience;
   return section(
     t,
     "experience",
-    [
-      jobCard(t.experience.kapia),
-      jobCard(t.experience.consulting),
-      jobCard(t.experience.insurance),
-    ].join(""),
+    timeline([
+      {
+        date: kapia.date,
+        org: kapia.company,
+        role: kapia.title,
+        items: kapia.items,
+        current: true,
+      },
+      {
+        date: consulting.date,
+        org: consulting.company,
+        role: consulting.title,
+        items: consulting.items,
+      },
+      {
+        date: insurance.date,
+        org: insurance.company,
+        role: insurance.title,
+        desc: insurance.desc,
+      },
+    ]),
+    "section__body section__body--timeline",
   );
 }
 
 /**
- * One card per institution: its logo, its name, then the diploma earned there.
- *
- * `logo` is trusted static markup from [src/logos.ts](src/logos.ts) and is
- * inlined unescaped; it is decorative here, since the heading right under it
- * already names the school, so the wrapper hides it from assistive tech rather
- * than letting the SVG's own label announce the name a second time.
- *
- * A school with no logo still gets the (empty) slot: the cards sit in one grid
- * row, so dropping the box would lift that card's heading above the others.
+ * The same rail, opened by each institution's mark instead of its name. The
+ * marks are taller than a line of text, so `timeline--marks` re-centres the
+ * node and the date on them (see src/styles.css).
  */
-function schoolCard(logo: string | null, school: {
-  school: string;
-  title: string;
-  date: string;
-  subtitle: string;
-  items?: readonly string[];
-  desc?: string;
-}): string {
-  const detail = school.items
-    ? `<ul class="card__list">${
-      school.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
-    }</ul>`
-    : school.desc
-    ? `<p class="card__text">${escapeHtml(school.desc)}</p>`
-    : "";
-
-  return `
-        <article class="card card--school">
-          <div class="card__logo" aria-hidden="true">${logo ?? ""}</div>
-          <div class="card__header">
-            <h3 class="card__title">${escapeHtml(school.school)}</h3>
-            <span class="card__meta">${escapeHtml(school.date)}</span>
-          </div>
-          <p class="card__subtitle">${escapeHtml(school.title)}</p>
-          ${
-    school.subtitle
-      ? `<p class="card__note">${escapeHtml(school.subtitle)}</p>`
-      : ""
-  }
-          ${detail}
-        </article>`;
-}
-
 function education(t: Translation): string {
   const { sichuan, master, edc } = t.education;
   return section(
     t,
     "education",
-    [
-      schoolCard(LOGOS.sichuan, sichuan),
-      schoolCard(LOGOS.master, master),
-      schoolCard(LOGOS.edc, edc),
-    ].join("\n"),
-    "section__body section__body--cards",
+    timeline([
+      {
+        date: sichuan.date,
+        org: sichuan.school,
+        role: sichuan.title,
+        note: sichuan.subtitle,
+        logo: LOGOS.sichuan,
+        items: sichuan.items,
+      },
+      {
+        date: master.date,
+        org: master.school,
+        role: master.title,
+        note: master.subtitle,
+        logo: LOGOS.master,
+        desc: master.desc,
+      },
+      {
+        date: edc.date,
+        org: edc.school,
+        role: edc.title,
+        note: edc.subtitle,
+        logo: LOGOS.edc,
+        desc: edc.desc,
+      },
+    ], " timeline--marks"),
+    "section__body section__body--timeline",
   );
 }
 
