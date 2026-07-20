@@ -287,19 +287,24 @@ function startStat(stat: HTMLElement): void {
   if (stat.dataset.animated) return;
   stat.dataset.animated = "true";
 
-  const target = parseFloat(stat.dataset.count ?? "0");
+  const raw = stat.dataset.count ?? "0";
+  const target = parseFloat(raw);
   const valueEl = stat.querySelector(".stat__value");
   if (!valueEl) return;
 
-  const isFloat = target % 1 !== 0;
+  // Render every frame with the precision the source value was written at, so
+  // the counter never invents or drops a decimal (all four stats are integers
+  // today; a "3.88" would count up as 3.88, not 4).
+  const decimals = raw.split(".")[1]?.length ?? 0;
+
   if (reducedMotion()) {
-    valueEl.textContent = isFloat ? target.toFixed(2) : String(target);
+    valueEl.textContent = target.toFixed(decimals);
     return;
   }
 
   const duration = 900;
-  // Quantized ease-out: the value climbs in visible ticks (dither-style
-  // discreteness) instead of a smooth blur of digits.
+  // Quantized ease-out: the value climbs in visible ticks instead of a smooth
+  // blur of digits.
   const ticks = 10;
   const start = performance.now();
   const frame = (now: number): void => {
@@ -307,9 +312,7 @@ function startStat(stat: HTMLElement): void {
     const eased = 1 - Math.pow(1 - progress, 3);
     const stepped = progress >= 1 ? 1 : Math.floor(eased * ticks) / ticks;
     const current = target * stepped;
-    valueEl.textContent = isFloat
-      ? current.toFixed(2)
-      : String(Math.round(current));
+    valueEl.textContent = current.toFixed(decimals);
     if (progress < 1) requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
@@ -376,7 +379,12 @@ function bindEvents(): void {
   app?.querySelectorAll<HTMLAnchorElement>("a[data-lang]").forEach((link) => {
     link.addEventListener("click", (event) => {
       const next = link.dataset.lang;
-      if (!isLang(next) || event.metaKey || event.ctrlKey || event.shiftKey) {
+      // Let the browser handle every modified click itself — new tab/window
+      // (meta/ctrl/shift) and download (alt) all mean "not an in-page switch".
+      if (
+        !isLang(next) ||
+        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
+      ) {
         return;
       }
       event.preventDefault();
@@ -418,10 +426,23 @@ function afterPaint(): void {
   });
 }
 
+/**
+ * The armed fade-out of a transition that hasn't painted yet. Two switches
+ * inside PAGE_SWAP_MS would otherwise stack two paints, and the first one —
+ * rendering an already-stale language — would land after the second.
+ */
+let pendingPaint: ReturnType<typeof setTimeout> | null = null;
+
 function render(transition: boolean): void {
   if (!app) return;
 
+  if (pendingPaint !== null) {
+    clearTimeout(pendingPaint);
+    pendingPaint = null;
+  }
+
   const paint = (): void => {
+    pendingPaint = null;
     app.innerHTML = renderApp(currentLang, theme);
     syncDocumentMeta();
     bindEvents();
@@ -433,7 +454,7 @@ function render(transition: boolean): void {
 
   if (transition) {
     app.classList.add("is-transitioning");
-    setTimeout(paint, PAGE_SWAP_MS);
+    pendingPaint = setTimeout(paint, PAGE_SWAP_MS);
   } else {
     paint();
   }

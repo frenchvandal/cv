@@ -1,15 +1,9 @@
 # Logs
 logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
 node_modules
 dist
-dist-ssr
 *.local
 
 # Env files (secrets never belong in git)
@@ -20,8 +14,8 @@ dist-ssr
 # Playwright MCP artifacts
 .playwright-mcp
 
-# Astro cache (legacy)
-.astro
+# Rust build output (the crate is gone; this keeps any stray reappearance out)
+target
 
 # Editor directories and files
 .vscode/*

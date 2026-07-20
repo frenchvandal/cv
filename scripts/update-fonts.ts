@@ -9,8 +9,9 @@
  * src/fonts/*.woff2 and src/fonts.ts (with fresh unicode-range values).
  *
  * Latin glyphs are scanned from every source file that contains user-visible
- * literals (translations.ts AND render.ts — e.g. the ↗ link arrow lives in the
- * markup, not the translations). The two Chinese glyph sets are extracted per
+ * literals — translations.ts AND render.ts, since the markup carries text of
+ * its own (the theme-toggle glyphs, the `@handle` in contact) that never passes
+ * through a translation object. The two Chinese glyph sets are extracted per
  * language (from the imported translation objects, not the raw file):
  * Simplified and Traditional pages each ship only their own script, and shared
  * codepoints get the right regional glyph variant from their respective family
@@ -43,8 +44,7 @@ const isLatin = (cp: number): boolean =>
   (cp >= 0xa0 && cp <= 0x24f) ||
   (cp >= 0x2010 && cp <= 0x203a) ||
   cp === 0x20ac ||
-  cp === 0xb0 ||
-  cp === 0x2197; // ↗ (external-link arrow in render.ts)
+  cp === 0xb0;
 const isCjk = (cp: number, ch: string): boolean =>
   (cp >= 0x4e00 && cp <= 0x9fff) || // unified ideographs
   (cp >= 0x3000 && cp <= 0x303f) || // CJK punctuation（、。「」）

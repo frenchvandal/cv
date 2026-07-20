@@ -29,7 +29,6 @@
      is reserved for non-essential text (footer, captions) at >= 4.5:1 too. */
   --bg: #ffffff;
   --bg-secondary: #f5f5f7;
-  --bg-elevated: #ffffff;
   --fg: #1d1d1f;
   --fg-secondary: #4b4b50; /* 8.6:1 */
   --fg-tertiary: #6e6e73; /* 5.6:1 */
@@ -52,7 +51,6 @@
   /* Radii. Large values read as the continuous corners HIG asks for; the pill
      is Apple's own button radius. */
   --r-sm: 8px;
-  --r-md: 12px;
   --r-lg: 18px;
   --r-pill: 980px;
 
@@ -86,7 +84,6 @@
   color-scheme: dark;
   --bg: #000000;
   --bg-secondary: #1d1d1f;
-  --bg-elevated: #1d1d1f;
   --fg: #f5f5f7;
   --fg-secondary: #b0b0b6; /* 9.4:1 */
   --fg-tertiary: #86868b; /* 5.6:1 */

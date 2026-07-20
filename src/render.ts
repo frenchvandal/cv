@@ -19,6 +19,7 @@ import {
   LANG_NAME,
   LANGS,
   PROFILE,
+  PROFILE_URLS,
   type Translation,
   translations,
 } from "./translations.ts";
@@ -92,7 +93,7 @@ function nav(t: Translation, lang: Lang, theme: Theme): string {
 
 function hero(t: Translation): string {
   return `
-    <section class="hero wrap" id="top" aria-label="Introduction">
+    <section class="hero wrap" id="top" aria-label="${escapeHtml(t.ui.intro)}">
       <p class="hero__eyebrow animate">${escapeHtml(t.hero.greeting)}</p>
       <h1 class="hero__name">
         ${
@@ -321,7 +322,6 @@ function education(t: Translation): string {
         date: edc.date,
         org: edc.school,
         role: edc.title,
-        note: edc.subtitle,
         logo: LOGOS.edc,
         desc: edc.desc,
       },
@@ -453,7 +453,19 @@ function contact(t: Translation): string {
         <div class="contact__grid">
           <div>
             <p class="contact__label">${escapeHtml(t.contact.wechatLabel)}</p>
-            <p class="contact__value">${PROFILE.wechat}</p>
+            <p class="contact__value">${escapeHtml(PROFILE.wechat)}</p>
+          </div>
+          <div>
+            <p class="contact__label">${escapeHtml(t.contact.githubLabel)}</p>
+            <p class="contact__value"><a href="${
+      escapeHtml(PROFILE_URLS.github)
+    }" rel="me">${escapeHtml(`@${PROFILE.github}`)}</a></p>
+          </div>
+          <div>
+            <p class="contact__label">${escapeHtml(t.contact.linkedinLabel)}</p>
+            <p class="contact__value"><a href="${
+      escapeHtml(PROFILE_URLS.linkedin)
+    }" rel="me">${escapeHtml(`in/${PROFILE.linkedin}`)}</a></p>
           </div>
           <div>
             <p class="contact__label">${escapeHtml(t.contact.locationLabel)}</p>

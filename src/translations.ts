@@ -49,11 +49,28 @@ export const PROFILE = {
   fullName: "Philippe Ribeiro",
   chineseName: "李北洛",
   wechat: "frenchvandal",
+  github: "frenchvandal",
+  linkedin: "philipperibeiro",
   /** JSON-LD PostalAddress fields ([scripts/build.ts](scripts/build.ts)). */
   address: { locality: "Chengdu", country: "CN" },
   /** ISO 639-1 codes for the JSON-LD `knowsLanguage`. */
   knowsLanguage: ["fr", "pt", "en", "es", "zh"],
 } as const;
+
+/**
+ * Public profiles, in one place because they are used twice: as links in the
+ * contact section ([src/render.ts](src/render.ts)) and as the JSON-LD `sameAs`
+ * array ([scripts/build.ts](scripts/build.ts)), which is how a search engine
+ * ties this page to the same person elsewhere. Keep the two in sync by adding
+ * here, never at a call site.
+ */
+export const PROFILE_URLS = {
+  github: `https://github.com/${PROFILE.github}`,
+  linkedin: `https://www.linkedin.com/in/${PROFILE.linkedin}/`,
+} as const;
+
+/** Every profile URL, for JSON-LD `sameAs`. */
+export const SAME_AS: readonly string[] = Object.values(PROFILE_URLS);
 
 const en = {
   name: {
@@ -158,7 +175,6 @@ const en = {
       school: "EDC Paris Business School",
       title: "Business Degree — Finance Major",
       date: "2004",
-      subtitle: "",
       desc: "Business and management, specialising in finance.",
     },
   },
@@ -300,11 +316,14 @@ const en = {
     intro:
       "I'm looking for Product Owner, Business Analyst, or project-management roles — in China or in Europe-facing remote collaboration. Twenty years in regulated financial software, based in Chengdu, mobile nationwide, available immediately.",
     wechatLabel: "WeChat",
+    githubLabel: "GitHub",
+    linkedinLabel: "LinkedIn",
     locationLabel: "Location",
     footer: "© 2026 Philippe Ribeiro · Built with Bun & pretext",
   },
   ui: {
     skipLink: "Skip to content",
+    intro: "Introduction",
     languageNav: "Language",
     sectionsNav: "Sections",
     copyWechat: "Copy WeChat ID",
@@ -425,7 +444,6 @@ const fr: Translation = {
       school: "EDC Paris Business School",
       title: "Diplôme d'école de commerce — Majeure Finance",
       date: "2004",
-      subtitle: "",
       desc: "Commerce et gestion, avec une spécialisation en finance.",
     },
   },
@@ -569,11 +587,14 @@ const fr: Translation = {
     intro:
       "Je recherche des postes de Product Owner, Business Analyst ou conduite de projet — en Chine ou en collaboration à distance avec l'Europe. Vingt ans dans le logiciel financier réglementé, basé à Chengdu, mobile dans toute la Chine, disponible immédiatement.",
     wechatLabel: "WeChat",
+    githubLabel: "GitHub",
+    linkedinLabel: "LinkedIn",
     locationLabel: "Localisation",
     footer: "© 2026 Philippe Ribeiro · Construit avec Bun & pretext",
   },
   ui: {
     skipLink: "Aller au contenu",
+    intro: "Introduction",
     languageNav: "Langue",
     sectionsNav: "Sections",
     copyWechat: "Copier l'ID WeChat",
@@ -683,7 +704,6 @@ const zh: Translation = {
       school: "EDC 巴黎商学院",
       title: "商科学位——金融方向",
       date: "2004",
-      subtitle: "",
       desc: "商业与管理教育，主修金融。",
     },
   },
@@ -813,11 +833,14 @@ const zh: Translation = {
     intro:
       "我正在寻找产品负责人、业务分析师或项目管理类职位——在中国工作或远程面向欧洲协作均可。二十年受监管金融软件经验，现居成都，可在全国范围工作，可随时到岗。",
     wechatLabel: "微信",
+    githubLabel: "GitHub",
+    linkedinLabel: "领英",
     locationLabel: "所在地",
     footer: "© 2026 李北洛 Philippe Ribeiro · 使用 Bun 与 pretext 构建",
   },
   ui: {
     skipLink: "跳到内容",
+    intro: "简介",
     languageNav: "语言",
     sectionsNav: "章节",
     copyWechat: "复制微信号",
@@ -927,7 +950,6 @@ const zhHant: Translation = {
       school: "EDC 巴黎商學院",
       title: "商學學位——金融方向",
       date: "2004",
-      subtitle: "",
       desc: "商業與管理教育，主修金融。",
     },
   },
@@ -1057,11 +1079,14 @@ const zhHant: Translation = {
     intro:
       "我正在尋找產品負責人、商業分析師或專案管理類職位——在中國工作或遠端面向歐洲協作皆可。二十年受監管金融軟體經驗，現居成都，可於中國各地工作，可隨時到職。",
     wechatLabel: "微信",
+    githubLabel: "GitHub",
+    linkedinLabel: "領英",
     locationLabel: "所在地",
     footer: "© 2026 李北洛 Philippe Ribeiro · 以 Bun 與 pretext 打造",
   },
   ui: {
     skipLink: "跳至內容",
+    intro: "簡介",
     languageNav: "語言",
     sectionsNav: "章節",
     copyWechat: "複製微信號",

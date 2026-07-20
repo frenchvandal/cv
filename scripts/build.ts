@@ -17,6 +17,9 @@
 
 import { readdir, rm } from "node:fs/promises";
 import { langUrl, pageTitle, renderApp } from "../src/render.ts";
+// The same escaper the renderer uses — one implementation, so the two can't
+// drift (this file used to carry a near-copy that missed the apostrophe).
+import { escapeHtml } from "../src/dom.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
 import { THEME_COLOR } from "../src/config.ts";
 import {
@@ -24,6 +27,7 @@ import {
   type Lang,
   LANGS,
   PROFILE,
+  SAME_AS,
   translations,
 } from "../src/translations.ts";
 
@@ -58,14 +62,6 @@ const OG_LOCALE: Record<Lang, string> = {
   zh: "zh_CN",
   "zh-hant": "zh_TW",
 };
-
-function attr(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 /** Public URL of a language's page — relative by default, absolute when SITE_URL is set. */
 function href(lang: Lang): string {
@@ -134,7 +130,7 @@ const fontsStyle = `<style data-fonts="ssg">${
 // subsets stay lazy behind their unicode-range.
 const latinFace = distFontFaces.find((face) => face.family === "Noto Sans")!;
 const fontPreload = `<link rel="preload" href="${
-  attr(latinFace.url)
+  escapeHtml(latinFace.url)
 }" as="font" type="font/woff2" crossorigin />`;
 
 /*
@@ -159,7 +155,7 @@ for (const lang of LANGS) {
   const alternates = LANGS.map(
     (l) =>
       `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${
-        attr(href(l))
+        escapeHtml(href(l))
       }" />`,
   ).join("\n    ");
 
@@ -170,6 +166,7 @@ for (const lang of LANGS) {
     alternateName: PROFILE.chineseName,
     jobTitle: t.hero.title,
     url: href(lang),
+    sameAs: SAME_AS,
     address: {
       "@type": "PostalAddress",
       addressLocality: PROFILE.address.locality,
@@ -181,22 +178,26 @@ for (const lang of LANGS) {
   const headExtra = `
     ${fontPreload}
     ${fontsStyle}
-    <link rel="canonical" href="${attr(href(lang))}" />
+    <link rel="canonical" href="${escapeHtml(href(lang))}" />
     ${alternates}
-    <link rel="alternate" hreflang="x-default" href="${attr(href("en"))}" />
+    <link rel="alternate" hreflang="x-default" href="${
+    escapeHtml(href("en"))
+  }" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="${attr(title)}" />
-    <meta property="og:description" content="${attr(description)}" />
-    <meta property="og:url" content="${attr(href(lang))}" />
+    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:url" content="${escapeHtml(href(lang))}" />
     <meta property="og:locale" content="${OG_LOCALE[lang]}" />${
     SITE
       ? `
-    <meta property="og:image" content="${attr(`${SITE}/${OG_IMAGE}`)}" />
+    <meta property="og:image" content="${escapeHtml(`${SITE}/${OG_IMAGE}`)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${attr(title)}" />
+    <meta property="og:image:alt" content="${escapeHtml(title)}" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="${attr(`${SITE}/${OG_IMAGE}`)}" />`
+    <meta name="twitter:image" content="${
+        escapeHtml(`${SITE}/${OG_IMAGE}`)
+      }" />`
       : `
     <meta name="twitter:card" content="summary" />`
   }
@@ -237,7 +238,7 @@ console.log(`  ${OUT}/robots.txt`);
 
 if (SITE) {
   const urls = LANGS.map(
-    (lang) => `  <url>\n    <loc>${attr(href(lang))}</loc>\n  </url>`,
+    (lang) => `  <url>\n    <loc>${escapeHtml(href(lang))}</loc>\n  </url>`,
   ).join("\n");
   const sitemap =
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
@@ -252,7 +253,7 @@ const notFound = `<!doctype html>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <title>404 — ${attr(PROFILE.fullName)}</title>
+    <title>404 — ${escapeHtml(PROFILE.fullName)}</title>
     <style>
       :root { color-scheme: light dark; }
       body { font-family: system-ui, -apple-system, sans-serif;

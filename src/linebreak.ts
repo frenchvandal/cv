@@ -58,11 +58,21 @@ const hyphenators = new Map<Lang, Promise<Hyphenate | null>>();
 export function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
   let loading = hyphenators.get(lang);
   if (!loading) {
-    loading = lang === "en"
-      ? import("hyphen/en").then((m) => m.hyphenateSync)
+    loading = (lang === "en"
+      ? import("hyphen/en").then((m) =>
+        m.hyphenateSync
+      )
       : lang === "fr"
       ? import("hyphen/fr").then((m) => m.hyphenateSync)
-      : Promise.resolve(null);
+      : Promise.resolve(null))
+      .catch(() => {
+        // A transient chunk-load failure must not cost hyphenation for the rest
+        // of the session: drop the rejected promise so the next caller (a
+        // resize, a language switch) retries the import instead of re-awaiting
+        // the failure. This run degrades to unhyphenated line breaking.
+        hyphenators.delete(lang);
+        return null;
+      });
     hyphenators.set(lang, loading);
   }
   return loading;

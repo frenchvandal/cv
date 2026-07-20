@@ -1,4 +1,4 @@
-# Type-check, lint, test and build on every pull request (deploy.yaml only runs on main).
+# Type-check, test and build on every pull request (deploy.yaml only runs on main).
 name: CI
 
 on:

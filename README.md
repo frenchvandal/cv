@@ -25,9 +25,6 @@ and progressively enhanced with pretext-driven typography. No framework.
   fits the hero name to the viewport width and sizes the section titles to their
   column (uniform, no ellipsis truncation) across all four languages. A dev-only
   console audit flags any title that would overflow.
-- **About orbs** ([src/orbs.ts](src/orbs.ts)) — the About paragraphs flow around
-  four draggable, labelled circles (real anchors to their sections), re-laid-out
-  each frame with pretext. Falls back to the layout below when it can't run.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the
   About paragraphs are re-typeset with TeX-style optimal line breaking and
   syllable hyphenation, over pretext-measured boxes/glue (Latin languages;

@@ -16,39 +16,27 @@ has none of them.
     language pages into `dist/`; runs `tsgo --noEmit` concurrently and gates on
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
-    `bun run check:rust` → `cargo fmt --all --check` + `cargo clippy` with
-    warnings denied (the Rust lint gate, also run in CI). `cargo test` is N/A:
-    the crate is `no_std` with `panic = "abort"`, so the test harness can't
-    link.
-  - `bun run wasm:build` →
-    `cargo build --release --target wasm32-unknown-unknown` (root Cargo
-    workspace) and copies the artifact to `src/dither.wasm`. CI (ci.yaml +
-    deploy.yaml) installs the Rust toolchain, runs `check:rust`, then this
-    before `bun run build`, so the deployed bundle always carries a fresh
-    engine. The compiled .wasm is ALSO committed so local dev (`bun run dev`)
-    works without a Rust install — rebuild + commit it when you change the
-    crate.
+  - `bun run fonts:update` → `bun scripts/update-fonts.ts`, which re-subsets the
+    vendored Noto `.woff2` files from the characters actually used in the source
+    literals. Run it after changing copy in
+    [src/translations.ts](src/translations.ts) or [src/render.ts](src/render.ts)
+    — a glyph that no subset carries renders as tofu.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
-  rendered into `#app` by [src/main.ts](src/main.ts). Content lives in
+  emitted by [src/render.ts](src/render.ts). Content lives in
   [src/translations.ts](src/translations.ts) (EN / FR / zh-Hans / zh-Hant). Text
   measurement/layout is done with `@chenglou/pretext` in
   [src/measure.ts](src/measure.ts).
-- **UI architecture (2026 redesign, after careers.kimi.com):** the page is a
-  deck of full-screen panels. [src/render.ts](src/render.ts) emits plain stacked
-  `<section class="panel">` markup (valid SSG/no-JS flow); on desktop without
-  `prefers-reduced-motion`, [src/panels.ts](src/panels.ts) adds `panels-on` to
-  `<html>` and scroll-jacks between panels (wheel/touch/keyboard/hash, dither
-  wipe transitions, internal-scroll edge guard for overflowing panels).
-  [src/dither.ts](src/dither.ts) drives the background: FBM nebula + Bayer
-  ordered dithering computed in Rust ([wasm/dither/](wasm/dither/), `no_std`,
-  raw exports, no wasm-bindgen), painted to a low-res canvas upscaled with
-  `image-rendering: pixelated`. If the wasm fails, a CSS gradient fallback
-  paints instead — the page never depends on the engine.
-- **Rust:** stable toolchain via rustup (`~/.cargo`). Root `Cargo.toml` is a
-  workspace so `cargo clippy` / `cargo fmt` work at the repo root; build
-  profiles live there (member-crate profiles are ignored). `no_std` needs
-  `panic = "abort"` in every profile (dev included). VS Code: rust-analyzer with
-  clippy-on-save + formatOnSave (see .vscode/settings.json).
+- **UI architecture:** an ordinary scrolling document — no deck, no scroll
+  jacking, no canvas background. [src/render.ts](src/render.ts) emits stacked
+  `<section class="section">` markup and is the **single** renderer: the static
+  build ([scripts/build.ts](scripts/build.ts)) calls it at build time to
+  pre-render one full page per language, and [src/main.ts](src/main.ts) calls
+  the same function at runtime for reload-free language switches. Keep it pure
+  (no DOM access) so both callers stay valid — it runs under Bun, outside a
+  browser, during the build.
+- **Progressive enhancement, strictly.** The pre-rendered HTML is the product;
+  every module in the runtime only refines it. With JS off you get the complete,
+  readable, navigable CV. See §7 for the enhancement inventory and its rules.
 - **Output:** a fully static `dist/` with relative asset paths — deploys to
   GitHub Pages (or any static host) at any base path. CI sets `SITE_URL` for
   absolute SEO URLs.
@@ -160,30 +148,34 @@ this site targets modern browsers only, so don't down-level.
   keep that invariant, and keep the small target-width margin, or lines will
   wrap.
 
-## 7. Panel deck & dither conventions (project-specific)
+## 7. Rendering & enhancement conventions (project-specific)
 
-- **Progressive enhancement order.** Markup must stay a readable stacked
-  document without JS; deck styling lives exclusively behind `html.panels-on` in
-  [src/styles.css](src/styles.css). Deck mode =
-  `matchMedia("(min-width:
-  56rem)")` AND NOT reduced-motion — mirrored in
-  [src/panels.ts](src/panels.ts), keep the two in sync.
-- **Hidden panels use `visibility`, never `display`** — pretext measures
-  geometry (orbs stage, hero fit) even on inactive panels.
-- **Re-render wipes DOM.** Language switches replace `#app` innerHTML, so
-  long-lived elements (the dither canvas) attach to `<body>`, and controllers
-  re-query on every `afterPaint` (`initPanels` is idempotent).
-- **Monochrome discipline.** No hue anywhere: interactive states use fg/bg
-  inversion, borders, or the hard offset shadow (`--shadow-hard`). The orbs
-  differ by border style + Bayer-tile density (`--tile-1..4` data-URIs, defined
-  per theme), set in CSS modifier classes — `orbs.ts` only sets geometry inline.
-- **The dither engine contract** (wasm/dither/src/lib.rs):
-  `init/resize(cols,
-  rows) -> 0|-1`, `render(t_ms, mode, blend, flags)` with
-  mode 0 nebula / 1 wipe / 2 static, `flags & 1` = light theme,
-  `frame_ptr/frame_len` expose an RGBA buffer over a static arena (max 640×400
-  cells — keep src/dither.ts's MAX_COLS/MAX_ROWS in sync). `src/dither.wasm` is
-  committed; after editing the crate, run `bun run wasm:build` and commit the
-  new artifact.
-- **No print stylesheet** — the deck is screen-only by design (dropped in the
-  2026 redesign on purpose).
+- **The enhancement inventory.** Each runs after paint, none is load-bearing:
+  pretext-measured fitting of the hero name and section titles
+  ([src/measure.ts](src/measure.ts)), Knuth–Plass re-typesetting of the About
+  paragraphs ([src/linebreak.ts](src/linebreak.ts)), tight-wrapped chat bubbles
+  ([src/chat.ts](src/chat.ts)), reveal-on-scroll with stat counters, the theme
+  toggle, and reload-free language switching. If any one fails, the pre-rendered
+  content stays on screen — write them so a failure is a no-op, never a blank.
+- **Measure only after `document.fonts.ready`.** Every pretext call goes through
+  `whenFontsReady` and uses the page's _live_ font stack
+  (`getComputedStyle(document.body).fontFamily`), so CJK pages measure with the
+  family they actually render in. Measuring against a fallback silently produces
+  wrong widths.
+- **Re-render wipes the DOM.** A language switch replaces `#app` innerHTML, so
+  no enhancement may hold a reference across it: controllers re-query on every
+  `afterPaint`, and async work re-checks
+  `lang !== currentLang || !el.isConnected` before touching the DOM it started
+  from (see `enhanceAboutKp`).
+- **Hydration over re-render.** On first load, `renderApp` output already equals
+  the pre-rendered markup, so `init` binds events instead of rebuilding — keep
+  the two byte-identical, or first paint will flash.
+- **Colour discipline.** One neutral ramp plus a single accent — the system blue
+  (`#0071e3` light / `#0a84ff` dark, [src/styles.css](src/styles.css)).
+  Interactive states use that accent, hairline borders, or fg/bg inversion.
+  Don't introduce a second hue.
+- **Dev-only code is feature-gated.** `feature("PROD")` from `bun:bundle` (the
+  production build passes `features: ["PROD"]`) compiles the title audit down to
+  `if (false)` and tree-shakes it out. Use the same gate for any new diagnostic
+  rather than a `NODE_ENV` check.
+- **No print stylesheet** — screen-only by design.
