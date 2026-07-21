@@ -266,12 +266,25 @@ function timelineItem(entry: TimelineEntry, index: number): string {
  * The rail itself. `role="list"` restores the semantics that `list-style: none`
  * strips in Safari/VoiceOver, and the ordering is meaningful — an `<ol>`.
  */
-function timeline(entries: readonly TimelineEntry[], modifier = ""): string {
-  return `
-        <ol class="timeline${modifier}" role="list">${
+function timeline(
+  entries: readonly TimelineEntry[],
+  modifier = "",
+  tracked = false,
+): string {
+  const list = `<ol class="timeline${modifier}" role="list">${
     entries.map(timelineItem).join("")
   }
         </ol>`;
+  if (!tracked) return `\n        ${list}`;
+  // Experience only: an accent bubble that rides the rail as the section scrolls
+  // (main.ts wires `.timeline__tracker`). It is a positioned sibling of the list,
+  // not a list child, so the <ol> keeps holding only <li>s; a no-JS page never
+  // reveals it and keeps the fixed node on the current role instead.
+  return `
+        <div class="timeline-track">
+          ${list}
+          <span class="timeline__tracker" aria-hidden="true"></span>
+        </div>`;
 }
 
 /** Reverse-chronological; the first entry is the role still running. */
@@ -292,17 +305,21 @@ function experience(t: Translation): string {
   return section(
     t,
     "experience",
-    timeline(EXPERIENCE.map((key, index) => {
-      const entry = t.experience[key];
-      return {
-        date: entry.date,
-        org: entry.company,
-        location: entry.location,
-        sector: entry.sector,
-        role: entry.title,
-        current: index === 0,
-      };
-    })),
+    timeline(
+      EXPERIENCE.map((key, index) => {
+        const entry = t.experience[key];
+        return {
+          date: entry.date,
+          org: entry.company,
+          location: entry.location,
+          sector: entry.sector,
+          role: entry.title,
+          current: index === 0,
+        };
+      }),
+      "",
+      true,
+    ),
     "section__body",
   );
 }

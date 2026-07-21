@@ -125,21 +125,21 @@ const en = {
     },
     open: {
       date: "2014 – 2019",
-      company: "Groupe Open",
+      company: "OPEN",
       location: "Paris, France",
       sector: "IT consulting",
       title: "IT Consultant",
     },
     kapiaSolutions: {
       date: "2011 – 2014",
-      company: "KAPIA Solutions (KAPIA-RGI)",
+      company: "KAPIA Solutions (now KAPIA-RGI)",
       location: "Paris, France",
       sector: "Life-insurance core-systems software",
       title: "Business Analyst",
     },
     adneom: {
       date: "2008 – 2011",
-      company: "Adneom Technologies (CBTW)",
+      company: "Adneom Technologies (now CBTW)",
       location: "Paris, France",
       sector: "IT consulting",
       title: "IT Consultant",
@@ -396,7 +396,7 @@ const fr: Translation = {
     },
     open: {
       date: "2014 – 2019",
-      company: "Groupe Open",
+      company: "OPEN",
       location: "Paris, France",
       sector: "Conseil en informatique",
       title: "Consultant IT",
@@ -660,7 +660,7 @@ const zh: Translation = {
     },
     open: {
       date: "2014 – 2019",
-      company: "Groupe Open",
+      company: "OPEN",
       location: "法国巴黎",
       sector: "IT 咨询",
       title: "IT 顾问",
@@ -909,7 +909,7 @@ const zhHant: Translation = {
     },
     open: {
       date: "2014 – 2019",
-      company: "Groupe Open",
+      company: "OPEN",
       location: "法國巴黎",
       sector: "IT 顧問服務",
       title: "IT 顧問",
