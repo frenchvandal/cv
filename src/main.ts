@@ -370,82 +370,6 @@ function observeSections(): void {
 }
 
 /* ------------------------------------------------------------------ *
- * Experience rail tracker
- * ------------------------------------------------------------------ */
-
-/**
- * The accent bubble that rides the experience timeline's rail: at the top of the
- * section it sits on the current role, and it travels down to the earliest one
- * as the reader scrolls the section through the viewport.
- *
- * Pure progressive enhancement — the CSS keeps the bubble hidden and the current
- * role's node filled until we flag the track `is-tracking`, so a no-JS or
- * reduced-motion visitor keeps the fixed highlight. Positions are read live from
- * the first and last node each frame (never cached), so the reveal transforms
- * and the 52rem grid switch need no invalidation; the reads are rAF-throttled
- * behind a passive scroll listener, so a scroll costs one batch of rects and a
- * composited move.
- */
-
-/** Fraction of the viewport height used as the tracker's "you are here" line. */
-const TRACKER_FOCUS = 0.5;
-
-let trackerDot: HTMLElement | null = null;
-let trackerFirst: HTMLElement | null = null;
-let trackerLast: HTMLElement | null = null;
-let trackerRAF = 0;
-
-function positionTracker(): void {
-  trackerRAF = 0;
-  const dot = trackerDot, first = trackerFirst, last = trackerLast;
-  const wrap = dot?.parentElement;
-  if (!dot || !first || !last || !wrap) return;
-
-  const wrapRect = wrap.getBoundingClientRect();
-  const a = first.getBoundingClientRect();
-  const b = last.getBoundingClientRect();
-
-  const firstY = a.top - wrapRect.top + a.height / 2;
-  const span = (b.top - wrapRect.top + b.height / 2) - firstY;
-  const focus = globalThis.innerHeight * TRACKER_FOCUS;
-  const progress = span > 0
-    ? Math.min(Math.max((focus - (wrapRect.top + firstY)) / span, 0), 1)
-    : 0;
-
-  // Rail centre from the track's left — correct in both the narrow (rail-first)
-  // and wide (date-then-rail) grids without hard-coding either column.
-  dot.style.setProperty(
-    "--tracker-x",
-    `${a.left - wrapRect.left + a.width / 2}px`,
-  );
-  dot.style.transform = `translate(-50%, -50%) translateY(${
-    firstY + progress * span
-  }px)`;
-}
-
-function onTrackerScroll(): void {
-  if (trackerRAF) return;
-  trackerRAF = requestAnimationFrame(positionTracker);
-}
-
-/** Wire the experience bubble to scroll, or leave the static node under reduced motion. */
-function setupTracker(): void {
-  trackerDot = trackerFirst = trackerLast = null;
-  if (reducedMotion()) return;
-
-  const wrap = app?.querySelector<HTMLElement>(".timeline-track");
-  const dot = wrap?.querySelector<HTMLElement>(".timeline__tracker");
-  const nodes = wrap?.querySelectorAll<HTMLElement>(".timeline__node");
-  if (!wrap || !dot || !nodes || nodes.length < 2) return;
-
-  trackerDot = dot;
-  trackerFirst = nodes[0] ?? null;
-  trackerLast = nodes[nodes.length - 1] ?? null;
-  wrap.classList.add("is-tracking");
-  positionTracker();
-}
-
-/* ------------------------------------------------------------------ *
  * Rendering & navigation
  * ------------------------------------------------------------------ */
 
@@ -499,7 +423,6 @@ function afterPaint(): void {
     applyMeasuredLayout();
     enhanceChat();
     void enhanceAboutKp();
-    setupTracker();
   });
 }
 
@@ -574,17 +497,12 @@ function init(): void {
   });
 
   globalThis.addEventListener("popstate", onPopState);
-  // One passive scroll listener for the life of the page: it drives the
-  // experience bubble, reading the current tracker refs `setupTracker` refreshes
-  // on every render, and no-ops entirely when tracking is off (reduced motion).
-  globalThis.addEventListener("scroll", onTrackerScroll, { passive: true });
   globalThis.addEventListener(
     "resize",
     debounce(() => {
       applyMeasuredLayout();
       enhanceChat();
       void enhanceAboutKp();
-      positionTracker();
     }, 150),
     { passive: true },
   );

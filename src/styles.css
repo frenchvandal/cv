@@ -639,7 +639,7 @@ a:hover {
      dual ranges ("2011 – 2014 · 2019 – aujourd'hui", the widest at 196px).
      Narrower and they wrap after the separator, leaving it dangling. */
   --tl-date-col: 13rem;
-  --tl-logo: 2.25rem;
+  --tl-logo: 3.25rem;
   --tl-gap: var(--space-xl);
 }
 
@@ -719,43 +719,6 @@ a:hover {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-/* Experience only. A single accent bubble that rides the rail as the section
-   scrolls past — the reader's "you are here" on the timeline. It is a pure
-   enhancement: hidden until main.ts has measured the rail and flagged the track
-   `is-tracking`, so a no-JS or reduced-motion visitor keeps the fixed node on
-   the current role (below). `--tracker-x` is the rail's horizontal centre, set
-   by JS so it lands in the right grid column at every breakpoint; the vertical
-   `translateY` is the only thing that changes per scroll frame. */
-.timeline-track {
-  position: relative;
-}
-
-.timeline__tracker {
-  position: absolute;
-  top: 0;
-  left: var(--tracker-x, calc(var(--tl-rail-col) / 2));
-  width: var(--tl-node);
-  height: var(--tl-node);
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.timeline-track.is-tracking .timeline__tracker {
-  opacity: 1;
-}
-
-/* With the bubble carrying the accent, the current role's own node steps back to
-   a ring like every finished event — one blue mark on the rail, never two. */
-.timeline-track.is-tracking .timeline__item--current .timeline__node {
-  background: var(--bg);
-  box-shadow: inset 0 0 0 1.5px var(--fg-tertiary);
-}
-
 .timeline__body {
   grid-area: body;
 }
@@ -776,7 +739,7 @@ a:hover {
 .timeline__logo svg {
   height: 100%;
   width: auto;
-  max-width: min(100%, 7rem);
+  max-width: min(100%, 10rem);
   display: block;
 }
 
