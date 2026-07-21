@@ -751,10 +751,25 @@ a:hover {
   color: var(--fg);
 }
 
+/*
+ * Levels 2 and 3 of an experience entry — city then sector. They sit between
+ * the employer and the role, so they take the tertiary ramp to keep the two
+ * ends of the block (who, and what the job was) the ones that read first.
+ */
+.timeline__meta {
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  color: var(--fg-tertiary);
+}
+
 .timeline__role {
   margin-top: 0.125rem;
   font-size: 0.9375rem;
   color: var(--fg-secondary);
+}
+
+.timeline__meta + .timeline__role {
+  margin-top: 0.375rem;
 }
 
 .timeline__note {

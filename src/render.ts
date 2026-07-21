@@ -194,6 +194,9 @@ type TimelineEntry = {
   note?: string;
   /** Trusted inline SVG from [src/logos.ts](src/logos.ts); see `timelineItem`. */
   logo?: string;
+  /** Experience only: "City, Country" and the employer's sector, in that order. */
+  location?: string;
+  sector?: string;
   items?: readonly string[];
   desc?: string;
   /** The one event still running — the only node drawn in the accent. */
@@ -240,6 +243,16 @@ function timelineItem(entry: TimelineEntry, index: number): string {
       : ""
   }
               <h3 class="timeline__org">${escapeHtml(entry.org)}</h3>
+              ${
+    entry.location
+      ? `<p class="timeline__meta">${escapeHtml(entry.location)}</p>`
+      : ""
+  }
+              ${
+    entry.sector
+      ? `<p class="timeline__meta">${escapeHtml(entry.sector)}</p>`
+      : ""
+  }
               <p class="timeline__role">${escapeHtml(entry.role)}</p>
               ${
     entry.note ? `<p class="timeline__note">${escapeHtml(entry.note)}</p>` : ""
@@ -261,46 +274,35 @@ function timeline(entries: readonly TimelineEntry[], modifier = ""): string {
         </ol>`;
 }
 
+/** Reverse-chronological; the first entry is the role still running. */
+const EXPERIENCE: readonly (keyof Translation["experience"])[] = [
+  "kapiaRgi",
+  "open",
+  "kapiaSolutions",
+  "adneom",
+  "insurance",
+];
+
+/**
+ * Every employer is described by the same four levels — company (carrying its
+ * current name in parentheses when it has been renamed), city, sector, role —
+ * so the entries are a projection rather than five hand-written literals.
+ */
 function experience(t: Translation): string {
-  const { kapiaRgi, adneom, kapiaSolutions, open, insurance } = t.experience;
   return section(
     t,
     "experience",
-    timeline([
-      {
-        date: kapiaRgi.date,
-        org: kapiaRgi.company,
-        role: kapiaRgi.title,
-        items: kapiaRgi.items,
-        current: true,
-      },
-      {
-        date: adneom.date,
-        org: adneom.company,
-        role: adneom.title,
-        note: adneom.note,
-        items: adneom.items,
-      },
-      {
-        date: kapiaSolutions.date,
-        org: kapiaSolutions.company,
-        role: kapiaSolutions.title,
-        note: kapiaSolutions.note,
-        items: kapiaSolutions.items,
-      },
-      {
-        date: open.date,
-        org: open.company,
-        role: open.title,
-        desc: open.desc,
-      },
-      {
-        date: insurance.date,
-        org: insurance.company,
-        role: insurance.title,
-        desc: insurance.desc,
-      },
-    ]),
+    timeline(EXPERIENCE.map((key, index) => {
+      const entry = t.experience[key];
+      return {
+        date: entry.date,
+        org: entry.company,
+        location: entry.location,
+        sector: entry.sector,
+        role: entry.title,
+        current: index === 0,
+      };
+    })),
     "section__body",
   );
 }
