@@ -116,31 +116,47 @@ const en = {
     },
   },
   experience: {
-    kapia: {
-      title: "Web Product Owner · Business Analyst",
+    kapiaRgi: {
+      title: "Web Product Owner",
       company:
         "KAPIA-RGI — life-insurance core-systems vendor (KELIA / K4U / KARMA)",
-      date: "2011 – 2014 · 2019 – Present",
+      date: "2019 – Present",
       items: [
         "Product Owner of K4U, a packaged customer-facing insurance web portal serving multiple client companies: own the product vision, roadmap, and backlog, prioritized across competing stakeholder demands",
         "Run all agile ceremonies (refinement, sprint planning, reviews, retrospectives) as the single point of contact between business stakeholders and technology, tracking work and defects in Jira",
         "Led the cross-company rollout of single sign-on (SAML/OIDC); interface the KELIA back end with external systems through KARMA, the company's REST-API catalog",
         "Drive evidence-based decisions from user feedback, defect analytics, and advanced SQL analysis; product demos to clients' decision-makers helped sign three new clients",
         "Appointed AI Ambassador during the company's internal AI rollout — driving adoption across business and technical teams",
-        "As Business Analyst, delivered protection products on KELIA (death benefit, annuities, premium waiver): requirements, functional specifications, integration testing, and UAT",
-        "Cut a client's open-defect backlog by about 75 percent in twelve months; led a major version upgrade with no business interruption",
       ],
     },
-    consulting: {
+    adneom: {
       title: "IT Consultant — public finance, rail, and insurance",
-      company: "Groupe Open & Adneom Technologies — on-site consulting",
-      date: "2008 – 2011 · 2014 – 2019",
+      company: "Adneom Technologies — on-site consulting",
+      note: "Now CBTW",
+      date: "2014 – 2019",
       items: [
         "DGFIP, French tax administration (2018–2019): functional designer on the “Digital Assistants” RPA project — about 57 percent less processing time (≈1,000 hours/year) on one process, 7 FTE/year saved on the other",
         "SNCF, national railway (2016–2018): functional referent for BREHAT, the train-punctuality system — single entry point for the client project manager, estimates, steering one to three consultants",
         "Groupama Gan Vie, insurance (2014–2016): expert on the Finance Department's downstream databases — production monitoring, data-consistency checks, coordination of acceptance testing",
-        "Earlier assignments (2008–2011): BNP Paribas Cardif (bancassurance), Accenture (life-insurance outsourcing), Linedata (financial software)",
       ],
+    },
+    kapiaSolutions: {
+      title: "Business Analyst",
+      company: "KAPIA Solutions — life-insurance core-systems vendor (KELIA)",
+      note: "Now KAPIA-RGI",
+      date: "2011 – 2014",
+      items: [
+        "Delivered protection products on KELIA (death benefit, annuities, premium waiver): requirements, functional specifications, integration testing, and UAT",
+        "Cut a client's open-defect backlog by about 75 percent in twelve months; led a major version upgrade with no business interruption",
+      ],
+    },
+    open: {
+      title:
+        "IT Consultant — bancassurance, life insurance, financial software",
+      company: "Groupe Open — on-site consulting",
+      date: "2008 – 2011",
+      desc:
+        "On-site assignments for BNP Paribas Cardif (bancassurance), Accenture (life-insurance outsourcing), and Linedata (financial software).",
     },
     insurance: {
       title: "Insurance operations & contract administration",
@@ -385,31 +401,48 @@ const fr: Translation = {
     },
   },
   experience: {
-    kapia: {
-      title: "Web Product Owner · Business Analyst",
+    kapiaRgi: {
+      title: "Web Product Owner",
       company:
         "KAPIA-RGI — éditeur de systèmes cœur d'assurance vie (KELIA / K4U / KARMA)",
-      date: "2011 – 2014 · 2019 – aujourd'hui",
+      date: "2019 – aujourd'hui",
       items: [
         "Product Owner de K4U, portail web d'assurance packagé servant les clients finaux de plusieurs compagnies : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes",
         "Animation de toutes les cérémonies agiles (refinement, sprint planning, revues, rétrospectives) comme interlocuteur unique entre le métier et la technique — travaux et anomalies suivis dans Jira",
         "Pilotage du déploiement transverse de l'authentification unique (SAML/OIDC) ; interfaçage du back-end KELIA avec les systèmes externes via KARMA, le catalogue d'API REST de l'éditeur",
         "Décisions fondées sur les retours utilisateurs, l'analyse des anomalies et le SQL avancé ; des démonstrations produit aux décideurs ont contribué à la signature de trois nouveaux clients",
         "Nommé AI Ambassador lors du déploiement interne de l'IA — promotion de l'adoption auprès des équipes métier et techniques",
-        "Comme Business Analyst, produits de prévoyance sur KELIA (capital décès, rentes, exonération des primes) : besoins, spécifications fonctionnelles, tests d'intégration et recette",
-        "Réduction d'environ 75 % du stock d'anomalies ouvertes d'un client en douze mois ; pilotage d'une montée de version majeure sans interruption d'activité",
       ],
     },
-    consulting: {
+    adneom: {
       title: "Consultant IT — finances publiques, ferroviaire, assurance",
-      company: "Groupe Open & Adneom Technologies — conseil en régie",
-      date: "2008 – 2011 · 2014 – 2019",
+      company: "Adneom Technologies — conseil en régie",
+      note: "Aujourd'hui CBTW",
+      date: "2014 – 2019",
       items: [
         "DGFIP, ministère des Finances (2018–2019) : concepteur fonctionnel du projet RPA « Assistants digitaux » — environ 57 % de temps de traitement en moins (≈ 1 000 heures/an) sur un processus, 7 ETP/an économisés sur l'autre",
         "SNCF (2016–2018) : référent fonctionnel de BREHAT, le système des horaires réels et des indicateurs de régularité — point d'entrée unique du chef de projet client, devis, pilotage d'un à trois consultants",
         "Groupama Gan Vie (2014–2016) : expertise des bases de données avales de la Direction financière — suivi de production, contrôles de cohérence, coordination des recettes",
-        "Missions antérieures (2008–2011) : BNP Paribas Cardif (bancassurance), Accenture (gestion déléguée d'assurance vie), Linedata (logiciels financiers)",
       ],
+    },
+    kapiaSolutions: {
+      title: "Business Analyst",
+      company:
+        "KAPIA Solutions — éditeur de systèmes cœur d'assurance vie (KELIA)",
+      note: "Aujourd'hui KAPIA-RGI",
+      date: "2011 – 2014",
+      items: [
+        "Produits de prévoyance sur KELIA (capital décès, rentes, exonération des primes) : besoins, spécifications fonctionnelles, tests d'intégration et recette",
+        "Réduction d'environ 75 % du stock d'anomalies ouvertes d'un client en douze mois ; pilotage d'une montée de version majeure sans interruption d'activité",
+      ],
+    },
+    open: {
+      title:
+        "Consultant IT — bancassurance, assurance vie, logiciels financiers",
+      company: "Groupe Open — conseil en régie",
+      date: "2008 – 2011",
+      desc:
+        "Missions en régie chez BNP Paribas Cardif (bancassurance), Accenture (gestion déléguée d'assurance vie) et Linedata (logiciels financiers).",
     },
     insurance: {
       title: "Opérations d'assurance & gestion de contrats",
@@ -647,30 +680,45 @@ const zh: Translation = {
     },
   },
   experience: {
-    kapia: {
-      title: "网页产品负责人 · 业务分析师",
+    kapiaRgi: {
+      title: "网页产品负责人",
       company: "KAPIA-RGI — 人寿保险核心系统软件厂商（KELIA / K4U / KARMA）",
-      date: "2011 – 2014 · 2019 – 至今",
+      date: "2019 – 至今",
       items: [
         "负责 K4U——服务多家保险公司终端客户的标准化网页门户：产品愿景、路线图与待办列表，在相互竞争的干系人需求之间做优先级取舍",
         "主持全部敏捷仪式（需求梳理、迭代计划、评审、回顾），作为业务与技术之间的唯一接口人，在 Jira 中跟踪工作与缺陷",
         "主导单点登录（SAML/OIDC）的跨公司部署；通过公司的 REST API 目录 KARMA 将 KELIA 后端与外部系统对接",
         "依托用户反馈、缺陷分析与高级 SQL 驱动决策；面向客户决策层的产品演示助力签下三位新客户",
         "在公司内部推广 AI 期间被任命为 AI 大使，推动业务与技术团队采用 AI",
-        "作为业务分析师，在 KELIA 平台交付保障型产品（身故保险金、年金、保费豁免）：需求分析、功能规格、集成测试与验收",
-        "十二个月内将客户未结缺陷积压削减约 75%；主导一次重大版本升级，业务零中断",
       ],
     },
-    consulting: {
+    adneom: {
       title: "IT 顾问 — 公共财政、铁路、保险",
-      company: "Groupe Open & Adneom Technologies — 驻场咨询",
-      date: "2008 – 2011 · 2014 – 2019",
+      company: "Adneom Technologies — 驻场咨询",
+      note: "现为 CBTW",
+      date: "2014 – 2019",
       items: [
         "法国税务总局 DGFIP（2018–2019）：“数字助手”RPA 项目功能设计师——一个流程的处理时间缩短约 57%（约合每年 1000 小时），另一个流程每年节省 7 个全职人力",
         "法国国家铁路 SNCF（2016–2018）：列车正点率系统 BREHAT 的功能负责人——客户项目经理的唯一对接人，负责报价并带领一至三名顾问",
         "Groupama Gan Vie 保险（2014–2016）：财务部门下游数据库专家——生产监控、数据一致性核查、验收测试协调",
-        "早期项目（2008–2011）：BNP Paribas Cardif（银行保险）、埃森哲（寿险外包）、Linedata（金融软件）",
       ],
+    },
+    kapiaSolutions: {
+      title: "业务分析师",
+      company: "KAPIA Solutions — 人寿保险核心系统软件厂商（KELIA）",
+      note: "现为 KAPIA-RGI",
+      date: "2011 – 2014",
+      items: [
+        "在 KELIA 平台交付保障型产品（身故保险金、年金、保费豁免）：需求分析、功能规格、集成测试与验收",
+        "十二个月内将客户未结缺陷积压削减约 75%；主导一次重大版本升级，业务零中断",
+      ],
+    },
+    open: {
+      title: "IT 顾问 — 银行保险、人寿保险、金融软件",
+      company: "Groupe Open — 驻场咨询",
+      date: "2008 – 2011",
+      desc:
+        "驻场项目：BNP Paribas Cardif（银行保险）、埃森哲（寿险外包）、Linedata（金融软件）。",
     },
     insurance: {
       title: "保险运营与合同管理",
@@ -893,30 +941,45 @@ const zhHant: Translation = {
     },
   },
   experience: {
-    kapia: {
-      title: "網頁產品負責人 · 商業分析師",
+    kapiaRgi: {
+      title: "網頁產品負責人",
       company: "KAPIA-RGI — 壽險核心系統軟體廠商（KELIA / K4U / KARMA）",
-      date: "2011 – 2014 · 2019 – 迄今",
+      date: "2019 – 迄今",
       items: [
         "負責 K4U——服務多家保險公司終端客戶的標準化網頁入口網站：產品願景、路線圖與待辦清單，在相互競爭的利害關係人需求之間做優先順序取捨",
         "主持全部敏捷儀式（需求精煉、衝刺規劃、評審、回顧），作為業務與技術之間的單一窗口，在 Jira 中追蹤工作與缺陷",
         "主導單一登入（SAML/OIDC）的跨公司導入；透過公司的 REST API 目錄 KARMA 將 KELIA 後端與外部系統介接",
         "依據使用者回饋、缺陷分析與進階 SQL 驅動決策；面向客戶決策層的產品展示協助簽下三位新客戶",
         "於公司內部導入 AI 期間獲任命為 AI 大使，推動業務與技術團隊採用 AI",
-        "作為商業分析師，在 KELIA 平台交付保障型商品（身故給付、年金、保費豁免）：需求分析、功能規格、整合測試與驗收",
-        "十二個月內將客戶未結缺陷積壓削減約 75%；主導一次重大版本升級，業務零中斷",
       ],
     },
-    consulting: {
+    adneom: {
       title: "IT 顧問 — 公共財政、鐵路、保險",
-      company: "Groupe Open & Adneom Technologies — 駐點顧問服務",
-      date: "2008 – 2011 · 2014 – 2019",
+      company: "Adneom Technologies — 駐點顧問服務",
+      note: "現為 CBTW",
+      date: "2014 – 2019",
       items: [
         "法國稅務總署 DGFIP（2018–2019）：「數位助理」RPA 專案功能設計師——一項流程的處理時間縮短約 57%（約合每年 1,000 小時），另一項流程每年節省 7 名全職人力",
         "法國國家鐵路 SNCF（2016–2018）：列車準點率系統 BREHAT 的功能負責人——客戶專案經理的單一窗口，負責估價並帶領一至三名顧問",
         "Groupama Gan Vie 保險（2014–2016）：財務部門下游資料庫專家——生產監控、資料一致性查核、驗收測試協調",
-        "早期專案（2008–2011）：BNP Paribas Cardif（銀行保險）、埃森哲（壽險委外）、Linedata（金融軟體）",
       ],
+    },
+    kapiaSolutions: {
+      title: "商業分析師",
+      company: "KAPIA Solutions — 壽險核心系統軟體廠商（KELIA）",
+      note: "現為 KAPIA-RGI",
+      date: "2011 – 2014",
+      items: [
+        "在 KELIA 平台交付保障型商品（身故給付、年金、保費豁免）：需求分析、功能規格、整合測試與驗收",
+        "十二個月內將客戶未結缺陷積壓削減約 75%；主導一次重大版本升級，業務零中斷",
+      ],
+    },
+    open: {
+      title: "IT 顧問 — 銀行保險、人壽保險、金融軟體",
+      company: "Groupe Open — 駐點顧問服務",
+      date: "2008 – 2011",
+      desc:
+        "駐點專案：BNP Paribas Cardif（銀行保險）、埃森哲（壽險委外）、Linedata（金融軟體）。",
     },
     insurance: {
       title: "保險營運與契約管理",

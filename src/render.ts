@@ -262,23 +262,37 @@ function timeline(entries: readonly TimelineEntry[], modifier = ""): string {
 }
 
 function experience(t: Translation): string {
-  const { kapia, consulting, insurance } = t.experience;
+  const { kapiaRgi, adneom, kapiaSolutions, open, insurance } = t.experience;
   return section(
     t,
     "experience",
     timeline([
       {
-        date: kapia.date,
-        org: kapia.company,
-        role: kapia.title,
-        items: kapia.items,
+        date: kapiaRgi.date,
+        org: kapiaRgi.company,
+        role: kapiaRgi.title,
+        items: kapiaRgi.items,
         current: true,
       },
       {
-        date: consulting.date,
-        org: consulting.company,
-        role: consulting.title,
-        items: consulting.items,
+        date: adneom.date,
+        org: adneom.company,
+        role: adneom.title,
+        note: adneom.note,
+        items: adneom.items,
+      },
+      {
+        date: kapiaSolutions.date,
+        org: kapiaSolutions.company,
+        role: kapiaSolutions.title,
+        note: kapiaSolutions.note,
+        items: kapiaSolutions.items,
+      },
+      {
+        date: open.date,
+        org: open.company,
+        role: open.title,
+        desc: open.desc,
       },
       {
         date: insurance.date,
