@@ -247,7 +247,11 @@ if (SITE) {
   console.log(`  ${OUT}/sitemap.xml`);
 }
 
-// Friendly 404 for GitHub Pages (served for any unknown path).
+// Friendly 404 for GitHub Pages, served for any unknown path — including
+// nested ones (/foo/bar), where a relative "./" would resolve to the still-
+// missing directory and 404 again. href("en") is absolute whenever SITE_URL is
+// set (every real deploy); the relative fallback only matters for local dist/
+// previews, which are served from the site root anyway.
 const notFound = `<!doctype html>
 <html lang="en">
   <head>
@@ -274,7 +278,9 @@ const notFound = `<!doctype html>
   <body>
     <main>
       <h1>404</h1>
-      <p>This page does not exist. <a href="./">Back to the CV</a>.</p>
+      <p>This page does not exist. <a href="${
+  escapeHtml(href("en"))
+}">Back to the CV</a>.</p>
     </main>
   </body>
 </html>

@@ -402,19 +402,26 @@ function bindEvents(): void {
 
   // Contact closer: copy the WeChat id, flash the copied label on the button.
   const copyBtn = app?.querySelector<HTMLButtonElement>("[data-copy-wechat]");
-  copyBtn?.addEventListener("click", () => {
-    navigator.clipboard?.writeText(PROFILE.wechat).then(() => {
-      const label = copyBtn.textContent;
-      copyBtn.textContent = copyBtn.dataset.copiedLabel ?? label;
-      copyBtn.classList.add("is-copied");
-      setTimeout(() => {
-        copyBtn.textContent = label;
-        copyBtn.classList.remove("is-copied");
-      }, 1600);
-    }).catch(() => {
-      // Clipboard denied — the id is printed right above the button anyway.
+  if (copyBtn) {
+    // The idle label, read once at bind time (the button is freshly rendered):
+    // during the restore window the button says "Copied", and a second click
+    // must not capture that as the label to restore to.
+    const idleLabel = copyBtn.textContent;
+    let restore: ReturnType<typeof setTimeout> | undefined;
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard?.writeText(PROFILE.wechat).then(() => {
+        clearTimeout(restore);
+        copyBtn.textContent = copyBtn.dataset.copiedLabel ?? idleLabel;
+        copyBtn.classList.add("is-copied");
+        restore = setTimeout(() => {
+          copyBtn.textContent = idleLabel;
+          copyBtn.classList.remove("is-copied");
+        }, 1600);
+      }).catch(() => {
+        // Clipboard denied — the id is printed right above the button anyway.
+      });
     });
-  });
+  }
 }
 
 function afterPaint(): void {

@@ -86,21 +86,25 @@
 
 /* Dark appearance: not an inversion — a re-balance. Pure black ground so the
    content surfaces read as raised, and a brighter blue, since the light-mode
-   blue turns muddy against black. */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #000000;
-  --bg-secondary: #1d1d1f;
-  --fg: #f5f5f7;
-  --fg-secondary: #b0b0b6; /* 9.4:1 */
-  --fg-tertiary: #86868b; /* 5.6:1 */
-  --accent: #0a84ff;
-  --accent-hover: #3b9dff;
-  --accent-fg: #ffffff;
-  --link: #2997ff; /* 6.6:1 on --bg */
-  --separator: rgba(255, 255, 255, 0.16);
-  --fill: rgba(118, 118, 128, 0.24);
-  --fill-strong: rgba(118, 118, 128, 0.36);
+   blue turns muddy against black. Scoped to screens: printers strip the black
+   ground but keep the near-white text, so paper must always get the light ramp
+   above (the print rules live at the end of this file). */
+@media screen {
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --bg: #000000;
+    --bg-secondary: #1d1d1f;
+    --fg: #f5f5f7;
+    --fg-secondary: #b0b0b6; /* 9.4:1 */
+    --fg-tertiary: #86868b; /* 5.6:1 */
+    --accent: #0a84ff;
+    --accent-hover: #3b9dff;
+    --accent-fg: #ffffff;
+    --link: #2997ff; /* 6.6:1 on --bg */
+    --separator: rgba(255, 255, 255, 0.16);
+    --fill: rgba(118, 118, 128, 0.24);
+    --fill-strong: rgba(118, 118, 128, 0.36);
+  }
 }
 
 * {
@@ -1016,5 +1020,38 @@ a:hover {
 
   .contact__grid {
     gap: var(--space-lg);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Print
+ * ------------------------------------------------------------------ */
+
+@media print {
+  /* The reveal system is scroll-driven and print has no scroll: whatever the
+     reader had reached on screen, every section must print — without this,
+     anything below the fold sits at opacity 0 and comes out as blank pages. */
+  .js .animate {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  /* Interactive chrome with no meaning on paper. */
+  .nav,
+  .skip-link,
+  .hero__actions,
+  .button--copy {
+    display: none;
+  }
+
+  /* The hero fills paper by content, not by viewport height. */
+  .hero {
+    min-height: 0;
+  }
+
+  /* Keep each event and card whole across page breaks. */
+  .card,
+  .timeline__item {
+    break-inside: avoid;
   }
 }
