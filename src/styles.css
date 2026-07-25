@@ -81,7 +81,7 @@
    Naming only one CJK family per page also keeps the other subset undownloaded. */
 :root[data-lang='zh-hant'] {
   --font: 'Noto Sans', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    'Segoe UI', Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
 /* Dark appearance: not an inversion — a re-balance. Pure black ground so the
@@ -1016,5 +1016,27 @@ a:hover {
 
   .contact__grid {
     gap: var(--space-lg);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Print — a ⌘P must see the whole document
+ *
+ * `.js .animate` keeps every un-scrolled section at opacity 0, and the
+ * IntersectionObserver that reveals them never fires for the print layout:
+ * without this block a printed CV loses every section below the fold. The
+ * nav, skip link and copy button are meaningless on paper.
+ * ------------------------------------------------------------------ */
+
+@media print {
+  .js .animate {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .nav,
+  .skip-link,
+  .button--copy {
+    display: none !important;
   }
 }
