@@ -27,6 +27,12 @@
           : "light";
       }
       document.documentElement.dataset.theme = saved;
+      // The static meta above is light (#ffffff): sync the browser chrome with
+      // the resolved theme before first paint (same values as THEME_COLOR).
+      document.querySelector('meta[name="theme-color"]')?.setAttribute(
+        "content",
+        saved === "dark" ? "#000000" : "#ffffff",
+      );
     } catch {}
     </script>
 

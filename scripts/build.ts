@@ -247,7 +247,11 @@ if (SITE) {
   console.log(`  ${OUT}/sitemap.xml`);
 }
 
-// Friendly 404 for GitHub Pages (served for any unknown path).
+// Friendly 404 for GitHub Pages (served for any unknown path, including deep
+// ones: from /foo/bar a relative "./" would resolve to the bogus directory
+// and 404 again — SITE gives us the absolute home URL; without it, "./" is
+// still the best a portable build can offer).
+const homeUrl = SITE ? href("en") : "./";
 const notFound = `<!doctype html>
 <html lang="en">
   <head>
@@ -274,7 +278,7 @@ const notFound = `<!doctype html>
   <body>
     <main>
       <h1>404</h1>
-      <p>This page does not exist. <a href="./">Back to the CV</a>.</p>
+      <p>This page does not exist. <a href="${escapeHtml(homeUrl)}">Back to the CV</a>.</p>
     </main>
   </body>
 </html>
