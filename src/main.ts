@@ -48,7 +48,7 @@ function pageLang(): Lang {
   // Longest slug first so `zh-hant.html` is never claimed by the shorter `zh`.
   const bySpecificity = [...LANGS].sort((a, b) => b.length - a.length);
   for (const lang of bySpecificity) {
-    if (new RegExp(`(?:^|/)${lang}(?:\\.html)?/?$`).test(path)) return lang;
+    if (new RegExp(`(?:^|/)${lang}(?:\.html)?/?$`).test(path)) return lang;
   }
   return "en";
 }
@@ -115,7 +115,14 @@ function applyTheme(next: Theme, persist: boolean): void {
   syncThemeToggle();
 }
 
-/** Tab title and meta description follow the current language (the SSG sets them per page). */
+/**
+ * Tab title, meta description and canonical follow the current language (the
+ * SSG sets them per page). Without the canonical update, a client-side switch
+ * leaves the <head> describing the previous page while pushState has already
+ * changed the URL. The canonical is absolute on Pages (SITE_URL-gated), so
+ * re-root the new language's path onto the existing one; a relative canonical
+ * (local portable build) is left untouched.
+ */
 function syncDocumentMeta(): void {
   const t = translations[currentLang];
   document.title = pageTitle(t);
@@ -123,6 +130,17 @@ function syncDocumentMeta(): void {
     "content",
     t.meta.description,
   );
+  const canonical = document.querySelector<HTMLLinkElement>(
+    'link[rel="canonical"]',
+  );
+  if (canonical && /^https?:/.test(canonical.href)) {
+    const url = new URL(canonical.href);
+    url.pathname = url.pathname.replace(
+      /[^/]*$/,
+      currentLang === "en" ? "" : `${currentLang}.html`,
+    );
+    canonical.href = url.href;
+  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -401,20 +419,28 @@ function bindEvents(): void {
   });
 
   // Contact closer: copy the WeChat id, flash the copied label on the button.
+  // The original label is captured once, at bind time: reading textContent on
+  // a second click inside the flash window would snapshot "Copied" as the
+  // label to restore, leaving the button stuck on it forever.
   const copyBtn = app?.querySelector<HTMLButtonElement>("[data-copy-wechat]");
-  copyBtn?.addEventListener("click", () => {
-    navigator.clipboard?.writeText(PROFILE.wechat).then(() => {
-      const label = copyBtn.textContent;
-      copyBtn.textContent = copyBtn.dataset.copiedLabel ?? label;
-      copyBtn.classList.add("is-copied");
-      setTimeout(() => {
-        copyBtn.textContent = label;
-        copyBtn.classList.remove("is-copied");
-      }, 1600);
-    }).catch(() => {
-      // Clipboard denied — the id is printed right above the button anyway.
+  if (copyBtn) {
+    const label = copyBtn.textContent;
+    let reset: ReturnType<typeof setTimeout> | null = null;
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard?.writeText(PROFILE.wechat).then(() => {
+        copyBtn.textContent = copyBtn.dataset.copiedLabel ?? label;
+        copyBtn.classList.add("is-copied");
+        if (reset !== null) clearTimeout(reset);
+        reset = setTimeout(() => {
+          copyBtn.textContent = label;
+          copyBtn.classList.remove("is-copied");
+          reset = null;
+        }, 1600);
+      }).catch(() => {
+        // Clipboard denied — the id is printed right above the button anyway.
+      });
     });
-  });
+  }
 }
 
 function afterPaint(): void {
