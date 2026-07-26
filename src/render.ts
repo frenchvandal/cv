@@ -14,6 +14,7 @@
 
 import {
   HTML_LANG,
+  isLang,
   type Lang,
   LANG_LABEL,
   LANG_NAME,
@@ -36,6 +37,28 @@ export type Theme = "light" | "dark";
  */
 export function langUrl(lang: Lang): string {
   return lang === "en" ? "./" : `${lang}.html`;
+}
+
+/**
+ * The language a URL path names, or null when it names none — the English root
+ * (`/`, `/index.html`) and anything unrecognized. The exact inverse of
+ * `langUrl`, kept beside it so the two can't drift apart, and pure so it is
+ * testable without a document.
+ *
+ * Returning null rather than "en" is deliberate: "this path carries no language"
+ * and "this path is English" are different facts, and only the caller knows
+ * whether the default applies (on first load `<html data-lang>` answers first).
+ */
+export function langFromPath(path: string): Lang | null {
+  // The last path segment, minus any trailing slash and .html — compared whole,
+  // so `zh-hant.html` cannot be claimed by the shorter `zh` and `/french.html`
+  // is not French. (This used to be a per-language regex ordered longest-slug-
+  // first; an exact segment match removes the ordering subtlety entirely.)
+  const segment = path.replace(/\/$/, "").split("/").pop() ?? "";
+  const slug = segment.endsWith(".html")
+    ? segment.slice(0, -".html".length)
+    : segment;
+  return isLang(slug) ? slug : null;
 }
 
 /** Document title for a language's page — shared by the SSG build and the client. */

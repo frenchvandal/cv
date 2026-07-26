@@ -16,7 +16,13 @@ import {
   PROFILE,
   translations,
 } from "./translations.ts";
-import { langUrl, pageTitle, renderApp, type Theme } from "./render.ts";
+import {
+  langFromPath,
+  langUrl,
+  pageTitle,
+  renderApp,
+  type Theme,
+} from "./render.ts";
 import { escapeHtml, reducedMotion } from "./dom.ts";
 import {
   auditSectionTitles,
@@ -41,16 +47,15 @@ const app = document.getElementById("app");
 let currentLang: Lang = "en";
 let theme: Theme = "light";
 
-/** Language of the current page, from the pre-rendered `<html data-lang>` or the URL. */
+/**
+ * Language of the page as first loaded: the pre-rendered `<html data-lang>`
+ * answers first, since it is what the markup on screen actually is, and the URL
+ * only settles the dev shell (which carries no data-lang). Valid at startup
+ * ONLY — see `onPopState` for why nothing later may read that attribute.
+ */
 function pageLang(): Lang {
   if (isLang(root.dataset.lang)) return root.dataset.lang;
-  const path = location.pathname;
-  // Longest slug first so `zh-hant.html` is never claimed by the shorter `zh`.
-  const bySpecificity = [...LANGS].sort((a, b) => b.length - a.length);
-  for (const lang of bySpecificity) {
-    if (new RegExp(`(?:^|/)${lang}(?:\\.html)?/?$`).test(path)) return lang;
-  }
-  return "en";
+  return langFromPath(location.pathname) ?? "en";
 }
 
 function setLang(next: Lang): void {
@@ -478,8 +483,15 @@ function hydrate(): void {
   afterPaint();
 }
 
+/**
+ * Back/forward move the URL, so the URL is what says which language to show —
+ * never `<html data-lang>`. `setLang` overwrites that attribute on every switch,
+ * so reading it here would report the language already on screen, every
+ * comparison below would come out equal, and the history entry would be silently
+ * ignored: the URL returned to `/` while the page stayed in French.
+ */
 function onPopState(): void {
-  const next = pageLang();
+  const next = langFromPath(location.pathname) ?? "en";
   if (next === currentLang) return;
   setLang(next);
   render(true);

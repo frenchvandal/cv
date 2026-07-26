@@ -7,7 +7,7 @@
 
 import { expect, test } from "bun:test";
 import { escapeHtml } from "./dom.ts";
-import { langUrl, pageTitle, renderApp } from "./render.ts";
+import { langFromPath, langUrl, pageTitle, renderApp } from "./render.ts";
 import { type Lang, LANGS, translations } from "./translations.ts";
 
 test("escapeHtml escapes every markup-significant character", () => {
@@ -23,6 +23,35 @@ test("langUrl points at sibling pages (English is the directory root)", () => {
   expect(langUrl("zh")).toBe("zh.html");
   expect(langUrl("zh-hant")).toBe("zh-hant.html");
 });
+
+test("langFromPath reads the language out of a URL path", () => {
+  // The English root names no language — the caller applies the default.
+  expect(langFromPath("/")).toBeNull();
+  expect(langFromPath("/index.html")).toBeNull();
+
+  expect(langFromPath("/fr.html")).toBe("fr");
+  expect(langFromPath("/zh.html")).toBe("zh");
+  // The whole point of sorting by specificity: the shorter `zh` must not win.
+  expect(langFromPath("/zh-hant.html")).toBe("zh-hant");
+
+  // Deployed under a base path (GitHub Pages project sites), and extensionless.
+  expect(langFromPath("/cv/fr.html")).toBe("fr");
+  expect(langFromPath("/cv/zh-hant.html")).toBe("zh-hant");
+  expect(langFromPath("/cv/")).toBeNull();
+  expect(langFromPath("/fr")).toBe("fr");
+
+  // A path that merely starts with a slug is not that language.
+  expect(langFromPath("/french.html")).toBeNull();
+  expect(langFromPath("/zh-hans.html")).toBeNull();
+});
+
+test.each([...LANGS])(
+  "langFromPath inverts langUrl for %s (the two must never drift)",
+  (lang) => {
+    const path = lang === "en" ? "/" : `/${langUrl(lang)}`;
+    expect(langFromPath(path) ?? "en").toBe(lang);
+  },
+);
 
 test("pageTitle combines display name and hero title", () => {
   const t = translations.en;
