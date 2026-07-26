@@ -939,7 +939,7 @@ const zhHant: Translation = {
   education: {
     sichuan: {
       school: "四川大學",
-      title: "華語進修課程",
+      title: "漢語進修課程",
       date: "2025 – 2026",
       subtitle: "成都望江校區 · 全日制沉浸式學習",
       items: [
