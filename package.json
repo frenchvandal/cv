@@ -14,11 +14,11 @@
     "fonts:update": "bun scripts/update-fonts.ts"
   },
   "dependencies": {
-    "@chenglou/pretext": "latest",
-    "hyphen": "latest"
+    "@chenglou/pretext": "^0.0.8",
+    "hyphen": "^1.14.1"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@typescript/native-preview": "latest"
+    "@types/bun": "^1.3.14",
+    "@typescript/native-preview": "^7.0.0-dev.20260707.2"
   }
 }
