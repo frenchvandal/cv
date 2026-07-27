@@ -4,6 +4,10 @@ name: CI
 on:
   pull_request:
 
+# This job only reads the tree — it never pushes, comments or deploys.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest

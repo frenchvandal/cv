@@ -49,8 +49,9 @@ the code itself
   Webpack.
   - `bun run dev` → `bun ./index.html` (dev server + HMR,
     http://localhost:3000/).
-  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render the seven
-    language pages into `dist/`; runs `tsgo --noEmit` concurrently and gates on
+  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render eight pages
+    into `dist/` — seven languages, English written twice as `index.html` and
+    `en.html` — plus `404.html`; runs `tsgo --noEmit` concurrently and gates on
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
   - `bun run fonts:update` → `bun scripts/update-fonts.ts`, which re-subsets the
@@ -179,8 +180,8 @@ this site targets modern browsers only, so don't down-level.
   — cache it (see `widthPerPxCache` in `measure.ts`). On resize/language change,
   only re-run the cheap width/layout math, never re-prepare identical text.
 - **Named font required.** pretext is inaccurate with `system-ui`, so the site
-  self-hosts **Noto Sans / Noto Sans SC / Noto Sans TC**
-  ([src/fonts.ts](src/fonts.ts)) and every measurement waits for
+  self-hosts **Noto Sans / Noto Sans SC / Noto Sans TC / Noto Sans HK** — four
+  faces ([src/fonts.ts](src/fonts.ts)) — and every measurement waits for
   `document.fonts.ready`.
 - **Fonts are imported, not CSS-`url()`'d.** Bun inlines CSS-referenced fonts as
   base64; importing the `.woff2` (file loader) emits a separate hashed asset and
@@ -255,35 +256,32 @@ this site targets modern browsers only, so don't down-level.
   rather than a `NODE_ENV` check.
 - **No print stylesheet** — screen-only by design.
 
-## 8. `experiments/` — proven work that is not wired in
+## 8. `experiments/` — a slot, currently empty
 
-A place for code that has been built and tested but deliberately not adopted, so
-the reasoning survives instead of being rediscovered. It is **not** a scratch
-directory: nothing lands here unless it is typechecked, tested, and carries a
-`README.md` stating what it proves and what adoption would cost.
+There is no `experiments/` directory today. The convention is kept because the
+directory is meant to come and go: it holds **open questions**, not history, and
+is deleted the moment one is resolved.
 
-- **It is inside the gates.** `experiments/**/*.ts` is in the tsconfig `include`
-  and its tests run under plain `bun test`. An experiment that cannot survive
-  `bun run check` is not kept — a rotting prototype is worse than no prototype,
-  because it reads as a working option.
-- **Nothing in `src/` may import it.** The dependency arrow points one way:
-  experiments read the shipping modules, never the reverse. Adopting one means
-  moving the code into `src/` and deleting it from here, not adding an import.
-- **Prefer an equivalence test to a prose claim.** Where an experiment forks a
-  shipping module, assert the fork still matches it on the original's inputs
-  (see the last test in
-  [experiments/rich-linebreak](experiments/rich-linebreak/README.md)). That is
-  what keeps a fork from silently drifting away from the module it must
-  eventually replace.
-- **Delete on resolution.** When an experiment is adopted or ruled out for good,
-  remove it and record the outcome in its commit message. The directory holds
-  open questions, not history.
+If you create it again, it is **not** a scratch directory — nothing lands there
+unless it is typechecked, tested, and carries a `README.md` stating what it
+proves and what adoption would cost. Add `experiments/**/*.ts` back to the
+tsconfig `include` so it sits inside the gates: an experiment that cannot
+survive `bun run check` is not kept, because a rotting prototype reads as a
+working option. Nothing in `src/` may import it — the arrow points one way, and
+adopting one means moving the code into `src/`, not adding an import. Where an
+experiment forks a shipping module, assert with an **equivalence test over every
+input the original accepts** that the fork still matches it; a prose claim of
+equivalence is what lets a fork drift.
 
-Current occupant: [**rich-linebreak**](experiments/rich-linebreak/README.md) — a
-run-aware Knuth–Plass fork that lets a justified paragraph carry inline markup.
-The shipping breaker takes one font and returns flat strings, so inline styles
-are both mis-measured (+8.1% for a monospace span, against a 6px margin) and
-erased. Not adopted: the CV's prose is flat text, and italic — the one style it
-might want — measures identically in Noto Sans. Also records why
-`@chenglou/pretext/rich-inline` is _not_ the answer: it is a greedy breaker, so
-it would trade the optimal line breaking away to get rich text.
+Ruled out so far, so it is not rediscovered:
+
+- **rich-linebreak** (removed 2026-07-27) — a run-aware Knuth–Plass fork letting
+  a justified paragraph carry inline markup. The shipping breaker takes one font
+  and returns flat strings, so inline styles are both mis-measured (+8.1% for a
+  monospace span, against a 6px margin) and erased. Not adopted: the CV's prose
+  is flat text, and italic — the one style it might want — measures identically
+  in Noto Sans. It also proved that `@chenglou/pretext/rich-inline` is _not_ the
+  answer: it is a greedy breaker, so it would trade the optimal line breaking
+  away to get rich text. It drifted exactly as predicted — its `loadHyphenator`
+  was still the en/fr ternary when `src/linebreak.ts` had gained pt and es —
+  because its equivalence test only ever exercised `"en"`.

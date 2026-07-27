@@ -1,9 +1,10 @@
 /*
  * Build smoke test: run the real SSG (scripts/build.ts) and assert the emitted
  * dist/ pages carry their pre-rendered content, SEO head tags and font rules —
- * the contract deploys rely on. Heavy (a full bundle + four pre-renders), hence
- * the explicit timeout. SITE_URL is stripped from the env so the assertions
- * don't depend on the caller's setup.
+ * the contract deploys rely on. A full bundle plus eight pre-renders costs
+ * ~110ms locally; the explicit timeout is headroom for a cold CI runner, not a
+ * sign this is slow. SITE_URL is stripped from the env so the assertions don't
+ * depend on the caller's setup.
  */
 
 import { expect, test } from "bun:test";
@@ -13,7 +14,7 @@ import { HTML_LANG, LANGS } from "../src/translations.ts";
 const ROOT = `${import.meta.dir}/..`;
 
 test(
-  "bun scripts/build.ts emits four complete, well-formed pages",
+  "bun scripts/build.ts emits every language page complete and well-formed",
   async () => {
     const { SITE_URL: _stripped, ...env } = process.env;
     const proc = Bun.spawn(["bun", "scripts/build.ts"], {

@@ -610,7 +610,10 @@ function init(): void {
   }
 
   // Follow the OS appearance for as long as the visitor hasn't overridden it.
-  globalThis.matchMedia?.(DARK_QUERY).addEventListener("change", (event) => {
+  // `addEventListener` on a MediaQueryList is Safari 14+; the `?.` on the call
+  // keeps an older engine from throwing here, which would abort `init()` before
+  // the popstate and resize listeners below are ever bound.
+  globalThis.matchMedia?.(DARK_QUERY).addEventListener?.("change", (event) => {
     if (storedTheme()) return;
     applyTheme(event.matches ? "dark" : "light", false);
   });

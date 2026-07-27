@@ -61,7 +61,7 @@ bun install            # install dependencies
 bun run dev            # dev server with HMR → http://localhost:3000/
 bun run build          # type-check + pre-render the 8 pages into dist/
 bun run check          # tsgo --noEmit (TypeScript 7 native compiler, the type gate)
-bun test               # Knuth–Plass unit tests (canvas-free, injected measure)
+bun test               # full suite: line breaking, render, translations, font coverage, build
 bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
 ```
 

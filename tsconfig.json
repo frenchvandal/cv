@@ -25,7 +25,6 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
-    "scripts/**/*.ts",
-    "experiments/**/*.ts"
+    "scripts/**/*.ts"
   ]
 }

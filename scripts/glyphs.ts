@@ -52,11 +52,21 @@ const switcher = SWITCHER_LANGS.map((lang) =>
 /**
  * The exact character set each face must carry. Latin glyphs are scanned from
  * every source file that contains user-visible literals — translations.ts AND
- * render.ts, since the markup carries text of its own (the theme-toggle
- * glyphs, the `@handle` in contact) that never passes through a translation
- * object. The two Chinese sets are extracted per language (from the imported
- * translation objects, not the raw file): Simplified and Traditional pages
- * each ship only their own script.
+ * render.ts, since the markup carries text of its own (the `@handle` in
+ * contact) that never passes through a translation object. The two Chinese
+ * sets are extracted per language (from the imported translation objects, not
+ * the raw file): Simplified and Traditional pages each ship only their own
+ * script.
+ *
+ * The theme-toggle glyphs ☾ ☀ (U+263E, U+2600) are the one deliberate
+ * exclusion, and `isLatin` stopping at U+024F is what enforces it: Noto Sans
+ * does not carry them. Measured against the Google Fonts API on 2026-07-26 —
+ * a `&text=☾☀` request returns a 1664-byte woff2, byte-for-byte the size of
+ * the same request for 🍕, i.e. an empty font. Subsetting them in would ship
+ * a file without the glyphs AND make `unicode-range` claim codepoints the
+ * face lacks, turning a known gap into a false guarantee. They render in the
+ * system symbol font; replacing them with inline SVG (as `LOGOS` already
+ * does) is the only real fix, not a wider scan.
  */
 export async function glyphSets(): Promise<
   { latin: string; sc: string; tc: string; hk: string }
