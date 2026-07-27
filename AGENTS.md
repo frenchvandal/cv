@@ -28,6 +28,20 @@ verbosity.
 When in doubt, choose the simplest implementation that is correct and easy to
 modify.
 
+### Comments
+
+- Prefer self-explanatory code over comments.
+- Use comments only when the reason is not obvious from the code.
+- Comment **why**, not **what**.
+- Explain business rules, edge cases, constraints, and non-obvious decisions.
+- Do not repeat or paraphrase the code.
+- Keep comments short, precise, and up to date.
+- Remove stale, misleading, or redundant comments immediately.
+- Use `/** ... */` for public APIs or important contracts only.
+- Avoid decorative, noisy, or overly verbose comments.
+
+If a comment is needed to make the code understandable, first try to simplify the code itself
+
 ## 1. Stack & shape
 
 - **Runtime/tooling:** Bun (package manager, dev server, bundler). No Vite, no
@@ -200,10 +214,11 @@ this site targets modern browsers only, so don't down-level.
   becomes a history entry and Back is not trapped in a redirect loop; and a
   hand-picked language (localStorage `cv-lang`, written only on an explicit
   switcher click, never on popstate) outranks the browser list. The matching
-  rule is mirrored in vanilla JS inside that script because it must run before
-  the bundle — an equivalence test in [src/render.test.ts](src/render.test.ts)
-  executes the generated source against `negotiateLang` so the copy cannot
-  drift.
+  rule lives **once**, as ES5 inside that generated script, because it has to
+  run before the bundle exists; resist adding a "proper" TypeScript twin, since
+  the script is its only caller and a second copy would just be one more thing
+  to keep in step. The test in [src/render.test.ts](src/render.test.ts) executes
+  that shipped source against a stubbed browser instead.
 - **Measure only after `document.fonts.ready`.** Every pretext call goes through
   `whenFontsReady` and uses the page's _live_ font stack
   (`getComputedStyle(document.body).fontFamily`), so CJK pages measure with the
