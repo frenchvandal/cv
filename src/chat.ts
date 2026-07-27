@@ -20,6 +20,7 @@ import {
   prepareWithSegments,
   walkLineRanges,
 } from "@chenglou/pretext";
+import { fontSpecFrom } from "./measure.ts";
 
 /**
  * Fallback bubble-to-chat ratio when `.msg` exposes no usable `max-width`.
@@ -43,14 +44,20 @@ function bubbleMaxWidth(style: CSSStyleDeclaration, chatWidth: number): number {
 /**
  * prepareWithSegments is the expensive pass — cache it per font+text, as
  * bubbles re-tighten on every resize but their texts only change per language.
+ * The tracking is keyed in too: it is measured into the widths, so two
+ * trackings must never share a prepared text.
  */
 const preparedCache = new Map<string, PreparedTextWithSegments>();
 
-function prepared(text: string, font: string): PreparedTextWithSegments {
-  const key = `${font}\u0000${text}`;
+function prepared(
+  text: string,
+  font: string,
+  letterSpacing: number,
+): PreparedTextWithSegments {
+  const key = `${letterSpacing} ${font}\u0000${text}`;
   let hit = preparedCache.get(key);
   if (!hit) {
-    hit = prepareWithSegments(text, font);
+    hit = prepareWithSegments(text, font, { letterSpacing });
     preparedCache.set(key, hit);
   }
   return hit;
@@ -103,8 +110,7 @@ export function enhanceChat(): void {
   // All bubbles share one computed style; box-sizing is border-box, so the
   // horizontal padding and borders count into the width we set.
   const style = getComputedStyle(first);
-  const font =
-    `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const { font, letterSpacing } = fontSpecFrom(style);
   const chromeH = (parseFloat(style.paddingLeft) || 0) +
     (parseFloat(style.paddingRight) || 0) +
     (parseFloat(style.borderLeftWidth) || 0) +
@@ -117,7 +123,8 @@ export function enhanceChat(): void {
     const text = bubble.dataset.text ?? "";
     if (!text) continue;
     // +1px of slack: canvas-vs-DOM rounding must never wrap an extra line.
-    const width = Math.ceil(tightWidth(prepared(text, font), contentMax)) +
+    const width =
+      Math.ceil(tightWidth(prepared(text, font, letterSpacing), contentMax)) +
       chromeH + 1;
     bubble.style.width = `${Math.min(width, bubbleMax)}px`;
   }

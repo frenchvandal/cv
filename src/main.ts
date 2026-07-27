@@ -36,9 +36,10 @@ import {
   fitHeroName,
   fitNavLinks,
   fitSectionTitles,
+  fontSpecFrom,
   whenFontsReady,
 } from "./measure.ts";
-import { breakIntoLines } from "./linebreak.ts";
+import { breakIntoLines, pretextMeasure } from "./linebreak.ts";
 import { enhanceChat } from "./chat.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
@@ -218,8 +219,7 @@ async function enhanceAboutKp(): Promise<void> {
     p.dataset.text = text; // keep the source text for re-runs (resize)
 
     const style = getComputedStyle(p);
-    const font =
-      `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    const { font, letterSpacing } = fontSpecFrom(style);
     const width = p.clientWidth -
       (parseFloat(style.paddingLeft) || 0) -
       (parseFloat(style.paddingRight) || 0);
@@ -233,7 +233,13 @@ async function enhanceAboutKp(): Promise<void> {
 
     // Small safety margin: keep KP lines just inside the box so canvas-vs-DOM
     // rounding never makes the browser wrap a line that justify then can't fill.
-    const lines = await breakIntoLines(text, font, width - 6, lang);
+    const lines = await breakIntoLines(
+      text,
+      font,
+      width - 6,
+      lang,
+      pretextMeasure(letterSpacing),
+    );
     // The DOM may have been replaced while the patterns loaded (language switch).
     if (lang !== currentLang || !p.isConnected) return;
     if (!lines) {

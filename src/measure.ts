@@ -324,6 +324,32 @@ export function auditNavLinks(
   return entries;
 }
 
+/**
+ * The two measurement inputs an element's computed style implies: the CSS
+ * `font` shorthand, and the tracking — which pretext takes as a separate
+ * option, because `letter-spacing` is not part of that shorthand and would be
+ * dropped on the floor by a caller that only builds the string.
+ *
+ * The fits above take their font from a `FitFont` constant kept in sync with
+ * the stylesheet by hand ([src/config.ts](src/config.ts)); the two callers that
+ * measure body text — the chat bubbles and the justified KP paragraphs — read
+ * theirs from the live computed style instead, and this is what keeps that read
+ * complete. Both elements happen to inherit no tracking today, so the widths
+ * are right either way; adding `letter-spacing` to body text is what this
+ * guards against, since it would otherwise skew every width silently.
+ */
+export function fontSpecFrom(
+  style: CSSStyleDeclaration,
+): { font: string; letterSpacing: number } {
+  return {
+    font:
+      `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`,
+    // `normal` — the initial value, and what an untracked element reports —
+    // parses to NaN, which `||` turns into the 0 px pretext expects.
+    letterSpacing: parseFloat(style.letterSpacing) || 0,
+  };
+}
+
 /** Resolves once web fonts are loaded, so measurement uses the real glyphs. */
 export function whenFontsReady(callback: () => void): void {
   const fonts = document.fonts;

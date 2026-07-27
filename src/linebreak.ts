@@ -33,15 +33,33 @@ type BreakItem =
 
 const widthCache = new Map<string, number>();
 
-const measureWithPretext: MeasureFn = (text, font) => {
-  // NUL separator: neither string can contain it, so keys never collide.
-  const key = `${font}\u0000${text}`;
+/**
+ * Widths from pretext, for text tracked by `letterSpacing` px. The tracking is
+ * a separate argument because CSS `letter-spacing` is not part of the `font`
+ * shorthand pretext parses — measuring a tracked paragraph without it would
+ * break its lines at the wrong column. It is keyed into the width cache for
+ * the same reason.
+ */
+export function pretextMeasure(letterSpacing = 0): MeasureFn {
+  return (text, font) => measureCached(text, font, letterSpacing);
+}
+
+function measureCached(
+  text: string,
+  font: string,
+  letterSpacing: number,
+): number {
+  // NUL separator: neither string can contain it, so keys never collide. The
+  // tracking is a number, so a plain space separates it unambiguously.
+  const key = `${letterSpacing} ${font}\u0000${text}`;
   const cached = widthCache.get(key);
   if (cached !== undefined) return cached;
-  const width = measureNaturalWidth(prepareWithSegments(text, font));
+  const width = measureNaturalWidth(
+    prepareWithSegments(text, font, { letterSpacing }),
+  );
   widthCache.set(key, width);
   return width;
-};
+}
 
 /**
  * A Liang-pattern hyphenator: accepts any text and returns it with soft
@@ -377,14 +395,16 @@ function toLines(items: BreakItem[], breaks: number[]): string[] {
  * Break `text` into optimal justified lines for the given font and column width.
  * Resolves to null when the language isn't hyphenated here (e.g. Chinese) or no
  * feasible layout is found — the caller then keeps the plain paragraph.
- * `measure` defaults to pretext (canvas); tests inject a synthetic one.
+ * `measure` defaults to pretext (canvas) with no tracking; a caller whose
+ * paragraph carries `letter-spacing` passes `pretextMeasure(px)` instead, and
+ * tests inject a synthetic one.
  */
 export async function breakIntoLines(
   text: string,
   font: string,
   lineWidth: number,
   lang: Lang,
-  measure: MeasureFn = measureWithPretext,
+  measure: MeasureFn = pretextMeasure(),
 ): Promise<string[] | null> {
   if (lineWidth <= 0) return null;
   const hyphenate = await loadHyphenator(lang);
