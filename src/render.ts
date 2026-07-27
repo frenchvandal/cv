@@ -27,6 +27,16 @@ import {
 } from "./translations.ts";
 import { escapeHtml } from "./dom.ts";
 import { LOGOS } from "./logos.ts";
+import {
+  ICON_BATTERY,
+  ICON_CHEVRON_LEFT,
+  ICON_CHEVRON_RIGHT,
+  ICON_MIC,
+  ICON_PLUS,
+  ICON_SIGNAL,
+  ICON_WIFI,
+} from "./icons.ts";
+import { CHAT_WIDTH } from "./config.ts";
 
 export type Theme = "light" | "dark";
 
@@ -567,32 +577,101 @@ function hobbies(t: Translation): string {
 }
 
 /**
- * The faux visitor interview, presented as a message thread. The pre-rendered
- * bubbles wrap at a plain CSS max-width (fine without JS); [src/chat.ts] then
- * tightens each bubble to its optimal wrap width with pretext. The bubble text
- * is duplicated into data-text so the enhancement measures exactly the visible
- * text (the .sr-only sender prefix is for screen readers only).
+ * The device the thread is drawn inside: status bar, conversation bar, and the
+ * composer under it. Pure decoration — every part of it is `aria-hidden`, so a
+ * screen reader hears the thread and nothing about the phone around it. `9:41`
+ * is Apple's own canonical time and is language-invariant, as are the glyphs;
+ * the only translated string is the contact name, which is the visitor, since
+ * the screen we are looking over is Philippe's.
+ */
+function phoneChrome(t: Translation): { status: string; bar: string } {
+  const visitor = escapeHtml(t.dialogue.visitor);
+  // The avatar monogram is the first *grapheme*, not the first UTF-16 unit, so
+  // it stays whole for 訪客 as well as for Visitor.
+  const monogram = escapeHtml([...t.dialogue.visitor][0] ?? "");
+
+  return {
+    status: `
+            <div class="phone__status" aria-hidden="true">
+              <span class="phone__time">9:41</span>
+              <span class="phone__island"></span>
+              <span class="phone__signals">${ICON_SIGNAL}${ICON_WIFI}${ICON_BATTERY}</span>
+            </div>`,
+    bar: `
+            <div class="phone__bar" aria-hidden="true">
+              <span class="phone__back">${ICON_CHEVRON_LEFT}</span>
+              <span class="phone__who">
+                <span class="phone__avatar">${monogram}</span>
+                <span class="phone__name">${visitor}${ICON_CHEVRON_RIGHT}</span>
+              </span>
+            </div>`,
+  };
+}
+
+/**
+ * The faux visitor interview, presented as a message thread on a phone.
+ *
+ * The bubbles are the load-bearing part: they wrap at a plain CSS max-width
+ * (fine without JS), and [src/chat.ts](src/chat.ts) then tightens each one to
+ * its optimal wrap width with pretext. The bubble text is duplicated into
+ * data-text so the enhancement measures exactly the visible text (the .sr-only
+ * sender prefix is for screen readers only).
+ *
+ * The phone around them is what makes the thread read as a thread rather than
+ * as two columns of coloured boxes, and the width control under it is the
+ * pretext demo's own (chenglou.me/pretext/bubbles): dragging it re-tightens
+ * every bubble live, which is the whole point of measuring instead of
+ * guessing. It is `.js`-gated in CSS, since a range input that moves nothing
+ * would be a lie without the script.
  */
 function dialogue(t: Translation): string {
   const rows = t.dialogue.messages.map(
     (m) => `
-          <div class="chat__row${m.me ? " chat__row--me" : ""}">
-            <div class="msg" data-text="${
+              <div class="chat__row${m.me ? " chat__row--me" : ""}">
+                <div class="msg" data-text="${
       escapeHtml(m.text)
     }"><span class="sr-only">${
       escapeHtml(m.me ? t.dialogue.me : t.dialogue.visitor)
     }: </span>${escapeHtml(m.text)}</div>
-          </div>`,
+              </div>`,
   ).join("");
+
+  const { status, bar } = phoneChrome(t);
 
   return section(
     t,
     "dialogue",
     `
         <p class="chat__disclaimer">${escapeHtml(t.dialogue.disclaimer)}</p>
-        <div class="chat" role="group" aria-label="${
+        <div class="phone">
+          <div class="phone__body">
+            <div class="phone__screen">${status}${bar}
+              <div class="chat" role="group" aria-label="${
       escapeHtml(t.nav.dialogue)
     }">${rows}
+              </div>
+              <div class="phone__composer" aria-hidden="true">
+                <span class="phone__plus">${ICON_PLUS}</span>
+                <span class="phone__field">${ICON_MIC}</span>
+              </div>
+              <span class="phone__home" aria-hidden="true"></span>
+            </div>
+          </div>
+          <label class="chat__width">
+            <span class="chat__width-name">${
+      escapeHtml(t.dialogue.width)
+    }</span>
+            <input
+              class="chat__width-range"
+              type="range"
+              min="${CHAT_WIDTH.min}"
+              max="${CHAT_WIDTH.max}"
+              value="${CHAT_WIDTH.initial}"
+              step="1"
+              data-chat-width
+            />
+            <output class="chat__width-value" data-chat-width-value>${CHAT_WIDTH.initial} px</output>
+          </label>
         </div>`,
   );
 }

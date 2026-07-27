@@ -213,7 +213,7 @@ const en = {
     master: {
       school: "Université de Cergy-Pontoise",
       title: "Master's, Financial Instruments Management",
-      date: "2005",
+      date: "2004 – 2005",
       subtitle: "Now CY Cergy Paris Université",
       desc:
         "Financial engineering and instruments management — the quantitative grounding behind twenty years in financial software.",
@@ -221,7 +221,7 @@ const en = {
     edc: {
       school: "EDC Paris Business School",
       title: "Business Degree — Finance Major",
-      date: "2004",
+      date: "2000 – 2004",
       desc: "Business and management, specialising in finance.",
     },
   },
@@ -321,6 +321,7 @@ const en = {
   },
   dialogue: {
     visitor: "Visitor",
+    width: "Container width",
     me: "Philippe",
     disclaimer: "A barely embellished transcript of a real conversation.",
     messages: [
@@ -484,7 +485,7 @@ const fr: Translation = {
     master: {
       school: "Université de Cergy-Pontoise",
       title: "Master, Gestion des instruments financiers",
-      date: "2005",
+      date: "2004 – 2005",
       subtitle: "Aujourd'hui CY Cergy Paris Université",
       desc:
         "Ingénierie financière et gestion d'instruments — le socle quantitatif de vingt ans dans le logiciel financier.",
@@ -492,7 +493,7 @@ const fr: Translation = {
     edc: {
       school: "EDC Paris Business School",
       title: "Diplôme d'école de commerce — Majeure Finance",
-      date: "2004",
+      date: "2000 – 2004",
       desc: "Commerce et gestion, avec une spécialisation en finance.",
     },
   },
@@ -592,6 +593,7 @@ const fr: Translation = {
   },
   dialogue: {
     visitor: "Visiteur",
+    width: "Largeur du conteneur",
     me: "Philippe",
     disclaimer:
       "Transcription à peine romancée d'une conversation authentique.",
@@ -763,7 +765,7 @@ const pt: Translation = {
     master: {
       school: "Université de Cergy-Pontoise",
       title: "Mestrado em Gestão de Instrumentos Financeiros",
-      date: "2005",
+      date: "2004 – 2005",
       subtitle: "Actualmente CY Cergy Paris Université",
       desc:
         "Engenharia financeira e gestão de instrumentos — a base quantitativa por trás de vinte anos em software financeiro.",
@@ -771,7 +773,7 @@ const pt: Translation = {
     edc: {
       school: "EDC Paris Business School",
       title: "Licenciatura em Gestão — especialização em Finanças",
-      date: "2004",
+      date: "2000 – 2004",
       desc:
         "Formação em gestão e administração, com especialização em finanças.",
     },
@@ -872,6 +874,7 @@ const pt: Translation = {
   },
   dialogue: {
     visitor: "Visitante",
+    width: "Largura do contentor",
     me: "Philippe",
     disclaimer:
       "Transcrição apenas ligeiramente romanceada de uma conversa verdadeira.",
@@ -1035,7 +1038,7 @@ const es: Translation = {
     master: {
       school: "Université de Cergy-Pontoise",
       title: "Máster en Gestión de Instrumentos Financieros",
-      date: "2005",
+      date: "2004 – 2005",
       subtitle: "Hoy CY Cergy Paris Université",
       desc:
         "Ingeniería financiera y gestión de instrumentos: la base cuantitativa de veinte años en software financiero.",
@@ -1043,7 +1046,7 @@ const es: Translation = {
     edc: {
       school: "EDC Paris Business School",
       title: "Grado en Empresariales — especialidad en Finanzas",
-      date: "2004",
+      date: "2000 – 2004",
       desc: "Formación en empresa y gestión, con especialidad en finanzas.",
     },
   },
@@ -1143,6 +1146,7 @@ const es: Translation = {
   },
   dialogue: {
     visitor: "Visitante",
+    width: "Anchura del contenedor",
     me: "Philippe",
     disclaimer: "Transcripción apenas adornada de una conversación real.",
     messages: [
@@ -1246,35 +1250,35 @@ const zh: Translation = {
   },
   experience: {
     kapiaRgi: {
-      date: "2019 – 至今",
+      date: "2019年 – 至今",
       company: "KAPIA-RGI",
       location: "法国巴黎",
       sector: "人寿保险核心系统软件",
       title: "网页产品负责人",
     },
     open: {
-      date: "2014 – 2019",
+      date: "2014年 – 2019年",
       company: "OPEN",
       location: "法国巴黎",
       sector: "IT 咨询",
       title: "IT 顾问",
     },
     kapiaSolutions: {
-      date: "2011 – 2014",
+      date: "2011年 – 2014年",
       company: "KAPIA Solutions (KAPIA-RGI)",
       location: "法国巴黎",
       sector: "人寿保险核心系统软件",
       title: "业务分析师",
     },
     adneom: {
-      date: "2008 – 2011",
+      date: "2008年 – 2011年",
       company: "Adneom Technologies (CBTW)",
       location: "法国巴黎",
       sector: "IT 咨询",
       title: "IT 顾问",
     },
     insurance: {
-      date: "2004 – 2008",
+      date: "2004年 – 2008年",
       company: "Fidelidade、SwissLife 与 AXA",
       location: "法国巴黎",
       sector: "保险",
@@ -1285,7 +1289,7 @@ const zh: Translation = {
     sichuan: {
       school: "四川大学",
       title: "汉语进修项目",
-      date: "2025 – 2026",
+      date: "2025年 – 2026年",
       subtitle: "成都望江校区 · 全日制沉浸式学习",
       items: [
         "从 KAPIA-RGI 停薪留职一年，全日制学习中文；项目于 2026 年 7 月结业",
@@ -1297,19 +1301,19 @@ const zh: Translation = {
     master: {
       school: "塞尔吉-蓬图瓦兹大学",
       title: "金融工具管理硕士",
-      date: "2005",
+      date: "2004年 – 2005年",
       subtitle: "现 CY 塞尔吉巴黎大学",
       desc: "金融工程与金融工具管理——二十年金融软件生涯的量化根基。",
     },
     edc: {
       school: "EDC 巴黎商学院",
       title: "商科学位——金融方向",
-      date: "2004",
+      date: "2000年 – 2004年",
       desc: "商业与管理教育，主修金融。",
     },
   },
   certifications: {
-    date: "2016 – 2024",
+    date: "2016年 – 2024年",
     items: [
       "Professional Scrum Product Owner（PSPO）——2024 年培训，认证进行中",
       "ISTQB 认证测试工程师——基础级（2016）",
@@ -1401,6 +1405,7 @@ const zh: Translation = {
   },
   dialogue: {
     visitor: "访客",
+    width: "容器宽度",
     me: "李北洛",
     disclaimer: "以下对话根据真实故事（几乎）改编。",
     messages: [
@@ -1495,35 +1500,35 @@ const zhHant: Translation = {
   },
   experience: {
     kapiaRgi: {
-      date: "2019 – 迄今",
+      date: "2019年 – 迄今",
       company: "KAPIA-RGI",
       location: "法國巴黎",
       sector: "壽險核心系統軟體",
       title: "網頁產品負責人",
     },
     open: {
-      date: "2014 – 2019",
+      date: "2014年 – 2019年",
       company: "OPEN",
       location: "法國巴黎",
       sector: "IT 顧問服務",
       title: "IT 顧問",
     },
     kapiaSolutions: {
-      date: "2011 – 2014",
+      date: "2011年 – 2014年",
       company: "KAPIA Solutions (KAPIA-RGI)",
       location: "法國巴黎",
       sector: "壽險核心系統軟體",
       title: "商業分析師",
     },
     adneom: {
-      date: "2008 – 2011",
+      date: "2008年 – 2011年",
       company: "Adneom Technologies (CBTW)",
       location: "法國巴黎",
       sector: "IT 顧問服務",
       title: "IT 顧問",
     },
     insurance: {
-      date: "2004 – 2008",
+      date: "2004年 – 2008年",
       company: "Fidelidade、SwissLife 與 AXA",
       location: "法國巴黎",
       sector: "保險",
@@ -1534,7 +1539,7 @@ const zhHant: Translation = {
     sichuan: {
       school: "四川大學",
       title: "漢語進修課程",
-      date: "2025 – 2026",
+      date: "2025年 – 2026年",
       subtitle: "成都望江校區 · 全日制沉浸式學習",
       items: [
         "自 KAPIA-RGI 留職停薪一年，全日制學習中文；課程於 2026 年 7 月結業",
@@ -1546,19 +1551,19 @@ const zhHant: Translation = {
     master: {
       school: "塞吉-蓬多瓦茲大學",
       title: "金融工具管理碩士",
-      date: "2005",
+      date: "2004年 – 2005年",
       subtitle: "現 CY 塞吉巴黎大學",
       desc: "金融工程與金融工具管理——二十年金融軟體生涯的量化根基。",
     },
     edc: {
       school: "EDC 巴黎商學院",
       title: "商學學位——金融方向",
-      date: "2004",
+      date: "2000年 – 2004年",
       desc: "商業與管理教育，主修金融。",
     },
   },
   certifications: {
-    date: "2016 – 2024",
+    date: "2016年 – 2024年",
     items: [
       "Professional Scrum Product Owner（PSPO）——2024 年培訓，認證進行中",
       "ISTQB 認證測試工程師——基礎級（2016）",
@@ -1650,6 +1655,7 @@ const zhHant: Translation = {
   },
   dialogue: {
     visitor: "訪客",
+    width: "容器寬度",
     me: "李北洛",
     disclaimer: "以下對話（幾乎）改編自真實故事。",
     messages: [

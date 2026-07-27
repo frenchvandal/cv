@@ -86,6 +86,21 @@ export const NAV_FIT = {
 } as const;
 
 /**
+ * The Dialogue phone's screen width, in px, and the range its control offers.
+ *
+ * `initial` is the pretext demo's own 340px, and the bounds stay inside what a
+ * real handset measures — an iPhone SE is 320pt across, a Pro Max 430 — so the
+ * frame reads as a phone at either end of the slider rather than as a box that
+ * happens to hold bubbles. `.phone` in [src/styles.css](src/styles.css) carries
+ * `initial` as the CSS default, for every visitor whose JS never runs.
+ */
+export const CHAT_WIDTH = {
+  min: 280,
+  max: 420,
+  initial: 340,
+} as const;
+
+/**
  * Language-switch timing: [src/main.ts](src/main.ts) swaps the DOM this long
  * after arming the fade — just before the 250ms `#app` opacity transition in
  * [src/styles.css](src/styles.css) completes, so the fade-in already runs on
