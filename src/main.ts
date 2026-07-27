@@ -4,6 +4,8 @@ import "./styles.css";
 import {
   DISPLAY_FONT,
   HERO_FIT,
+  NAV_FIT,
+  NAV_FONT,
   PAGE_SWAP_MS,
   THEME_COLOR,
   TITLE_FIT,
@@ -19,6 +21,7 @@ import {
 import {
   langFromPath,
   langUrl,
+  NAV_LINKS,
   pageTitle,
   renderApp,
   STORAGE_LANG_KEY,
@@ -26,9 +29,11 @@ import {
 } from "./render.ts";
 import { escapeHtml, reducedMotion } from "./dom.ts";
 import {
+  auditNavLinks,
   auditSectionTitles,
   debounce,
   fitHeroName,
+  fitNavLinks,
   fitSectionTitles,
   whenFontsReady,
 } from "./measure.ts";
@@ -166,10 +171,14 @@ function sectionTitleLabel(el: HTMLElement): string {
   return text.trim();
 }
 
-/** Fit the hero name to width, and the section titles to their column. */
+/**
+ * Fit the hero name to width, the section titles to their column, and the nav
+ * shortcuts to what the bar leaves them.
+ */
 function applyMeasuredLayout(): void {
   if (!app) return;
-  const font = { ...DISPLAY_FONT, family: pageFontFamily() };
+  const family = pageFontFamily();
+  const font = { ...DISPLAY_FONT, family };
 
   const nameEl = app.querySelector<HTMLElement>(".hero__name");
   if (nameEl) fitHeroName(nameEl, { ...font, ...HERO_FIT });
@@ -184,6 +193,9 @@ function applyMeasuredLayout(): void {
       label: sectionTitleLabel,
     });
   }
+
+  const linksEl = app.querySelector<HTMLElement>(".nav__links");
+  if (linksEl) fitNavLinks(linksEl, { ...NAV_FONT, family, ...NAV_FIT });
 }
 
 /**
@@ -244,10 +256,26 @@ async function enhanceAboutKp(): Promise<void> {
   }
 }
 
+function isDevHost(): boolean {
+  const host = location.hostname;
+  return host === "localhost" || host === "127.0.0.1";
+}
+
+/**
+ * Both CJK families in one stack: each language's text resolves to the family it
+ * would render with, regardless of the page the audit runs from.
+ */
+function allFontsFamily(): string {
+  return [
+    ...FONT_FACES.map((face) => `'${face.family}'`),
+    "system-ui",
+    "sans-serif",
+  ].join(", ");
+}
+
 /** Dev-only, pretext-powered QA: warn if any section title must shrink to fit in any language. */
 function auditTitles(): void {
-  const host = location.hostname;
-  if (host !== "localhost" && host !== "127.0.0.1") return;
+  if (!isDevHost()) return;
 
   const labelsByLang: Record<string, string[]> = {};
   for (const lang of LANGS) {
@@ -264,16 +292,9 @@ function auditTitles(): void {
     ];
   }
 
-  // Both CJK families in one stack: each language's labels resolve to the
-  // family they would render with, regardless of the page we audit from.
-  const family = [
-    ...FONT_FACES.map((face) => `'${face.family}'`),
-    "system-ui",
-    "sans-serif",
-  ].join(", ");
   const tight = auditSectionTitles(labelsByLang, {
     ...DISPLAY_FONT,
-    family,
+    family: allFontsFamily(),
     columnRem: TITLE_FIT.columnRem,
     maxPx: TITLE_FIT.maxPx,
   })
@@ -289,6 +310,63 @@ function auditTitles(): void {
     console.info(
       "[measure] all section titles fit at max size across all languages",
     );
+  }
+}
+
+/**
+ * Dev-only, pretext-powered QA for the nav bar: report, from any page and
+ * without switching languages, how much room the shortcuts get once the brand
+ * and the language switcher are paid for, and what `fitNavLinks` has to do to
+ * them. `clipped` is the one that matters — it means the CSS floor is doing the
+ * work and a label is actually being cut.
+ *
+ * The bar's geometry comes from the live DOM rather than from constants: the
+ * row width, its gaps and the switcher cluster are all language-invariant, so
+ * whichever page this runs on measures them correctly. Only meaningful at or
+ * above `desktopMinRem`, where the shortcuts are on screen at all.
+ */
+function auditNav(): void {
+  if (!isDevHost() || !app) return;
+
+  const inner = app.querySelector<HTMLElement>(".nav__inner");
+  const actions = app.querySelector<HTMLElement>(".nav__actions");
+  if (!inner || !actions) return;
+  if (globalThis.innerWidth < NAV_FIT.desktopMinRem * 16) return;
+
+  const innerStyle = getComputedStyle(inner);
+  const rowPx = inner.clientWidth -
+    (parseFloat(innerStyle.paddingLeft) || 0) -
+    (parseFloat(innerStyle.paddingRight) || 0);
+
+  const perLang: Record<string, { brand: string; labels: string[] }> = {};
+  for (const lang of LANGS) {
+    const t = translations[lang];
+    perLang[lang] = {
+      brand: t.name.display,
+      labels: NAV_LINKS.map((id) => t.nav[id]),
+    };
+  }
+
+  const family = allFontsFamily();
+  const entries = auditNavLinks(perLang, {
+    rowPx,
+    rowGapPx: parseFloat(innerStyle.columnGap) || 0,
+    actionsPx: actions.getBoundingClientRect().width,
+    // Mirrors `.nav__brand` in [src/styles.css](src/styles.css).
+    brand: { weight: 600, letterSpacingEm: -0.01, sizePx: 15, family },
+    link: { ...NAV_FONT, family, ...NAV_FIT },
+  });
+
+  const tight = entries.filter((entry) => !entry.fitsAtMax);
+  if (tight.length > 0) {
+    console.groupCollapsed(
+      `[measure] nav shortcuts are fitted in ${tight.length} language(s)` +
+        (tight.some((e) => e.clipped) ? " — SOME ARE CLIPPED" : ""),
+    );
+    console.table(entries);
+    console.groupEnd();
+  } else {
+    console.info("[measure] nav shortcuts fit untouched in every language");
   }
 }
 
@@ -552,7 +630,10 @@ function init(): void {
   // auditSectionTitles) is tree-shaken out of the bundle; the dev server never
   // sets feature flags, so it always runs there.
   if (!feature("PROD")) {
-    whenFontsReady(auditTitles);
+    whenFontsReady(() => {
+      auditTitles();
+      auditNav();
+    });
   }
 }
 

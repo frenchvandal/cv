@@ -2,12 +2,14 @@
  * Measurement layer, powered by @chenglou/pretext.
  *
  * pretext measures text with the browser's font engine (canvas) WITHOUT touching
- * the DOM, so there is no layout reflow. We use it for two real, multilingual
+ * the DOM, so there is no layout reflow. We use it for three real, multilingual
  * fit problems that plain CSS `clamp()` only approximates:
  *
  *   1. fitHeroName  — scale the hero name so its widest line fills the width.
  *   2. fitSectionTitles — size the sticky section titles so the longest one fits
  *      its column at every language, instead of being truncated with an ellipsis.
+ *   3. fitNavLinks — tighten the nav shortcuts into the fixed width the bar
+ *      leaves them, instead of letting them print over the language switcher.
  *
  * The site renders with self-hosted Noto Sans / Noto Sans SC/TC — named fonts,
  * which pretext requires for accuracy (system-ui is explicitly unsafe). Callers
@@ -151,6 +153,175 @@ export function fitSectionTitles(
   common = clamp(common, minPx, maxPx);
 
   for (const el of titleEls) el.style.fontSize = `${common}px`;
+}
+
+/** The room the nav shortcuts may be squeezed into, in px. See `NAV_FIT`. */
+export interface NavFitBounds {
+  maxPx: number;
+  minPx: number;
+  maxGapPx: number;
+  minGapPx: number;
+}
+
+export interface FitNavOptions extends FitFont, NavFitBounds {
+  /** Only fit at or above this viewport width (rem); below it the links are hidden. */
+  desktopMinRem: number;
+}
+
+export interface NavFit {
+  fontPx: number;
+  gapPx: number;
+  /** True when the labels fit at the sizes the stylesheet declares. */
+  natural: boolean;
+  /** True when even `minPx`/`minGapPx` overrun the bar, so the CSS clips. */
+  clipped: boolean;
+}
+
+/**
+ * Fits the nav shortcuts into the width the bar leaves them, gap first and type
+ * second. Returns the fit for the dev audit, or `null` when there is nothing to
+ * do (no links, or below the breakpoint where they are hidden).
+ *
+ * `.nav__links` is `flex: 1` off a zero basis, so its width comes from the bar —
+ * the brand and the language switcher — and never from the labels inside it.
+ * That is what makes `clientWidth` safe to measure against here: shrinking the
+ * text cannot widen the box and start a feedback loop.
+ */
+export function fitNavLinks(
+  linksEl: HTMLElement,
+  options: FitNavOptions,
+): NavFit | null {
+  const els = Array.from(linksEl.children) as HTMLElement[];
+
+  // Always undo the previous fit first, so a resize (or a switch to a language
+  // that fits) hands the stylesheet its own size and gap back rather than
+  // leaving the last, tighter layout behind.
+  linksEl.style.removeProperty("column-gap");
+  for (const el of els) el.style.removeProperty("font-size");
+
+  const gaps = els.length - 1;
+  if (gaps < 1) return null;
+  if (globalThis.innerWidth < options.desktopMinRem * rootFontSize()) {
+    return null;
+  }
+
+  const available = linksEl.clientWidth * MEASURE_SAFETY;
+  if (available <= 0) return null;
+
+  // Width of the whole label set per 1px of type size: one prepare per label,
+  // cached, so every later resize is arithmetic on five numbers.
+  const perPx = els.reduce(
+    (sum, el) => sum + widthPerPx(el.textContent ?? "", options),
+    0,
+  );
+  if (perPx <= 0) return null;
+
+  if (perPx * options.maxPx + options.maxGapPx * gaps <= available) {
+    return {
+      fontPx: options.maxPx,
+      gapPx: options.maxGapPx,
+      natural: true,
+      clipped: false,
+    };
+  }
+
+  // Spend the whitespace before the type: a tighter gap reads as a denser bar,
+  // while a smaller label is a size the ramp does not otherwise contain.
+  const gapPx = clamp(
+    (available - perPx * options.maxPx) / gaps,
+    options.minGapPx,
+    options.maxGapPx,
+  );
+  const fontPx = clamp(
+    (available - gapPx * gaps) / perPx,
+    options.minPx,
+    options.maxPx,
+  );
+
+  linksEl.style.columnGap = `${gapPx}px`;
+  for (const el of els) el.style.fontSize = `${fontPx}px`;
+
+  return {
+    fontPx,
+    gapPx,
+    natural: false,
+    clipped: perPx * fontPx + gapPx * gaps > available,
+  };
+}
+
+export interface NavAuditEntry {
+  lang: string;
+  /** Width `.nav__links` gets once the brand and the switcher are paid for. */
+  budgetPx: number;
+  /** Width the labels want at `maxPx` and `maxGapPx`. */
+  requiredPx: number;
+  fontPx: number;
+  gapPx: number;
+  fitsAtMax: boolean;
+  clipped: boolean;
+}
+
+export interface NavAuditOptions {
+  /** Content width of the bar's flex row, in px (its `.wrap` less padding). */
+  rowPx: number;
+  /** Gap between the bar's three parts, in px. */
+  rowGapPx: number;
+  /** Width of the right-hand cluster — switcher plus theme toggle, in px. */
+  actionsPx: number;
+  /** The brand's type, whose width is the one part of the bar that varies by language. */
+  brand: FitFont & { sizePx: number };
+  /** The shortcuts' type, and how far the fitter may squeeze it. */
+  link: FitFont & NavFitBounds;
+}
+
+/**
+ * Dev-only, pretext-powered QA for the bar, and the reason this file measures
+ * the brand as well as the labels: the budget is not one number. `.nav__brand`
+ * is 112px of "Philippe Ribeiro" but 161px of 李北洛, so each language leaves
+ * `.nav__links` a different width, and a label set that fits one page can
+ * overrun another. Reports, per language and from any page, the width the
+ * shortcuts want against the width they get.
+ */
+export function auditNavLinks(
+  perLang: Record<string, { brand: string; labels: string[] }>,
+  options: NavAuditOptions,
+): NavAuditEntry[] {
+  const { brand, link } = options;
+  const entries: NavAuditEntry[] = [];
+
+  for (const [lang, { brand: brandText, labels }] of Object.entries(perLang)) {
+    const gaps = labels.length - 1;
+    if (gaps < 1) continue;
+
+    const brandPx = widthPerPx(brandText, brand) * brand.sizePx;
+    const budgetPx =
+      (options.rowPx - brandPx - options.actionsPx - 2 * options.rowGapPx) *
+      MEASURE_SAFETY;
+    const perPx = labels.reduce((sum, l) => sum + widthPerPx(l, link), 0);
+    const requiredPx = perPx * link.maxPx + link.maxGapPx * gaps;
+
+    const gapPx = clamp(
+      (budgetPx - perPx * link.maxPx) / gaps,
+      link.minGapPx,
+      link.maxGapPx,
+    );
+    const fontPx = clamp(
+      (budgetPx - gapPx * gaps) / perPx,
+      link.minPx,
+      link.maxPx,
+    );
+
+    entries.push({
+      lang,
+      budgetPx: Math.round(budgetPx),
+      requiredPx: Math.round(requiredPx),
+      fontPx: Math.round(fontPx * 100) / 100,
+      gapPx: Math.round(gapPx * 10) / 10,
+      fitsAtMax: requiredPx <= budgetPx,
+      clipped: perPx * fontPx + gapPx * gaps > budgetPx,
+    });
+  }
+  return entries;
 }
 
 /** Resolves once web fonts are loaded, so measurement uses the real glyphs. */

@@ -150,8 +150,12 @@ export function pageTitle(t: Translation): string {
   return `${t.name.display} — ${t.hero.title}`;
 }
 
-/** Section shortcuts in the nav bar — a useful subset, not every heading. */
-const NAV_LINKS: readonly (keyof Translation["nav"])[] = [
+/**
+ * Section shortcuts in the nav bar — a useful subset, not every heading.
+ * Exported for the dev-only nav audit in [src/main.ts](src/main.ts), which has
+ * to measure the same five labels the bar renders.
+ */
+export const NAV_LINKS: readonly (keyof Translation["nav"])[] = [
   "about",
   "experience",
   "education",

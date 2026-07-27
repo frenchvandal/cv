@@ -34,9 +34,10 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
   maintain, and it has no button in the switcher: browsers asking for `zh-HK` or
   `zh-MO` are sent there, and `hreflang="zh-HK"` points search engines at it.
 - **Measurement-driven layout** ([src/measure.ts](src/measure.ts)) — pretext
-  fits the hero name to the viewport width and sizes the section titles to their
-  column (uniform, no ellipsis truncation) across all seven languages. A
-  dev-only console audit flags any title that would overflow.
+  fits the hero name to the viewport width, sizes the section titles to their
+  column (uniform, no ellipsis truncation), and tightens the nav shortcuts into
+  the fixed width the bar leaves them, across all seven languages. Dev-only
+  console audits flag any title or nav label that would overflow.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the
   About paragraphs are re-typeset with TeX-style optimal line breaking and
   syllable hyphenation, over pretext-measured boxes/glue (Latin languages;

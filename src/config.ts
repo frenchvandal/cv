@@ -55,6 +55,37 @@ export const TITLE_FIT = {
 } as const;
 
 /**
+ * Font descriptor for the nav-bar shortcuts. Must match `.nav__link` in
+ * [src/styles.css](src/styles.css): the body weight, and no tracking of its own.
+ */
+export const NAV_FONT = { weight: 400, letterSpacingEm: 0 } as const;
+
+/**
+ * Nav-shortcut fitting contract. Unlike the hero and the section titles, this
+ * one has no responsive slack to play with: the bar shares `--wrap` with the
+ * content, so `.nav__links` gets the same ~354px at every viewport — the window
+ * can be 1728px wide and the budget does not move. Five labels at `maxPx` fit
+ * that in English and Chinese with room to spare, and overrun it by 34–57px in
+ * Portuguese, French and Spanish.
+ *
+ * The fitter therefore spends the gap first, down to `minGapPx`: whitespace
+ * between shortcuts is the cheapest width on the bar. Only then does it touch
+ * the type, and `minPx` stops one step below `maxPx` — 0.8125rem is already the
+ * smallest size in the ramp, so anything under 12px is a new, lonelier step.
+ *
+ * `maxPx` mirrors `.nav__link`'s font-size and `maxGapPx` the `--space-md` gap;
+ * `desktopMinRem` mirrors the breakpoint below which the shortcuts are hidden
+ * outright. Keep the four in sync with [src/styles.css](src/styles.css).
+ */
+export const NAV_FIT = {
+  maxPx: 13,
+  minPx: 12,
+  maxGapPx: 20,
+  minGapPx: 10,
+  desktopMinRem: 56,
+} as const;
+
+/**
  * Language-switch timing: [src/main.ts](src/main.ts) swaps the DOM this long
  * after arming the fade — just before the 250ms `#app` opacity transition in
  * [src/styles.css](src/styles.css) completes, so the fade-in already runs on

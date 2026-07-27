@@ -275,6 +275,13 @@ a:hover {
   flex: 1;
   gap: var(--space-md);
   min-width: 0;
+  /* The floor under `fitNavLinks` (src/measure.ts), which is an enhancement and
+     so may not run. `min-width: 0` lets this box shrink past its content, and
+     the links are `nowrap`: without clipping they escape it and print over the
+     language switcher — which is exactly what pt/es/fr did, by 34 to 57px.
+     Clipped is not pretty, but it is never illegible, and once the fitter has
+     measured there is nothing left to clip. */
+  overflow: hidden;
 }
 
 @media (min-width: 56rem) {
