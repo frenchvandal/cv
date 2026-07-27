@@ -1,18 +1,24 @@
 /**
- * Portfolio content, fully typed and available in four languages.
+ * Portfolio content, fully typed and available in six languages.
  *
  * The English object `en` is the source of truth: its inferred type is
- * {@link Translation}, so `fr`, `zh` and `zhHant` must expose the exact same
+ * {@link Translation}, so every other translation must expose the exact same
  * shape — a missing or misnamed key is a compile-time error. This guarantees
  * parity across languages without hand-writing a large interface.
  *
- * `zh` (Simplified) and `zh-hant` (Traditional) are independent translations,
- * not script conversions of each other: vocabulary differs between the two
- * (软件/軟體, 业务分析师/商業分析師, 待办列表/待辦清單…), so each is written
- * for its audience. The Chinese pages use Philippe's Chinese name, 李北洛.
+ * Each translation is written for its own audience rather than converted from
+ * a neighbour, and several are region-locked on purpose:
+ *   - `zh` (Simplified) and `zh-hant` (Traditional) are independent, not script
+ *     conversions of each other — vocabulary differs (软件/軟體, 业务分析师/
+ *     商業分析師, 待办列表/待辦清單…). Both use Philippe's Chinese name, 李北洛.
+ *     `zh-hant` follows Taiwan usage (軟體, 專案), not Hong Kong/Macau (軟件,
+ *     項目), matching the Noto Sans TC glyph forms the page ships.
+ *   - `pt` is European Portuguese in the PRE-1990 orthography (see its own
+ *     header), never Brazilian.
+ *   - `es` is peninsular Spanish.
  */
 
-export const LANGS = ["en", "fr", "zh", "zh-hant"] as const;
+export const LANGS = ["en", "fr", "pt", "es", "zh", "zh-hant"] as const;
 export type Lang = (typeof LANGS)[number];
 
 /** Type guard for language values coming from the DOM or the URL (dataset, path). */
@@ -24,6 +30,10 @@ export function isLang(value: string | undefined): value is Lang {
 export const HTML_LANG: Record<Lang, string> = {
   en: "en",
   fr: "fr",
+  // Region-tagged: the copy is deliberately European, not Brazilian/American —
+  // `pt` follows the pre-1990 orthography and `es` is peninsular Spanish.
+  pt: "pt-PT",
+  es: "es-ES",
   zh: "zh-Hans",
   "zh-hant": "zh-Hant",
 };
@@ -32,6 +42,8 @@ export const HTML_LANG: Record<Lang, string> = {
 export const LANG_LABEL: Record<Lang, string> = {
   en: "EN",
   fr: "FR",
+  pt: "PT",
+  es: "ES",
   zh: "简",
   "zh-hant": "繁",
 };
@@ -40,6 +52,8 @@ export const LANG_LABEL: Record<Lang, string> = {
 export const LANG_NAME: Record<Lang, string> = {
   en: "English",
   fr: "Français",
+  pt: "Português",
+  es: "Español",
   zh: "简体中文",
   "zh-hant": "繁體中文",
 };
@@ -610,6 +624,555 @@ const fr: Translation = {
   },
 };
 
+/*
+ * European Portuguese in the PRE-1990 orthography (pré-Acordo Ortográfico), on
+ * purpose: the silent consonants the reform dropped are kept — "projecto" not
+ * "projeto", "objectivo" not "objetivo", "sector" not "setor", "actual" not
+ * "atual", "acção" not "ação" — and month names stay capitalised ("Julho").
+ * Consonants that ARE pronounced in Portugal never fell under the reform, so
+ * "contacto", "facto" and "secção" are spelled the same either way and are not
+ * evidence of one norm or the other.
+ *
+ * Portugal, not Brazil, throughout: "utilizador" (not usuário), "ficheiro"
+ * (not arquivo), "equipa" (not equipe), "a tempo inteiro" (not em tempo
+ * integral), "prémio" (not prêmio), and the "estar a fazer" progressive.
+ */
+const pt: Translation = {
+  name: {
+    display: "Philippe Ribeiro",
+    lines: ["Philippe Ribeiro"],
+  },
+  meta: {
+    description:
+      "Philippe Ribeiro — Product Owner e Analista de Negócio, 20 anos em software para serviços financeiros: sistemas centrais de seguros de vida, bancassurance, finanças públicas. Radicado em Chengdu, China, disponível imediatamente.",
+  },
+  nav: {
+    about: "Sobre",
+    experience: "Experiência",
+    education: "Formação",
+    certifications: "Certificações",
+    skills: "Competências",
+    hobbies: "Interesses",
+    dialogue: "Diálogo",
+    contact: "Contacto",
+  },
+  hero: {
+    greeting: "Olá, sou o",
+    title:
+      "Product Owner · Analista de Negócio — 20 anos em software financeiro",
+    location:
+      "Chengdu, China — mobilidade em todo o país · Nacionalidade francesa · Disponível imediatamente",
+    ctaPrimary: "Entrar em contacto",
+    ctaSecondary: "Saber mais",
+  },
+  about: {
+    p1:
+      "Product Owner e Analista de Negócio, com vinte anos em software para serviços financeiros — sistemas centrais de seguros de vida, bancassurance e finanças públicas. Trabalhei dos dois lados do sector: como consultor destacado em cliente, a entregar projectos em indústrias muito diferentes, e como responsável de produto numa empresa de software, a conduzir a evolução de um produto standard.",
+    p2:
+      "Na KAPIA-RGI sou responsável pelo K4U, um portal web de seguros destinado aos clientes finais de várias companhias, de ponta a ponta: visão de produto, roadmap e backlog, priorizados entre pedidos concorrentes. Conduzi a adopção transversal da autenticação única (SAML/OIDC), fundamento as decisões no feedback dos utilizadores e em análise SQL avançada, e só entrego incrementos testados e conformes — testador certificado ISTQB, com formação PSPO.",
+    p3:
+      "Radicado em Chengdu desde 2025, após um ano de mandarim a tempo inteiro na Universidade de Sichuan — o quotidiano faz-se em mandarim (HSK 4, HSK 5 em preparação). Francês e português maternos, inglês fluente, espanhol profissional. Disponível imediatamente, com mobilidade em toda a China.",
+    stats: {
+      years: "Anos em software",
+      languages: "Idiomas",
+      defects: "% de anomalias reduzidas",
+      clients: "Novos clientes angariados",
+    },
+  },
+  experience: {
+    kapiaRgi: {
+      date: "2019 – actualidade",
+      company: "KAPIA-RGI",
+      location: "Paris, França",
+      sector: "Software de sistemas centrais de seguros de vida",
+      title: "Web Product Owner",
+    },
+    open: {
+      date: "2014 – 2019",
+      company: "OPEN",
+      location: "Paris, França",
+      sector: "Consultoria informática",
+      title: "Consultor de TI",
+    },
+    kapiaSolutions: {
+      date: "2011 – 2014",
+      company: "KAPIA Solutions (KAPIA-RGI)",
+      location: "Paris, França",
+      sector: "Software de sistemas centrais de seguros de vida",
+      title: "Analista de Negócio",
+    },
+    adneom: {
+      date: "2008 – 2011",
+      company: "Adneom Technologies (CBTW)",
+      location: "Paris, França",
+      sector: "Consultoria informática",
+      title: "Consultor de TI",
+    },
+    insurance: {
+      date: "2004 – 2008",
+      company: "Fidelidade, SwissLife & AXA",
+      location: "Paris, França",
+      sector: "Seguros",
+      title: "Gestor de Contratos",
+    },
+  },
+  education: {
+    sichuan: {
+      school: "Universidade de Sichuan",
+      title: "Programa de Língua Chinesa",
+      date: "2025 – 2026",
+      subtitle: "Campus de Wangjiang, Chengdu · Imersão a tempo inteiro",
+      items: [
+        "Ano sabático da KAPIA-RGI para estudar mandarim a tempo inteiro; programa concluído em Julho de 2026",
+        "Resultados finais: média de 3,88 / 4,0 em 39 créditos — Chinês Integrado 92,8/100, Compreensão e Expressão Oral 93,9, Escrita 92,8, Informática e Internet em Chinês 90,3",
+        "Aulas, quotidiano e convívio em mandarim — uma visão de dentro da vida universitária chinesa",
+        "HSK 4 concluído (2023); HSK 5 em preparação",
+      ],
+    },
+    master: {
+      school: "Université de Cergy-Pontoise",
+      title: "Mestrado em Gestão de Instrumentos Financeiros",
+      date: "2005",
+      subtitle: "Actualmente CY Cergy Paris Université",
+      desc:
+        "Engenharia financeira e gestão de instrumentos — a base quantitativa por trás de vinte anos em software financeiro.",
+    },
+    edc: {
+      school: "EDC Paris Business School",
+      title: "Licenciatura em Gestão — especialização em Finanças",
+      date: "2004",
+      desc:
+        "Formação em gestão e administração, com especialização em finanças.",
+    },
+  },
+  certifications: {
+    date: "2016 – 2024",
+    items: [
+      "Professional Scrum Product Owner (PSPO) — formação em 2024, certificação em curso",
+      "ISTQB Certified Tester — Foundation Level (2016)",
+      "Gestão de Projectos — fundamentos e dimensão relacional (2018)",
+      "HSK 4 (2023) · HSKK oral, nível inicial (2022) · TOCFL nível A (2024)",
+    ],
+  },
+  skills: {
+    product: {
+      title: "Produto e Metodologia",
+      tags: [
+        "Agile / Scrum",
+        "Roadmap e backlog de produto",
+        "Engenharia de requisitos",
+        "Definição de MVP",
+        "Testes de aceitação (UAT)",
+        "Jira",
+      ],
+    },
+    data: {
+      title: "Bases de Dados e Linguagens",
+      tags: [
+        "SQL (avançado)",
+        "PL/SQL (base)",
+        "JavaScript / TypeScript (base)",
+      ],
+    },
+    interfaces: {
+      title: "Interfaces e Ambientes",
+      tags: [
+        "APIs REST",
+        "Autenticação única (SAML / OIDC)",
+        "Postman",
+        "Ambientes DEV / QA / PROD",
+      ],
+    },
+    domains: {
+      title: "Domínios",
+      tags: [
+        "Sistemas centrais de seguros de vida",
+        "Bancassurance",
+        "Percursos digitais e SSO",
+        "Finanças públicas",
+        "Ciclo de vida completo do software",
+      ],
+    },
+    soft: {
+      title: "Competências Transversais",
+      tags: [
+        "Ponto de contacto único",
+        "Facilitação entre intervenientes",
+        "Demonstrações a clientes",
+        "Documentação",
+        "Cultura de qualidade",
+        "Adaptabilidade intercultural",
+        "Autonomia",
+      ],
+    },
+    languages: {
+      title: "Idiomas",
+      french: { name: "Francês", level: "Materno" },
+      portuguese: { name: "Português", level: "Materno" },
+      english: { name: "Inglês", level: "Fluente · profissional" },
+      spanish: { name: "Espanhol", level: "Nível profissional" },
+      mandarin: { name: "Mandarim", level: "HSK 4 · HSK 5 em preparação" },
+    },
+  },
+  hobbies: {
+    running: {
+      title: "Corrida de Fundo",
+      desc:
+        "De provas de 10 km a ultramaratonas — incluindo a Maratona de Paris, por duas vezes.",
+    },
+    cycling: {
+      title: "Ciclismo",
+      desc: "Longas saídas por Chengdu e pelos campos do Sichuan.",
+    },
+    literature: {
+      title: "Literatura Francesa",
+      desc: "Leitor assíduo — escrevo recensões de livros em chinês no Douban.",
+    },
+    cinema: {
+      title: "Cinema",
+      desc:
+        "Wong Kar-wai, Melville, King Hu — a crítica de cinema em francês é a minha prática de escrita mais constante.",
+    },
+    language: {
+      title: "Aprendizagem de Línguas",
+      desc:
+        "O mandarim como quotidiano: aulas, recados e recensões — a seguir, HSK 5.",
+    },
+  },
+  dialogue: {
+    visitor: "Visitante",
+    me: "Philippe",
+    disclaimer:
+      "Transcrição apenas ligeiramente romanceada de uma conversa verdadeira.",
+    messages: [
+      { me: false, text: "Está mesmo disponível de imediato?" },
+      {
+        me: true,
+        text:
+          "Estou. O meu backlog pessoal está vazio: tudo priorizado, testado e entregue.",
+      },
+      {
+        me: false,
+        text: "Vinte anos em seguros de vida… não é um pouco monótono?",
+      },
+      {
+        me: true,
+        text:
+          "Capital por morte, rendas, isenção de prémios — o suspense é permanente.",
+      },
+      { me: false, text: "Porquê Chengdu?" },
+      {
+        me: true,
+        text: "Vim pelo mandarim. Foi o hotpot que me convenceu a ficar.",
+      },
+      { me: false, text: "Que nível de picante aguenta?" },
+      { me: true, text: "微辣 — suave. Eu disse adaptável, não temerário." },
+      { me: false, text: "Uma ultramaratona? A sério?" },
+      {
+        me: true,
+        text:
+          "É como uma actualização de versão maior: longa, dolorosa e sem interrupção do serviço.",
+      },
+      {
+        me: false,
+        text: "E contacto-o como? Nem sequer há um e-mail…",
+      },
+      { me: true, text: "WeChat: frenchvandal. Estamos em 2026." },
+    ],
+  },
+  contact: {
+    intro:
+      "Procuro funções de Product Owner, Analista de Negócio ou gestão de projectos — na China ou em colaboração remota com a Europa. Vinte anos em software financeiro regulado, radicado em Chengdu, com mobilidade em toda a China e disponibilidade imediata.",
+    wechatLabel: "WeChat",
+    githubLabel: "GitHub",
+    linkedinLabel: "LinkedIn",
+    locationLabel: "Localização",
+    footer: "© 2026 Philippe Ribeiro · Feito com Bun e pretext",
+  },
+  ui: {
+    skipLink: "Saltar para o conteúdo",
+    intro: "Introdução",
+    languageNav: "Idioma",
+    sectionsNav: "Secções",
+    copyWechat: "Copiar ID WeChat",
+    copied: "Copiado",
+    theme: {
+      light: "Tema: claro",
+      dark: "Tema: escuro",
+    },
+  },
+};
+
+/*
+ * Peninsular Spanish (Spain), not Latin American: "ordenador" over
+ * "computadora" where it comes up, peninsular business register, and the
+ * opening ¿/¡ the dialogue needs. Chengdú carries its accent, which is the
+ * form Spanish style guides settle on for the city.
+ */
+const es: Translation = {
+  name: {
+    display: "Philippe Ribeiro",
+    lines: ["Philippe Ribeiro"],
+  },
+  meta: {
+    description:
+      "Philippe Ribeiro — Product Owner y Analista de Negocio con 20 años en software para servicios financieros: sistemas centrales de seguros de vida, banca-seguros y finanzas públicas. Residente en Chengdú, China, disponible de forma inmediata.",
+  },
+  nav: {
+    about: "Sobre mí",
+    experience: "Experiencia",
+    education: "Formación",
+    certifications: "Certificaciones",
+    skills: "Competencias",
+    hobbies: "Intereses",
+    dialogue: "Diálogo",
+    contact: "Contacto",
+  },
+  hero: {
+    greeting: "Hola, soy",
+    title:
+      "Product Owner · Analista de Negocio — 20 años en software financiero",
+    location:
+      "Chengdú, China — movilidad por todo el país · Nacionalidad francesa · Disponible de forma inmediata",
+    ctaPrimary: "Contactar",
+    ctaSecondary: "Saber más",
+  },
+  about: {
+    p1:
+      "Product Owner y Analista de Negocio con veinte años en software para servicios financieros: sistemas centrales de seguros de vida, banca-seguros y finanzas públicas. He trabajado en los dos lados del sector, como consultor desplazado en cliente entregando proyectos en industrias muy distintas y como responsable de producto en una empresa de software, dirigiendo la evolución de un producto estándar.",
+    p2:
+      "En KAPIA-RGI soy responsable de K4U, un portal web de seguros dirigido a los clientes finales de varias compañías, de principio a fin: visión de producto, hoja de ruta y backlog, priorizados entre peticiones que compiten entre sí. Dirigí la adopción transversal del inicio de sesión único (SAML/OIDC), fundamento las decisiones en los comentarios de los usuarios y en análisis SQL avanzado, y solo entrego incrementos probados y conformes: tester certificado ISTQB y formado en PSPO.",
+    p3:
+      "Residente en Chengdú desde 2025, tras un año de mandarín a tiempo completo en la Universidad de Sichuan: el día a día transcurre en mandarín (HSK 4, HSK 5 en preparación). Francés y portugués maternos, inglés fluido y español profesional. Disponible de forma inmediata, con movilidad por toda China.",
+    stats: {
+      years: "Años en software",
+      languages: "Idiomas",
+      defects: "% de incidencias reducidas",
+      clients: "Nuevos clientes firmados",
+    },
+  },
+  experience: {
+    kapiaRgi: {
+      date: "2019 – actualidad",
+      company: "KAPIA-RGI",
+      location: "París, Francia",
+      sector: "Software de sistemas centrales de seguros de vida",
+      title: "Web Product Owner",
+    },
+    open: {
+      date: "2014 – 2019",
+      company: "OPEN",
+      location: "París, Francia",
+      sector: "Consultoría informática",
+      title: "Consultor TI",
+    },
+    kapiaSolutions: {
+      date: "2011 – 2014",
+      company: "KAPIA Solutions (KAPIA-RGI)",
+      location: "París, Francia",
+      sector: "Software de sistemas centrales de seguros de vida",
+      title: "Analista de Negocio",
+    },
+    adneom: {
+      date: "2008 – 2011",
+      company: "Adneom Technologies (CBTW)",
+      location: "París, Francia",
+      sector: "Consultoría informática",
+      title: "Consultor TI",
+    },
+    insurance: {
+      date: "2004 – 2008",
+      company: "Fidelidade, SwissLife & AXA",
+      location: "París, Francia",
+      sector: "Seguros",
+      title: "Gestor de Contratos",
+    },
+  },
+  education: {
+    sichuan: {
+      school: "Universidad de Sichuan",
+      title: "Programa de Lengua China",
+      date: "2025 – 2026",
+      subtitle: "Campus de Wangjiang, Chengdú · Inmersión a tiempo completo",
+      items: [
+        "Año sabático en KAPIA-RGI para estudiar mandarín a tiempo completo; programa finalizado en julio de 2026",
+        "Resultados finales: nota media de 3,88 / 4,0 en 39 créditos — Chino Integrado 92,8/100, Comprensión y Expresión Oral 93,9, Escritura 92,8, Informática e Internet en Chino 90,3",
+        "Clases, vida diaria y trato en mandarín: una visión desde dentro de la universidad china",
+        "HSK 4 superado (2023); HSK 5 en preparación",
+      ],
+    },
+    master: {
+      school: "Université de Cergy-Pontoise",
+      title: "Máster en Gestión de Instrumentos Financieros",
+      date: "2005",
+      subtitle: "Hoy CY Cergy Paris Université",
+      desc:
+        "Ingeniería financiera y gestión de instrumentos: la base cuantitativa de veinte años en software financiero.",
+    },
+    edc: {
+      school: "EDC Paris Business School",
+      title: "Grado en Empresariales — especialidad en Finanzas",
+      date: "2004",
+      desc: "Formación en empresa y gestión, con especialidad en finanzas.",
+    },
+  },
+  certifications: {
+    date: "2016 – 2024",
+    items: [
+      "Professional Scrum Product Owner (PSPO) — formación en 2024, certificación en curso",
+      "ISTQB Certified Tester — nivel Foundation (2016)",
+      "Gestión de proyectos — fundamentos y dimensión relacional (2018)",
+      "HSK 4 (2023) · HSKK oral, nivel inicial (2022) · TOCFL nivel A (2024)",
+    ],
+  },
+  skills: {
+    product: {
+      title: "Producto y Metodología",
+      tags: [
+        "Agile / Scrum",
+        "Hoja de ruta y backlog de producto",
+        "Ingeniería de requisitos",
+        "Definición de MVP",
+        "Pruebas de aceptación (UAT)",
+        "Jira",
+      ],
+    },
+    data: {
+      title: "Bases de Datos y Lenguajes",
+      tags: [
+        "SQL (avanzado)",
+        "PL/SQL (nivel básico)",
+        "JavaScript / TypeScript (nivel básico)",
+      ],
+    },
+    interfaces: {
+      title: "Interfaces y Entornos",
+      tags: [
+        "API REST",
+        "Inicio de sesión único (SAML / OIDC)",
+        "Postman",
+        "Entornos DEV / QA / PROD",
+      ],
+    },
+    domains: {
+      title: "Dominios",
+      tags: [
+        "Sistemas centrales de seguros de vida",
+        "Banca-seguros",
+        "Recorridos digitales y SSO",
+        "Finanzas públicas",
+        "Ciclo de vida completo del software",
+      ],
+    },
+    soft: {
+      title: "Competencias Transversales",
+      tags: [
+        "Punto de contacto único",
+        "Facilitación entre partes interesadas",
+        "Demostraciones a clientes",
+        "Documentación",
+        "Cultura de calidad",
+        "Adaptabilidad intercultural",
+        "Autonomía",
+      ],
+    },
+    languages: {
+      title: "Idiomas",
+      french: { name: "Francés", level: "Materno" },
+      portuguese: { name: "Portugués", level: "Materno" },
+      english: { name: "Inglés", level: "Fluido · profesional" },
+      spanish: { name: "Español", level: "Nivel profesional" },
+      mandarin: { name: "Mandarín", level: "HSK 4 · HSK 5 en preparación" },
+    },
+  },
+  hobbies: {
+    running: {
+      title: "Carreras de Fondo",
+      desc:
+        "Desde carreras de 10 km hasta ultramaratones, incluida la Maratón de París, dos veces.",
+    },
+    cycling: {
+      title: "Ciclismo",
+      desc: "Salidas largas por Chengdú y el campo de Sichuan.",
+    },
+    literature: {
+      title: "Literatura Francesa",
+      desc: "Lector empedernido: escribo reseñas de libros en chino en Douban.",
+    },
+    cinema: {
+      title: "Cine",
+      desc:
+        "Wong Kar-wai, Melville, King Hu: la crítica de cine en francés es mi práctica de escritura más constante.",
+    },
+    language: {
+      title: "Aprendizaje de Idiomas",
+      desc:
+        "El mandarín como vida diaria: clases, recados y reseñas. El siguiente paso, HSK 5.",
+    },
+  },
+  dialogue: {
+    visitor: "Visitante",
+    me: "Philippe",
+    disclaimer: "Transcripción apenas adornada de una conversación real.",
+    messages: [
+      { me: false, text: "¿De verdad está disponible de forma inmediata?" },
+      {
+        me: true,
+        text:
+          "Sí. Mi backlog personal está vacío: todo priorizado, probado y entregado.",
+      },
+      {
+        me: false,
+        text: "Veinte años en seguros de vida… ¿no resulta un poco monótono?",
+      },
+      {
+        me: true,
+        text:
+          "Capital por fallecimiento, rentas, exención de primas: el suspense no decae.",
+      },
+      { me: false, text: "¿Por qué Chengdú?" },
+      {
+        me: true,
+        text: "Vine por el mandarín. El hotpot me convenció para quedarme.",
+      },
+      { me: false, text: "¿Cuánto picante aguanta?" },
+      { me: true, text: "微辣 — suave. Dije adaptable, no temerario." },
+      { me: false, text: "¿Una ultramaratón? ¿En serio?" },
+      {
+        me: true,
+        text:
+          "Es como una actualización de versión mayor: larga, dolorosa y sin interrupción del servicio.",
+      },
+      {
+        me: false,
+        text: "¿Y cómo le contacto? Si no hay ni un correo…",
+      },
+      { me: true, text: "WeChat: frenchvandal. Estamos en 2026." },
+    ],
+  },
+  contact: {
+    intro:
+      "Busco puestos de Product Owner, Analista de Negocio o gestión de proyectos, en China o en colaboración remota con Europa. Veinte años en software financiero regulado, residente en Chengdú, con movilidad por toda China y disponibilidad inmediata.",
+    wechatLabel: "WeChat",
+    githubLabel: "GitHub",
+    linkedinLabel: "LinkedIn",
+    locationLabel: "Ubicación",
+    footer: "© 2026 Philippe Ribeiro · Creado con Bun y pretext",
+  },
+  ui: {
+    skipLink: "Ir al contenido",
+    intro: "Introducción",
+    languageNav: "Idioma",
+    sectionsNav: "Secciones",
+    copyWechat: "Copiar ID de WeChat",
+    copied: "Copiado",
+    theme: {
+      light: "Tema: claro",
+      dark: "Tema: oscuro",
+    },
+  },
+};
+
 const zh: Translation = {
   name: {
     display: "李北洛 Philippe Ribeiro",
@@ -1111,6 +1674,8 @@ const zhHant: Translation = {
 export const translations: Record<Lang, Translation> = {
   en,
   fr,
+  pt,
+  es,
   zh,
   "zh-hant": zhHant,
 };

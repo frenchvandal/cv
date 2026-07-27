@@ -55,16 +55,40 @@ const hyphenators = new Map<Lang, Promise<Hyphenate | null>>();
  * Lazily load the hyphenation patterns for `lang`; resolves to null where
  * hyphenation doesn't apply (Chinese wraps per character). Cached per language.
  */
+/**
+ * The pattern module for a language, or null where hyphenation doesn't apply.
+ * Every specifier is a literal so the bundler can see them and split each
+ * language's patterns into its own chunk — build them from a variable and
+ * `splitting: true` has nothing to split. The switch is exhaustive over `Lang`,
+ * so adding a language is a compile error here until it is answered for.
+ */
+function importPatterns(
+  lang: Lang,
+): Promise<{ hyphenateSync: Hyphenate }> | null {
+  switch (lang) {
+    case "en":
+      return import("hyphen/en");
+    case "fr":
+      return import("hyphen/fr");
+    case "pt":
+      return import("hyphen/pt");
+    case "es":
+      return import("hyphen/es");
+    // Chinese wraps per character; there are no syllable patterns to fetch.
+    case "zh":
+    case "zh-hant":
+      return null;
+  }
+}
+
 function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
   let loading = hyphenators.get(lang);
   if (!loading) {
-    loading = (lang === "en"
-      ? import("hyphen/en").then((m) =>
-        m.hyphenateSync
-      )
-      : lang === "fr"
-      ? import("hyphen/fr").then((m) => m.hyphenateSync)
-      : Promise.resolve(null))
+    const patterns = importPatterns(lang);
+    const resolving: Promise<Hyphenate | null> = patterns
+      ? patterns.then((m) => m.hyphenateSync)
+      : Promise.resolve(null);
+    loading = resolving
       .catch(() => {
         // A transient chunk-load failure must not cost hyphenation for the rest
         // of the session: drop the rejected promise so the next caller (a

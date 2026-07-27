@@ -30,8 +30,8 @@ import { LOGOS } from "./logos.ts";
 export type Theme = "light" | "dark";
 
 /**
- * Relative URL to a language's page. All four pages are siblings at the site
- * root (`index.html`, `fr.html`, `zh.html`, `zh-hant.html`), so the link is the
+ * Relative URL to a language's page. All six pages are siblings at the site
+ * root (`index.html`, then `<lang>.html` for the rest), so the link is the
  * same from any page and works under any deploy path — no base tag, no absolute
  * origin.
  */

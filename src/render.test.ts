@@ -1,7 +1,7 @@
 /*
  * render.ts unit tests — the pure SSG core. No DOM needed: renderApp returns
  * markup strings, so escaping, id uniqueness and anchor resolution are asserted
- * directly on the output for all four languages (the exact markup
+ * directly on the output for all six languages (the exact markup
  * scripts/build.ts pre-renders into dist/).
  */
 

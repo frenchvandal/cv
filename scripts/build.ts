@@ -2,11 +2,11 @@
  * Static site generator (run by Bun: `bun scripts/build.ts`).
  *
  * 1. Bun.build bundles the HTML entry → JS/CSS/font assets with hashed names.
- * 2. For each of the four languages we take the built shell, inject the
+ * 2. For each of the six languages we take the built shell, inject the
  *    pre-rendered markup (the same pure `renderApp` the client uses) plus
  *    per-language <head> meta and the @font-face rules (so fonts load before
  *    any JS, and no-JS visitors get them too), and write sibling pages at the
- *    site root: index.html, fr.html, zh.html, zh-hant.html.
+ *    site root: index.html (English) and <lang>.html for every other language.
  *
  * The pages are siblings (same depth) so every asset path stays relative
  * (`./assets/…`) and the whole `dist/` uploads to any host/bucket path
@@ -59,6 +59,8 @@ const SITE = siteBase();
 const OG_LOCALE: Record<Lang, string> = {
   en: "en_US",
   fr: "fr_FR",
+  pt: "pt_PT",
+  es: "es_ES",
   zh: "zh_CN",
   "zh-hant": "zh_TW",
 };

@@ -1,7 +1,12 @@
 # Philippe Ribeiro — CV
 
-A four-language (EN / FR / 简体 / 繁體) portfolio, pre-rendered to static HTML
-and progressively enhanced with pretext-driven typography. No framework.
+A six-language (EN / FR / PT / ES / 简体 / 繁體) portfolio, pre-rendered to
+static HTML and progressively enhanced with pretext-driven typography. No
+framework.
+
+The regional variants are deliberate: Portuguese is European and follows the
+pre-1990 orthography, Spanish is peninsular, and Traditional Chinese follows
+Taiwan usage.
 
 ## Stack
 
@@ -18,12 +23,13 @@ and progressively enhanced with pretext-driven typography. No framework.
 ## Features
 
 - **SSG pre-render** — [scripts/build.ts](scripts/build.ts) emits `index.html`,
-  `fr.html`, `zh.html` and `zh-hant.html` with the content already in the HTML
-  (SEO, link previews, works with JS off). The client hydrates and swaps
-  language instantly — no reload — syncing the URL via `history`.
+  `fr.html`, `pt.html`, `es.html`, `zh.html` and `zh-hant.html` with the content
+  already in the HTML (SEO, link previews, works with JS off). The client
+  hydrates and swaps language instantly — no reload — syncing the URL via
+  `history`.
 - **Measurement-driven layout** ([src/measure.ts](src/measure.ts)) — pretext
   fits the hero name to the viewport width and sizes the section titles to their
-  column (uniform, no ellipsis truncation) across all four languages. A dev-only
+  column (uniform, no ellipsis truncation) across all six languages. A dev-only
   console audit flags any title that would overflow.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the
   About paragraphs are re-typeset with TeX-style optimal line breaking and
@@ -41,7 +47,7 @@ and progressively enhanced with pretext-driven typography. No framework.
 ```bash
 bun install            # install dependencies
 bun run dev            # dev server with HMR → http://localhost:3000/
-bun run build          # type-check + pre-render the 4 pages into dist/
+bun run build          # type-check + pre-render the 6 pages into dist/
 bun run check          # tsgo --noEmit (TypeScript 7 native compiler, the type gate)
 bun test               # Knuth–Plass unit tests (canvas-free, injected measure)
 bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
@@ -64,7 +70,7 @@ workflow type-checks, tests and builds every pull request.
 
 ## Editing content
 
-All copy lives in [src/translations.ts](src/translations.ts), typed so the four
+All copy lives in [src/translations.ts](src/translations.ts), typed so the six
 languages stay in structural sync. See [AGENTS.md](AGENTS.md) for the code
 conventions.
 

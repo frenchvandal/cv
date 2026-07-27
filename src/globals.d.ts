@@ -30,3 +30,9 @@ declare module "hyphen/en" {
 declare module "hyphen/fr" {
   export function hyphenateSync(text: string): string;
 }
+declare module "hyphen/pt" {
+  export function hyphenateSync(text: string): string;
+}
+declare module "hyphen/es" {
+  export function hyphenateSync(text: string): string;
+}

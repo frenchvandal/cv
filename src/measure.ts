@@ -124,7 +124,7 @@ export interface FitTitlesOptions extends FitFont {
  * Gives every section title one uniform size: the largest size (capped at
  * `maxPx`) at which the *longest* title still fits the column. Prevents the
  * ellipsis truncation the CSS falls back to, and keeps titles visually
- * consistent as you scroll — across all four languages. On narrow viewports
+ * consistent as you scroll — across all six languages. On narrow viewports
  * the titles wrap normally, so any inline size is cleared.
  */
 export function fitSectionTitles(
@@ -186,7 +186,7 @@ export interface AuditEntry {
 /**
  * Dev-only, pretext-powered QA: without switching languages or touching the DOM,
  * report any section title that cannot render at `maxPx` within its column in
- * any of the four languages — i.e. that the fitter must shrink. Catches a
+ * any of the six languages — i.e. that the fitter must shrink. Catches a
  * localized label that would otherwise overflow, browser-tab-free.
  */
 export function auditSectionTitles(

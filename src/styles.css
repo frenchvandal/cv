@@ -331,6 +331,18 @@ a:hover {
   line-height: 1;
 }
 
+/* Six language links (193px) plus the theme toggle put the bar at a measured
+   382px minimum, so every viewport under 384px — iPhone SE at 375, plenty of
+   Androids at 360 — scrolled the whole page sideways once PT and ES joined.
+   The brand is 112px of that, and it is a scroll-to-top shortcut whose text
+   the hero repeats two lines below: the one element here that can go, the same
+   call `.nav__links` already makes at 56rem. */
+@media (max-width: 24rem) {
+  .nav__brand {
+    display: none;
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Reveal on scroll — a confirmation, not an entrance
  * ------------------------------------------------------------------ */

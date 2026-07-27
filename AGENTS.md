@@ -12,7 +12,7 @@ has none of them.
   Webpack.
   - `bun run dev` → `bun ./index.html` (dev server + HMR,
     http://localhost:3000/).
-  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render the four
+  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render the six
     language pages into `dist/`; runs `tsgo --noEmit` concurrently and gates on
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
@@ -23,8 +23,9 @@ has none of them.
     — a glyph that no subset carries renders as tofu.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
   emitted by [src/render.ts](src/render.ts). Content lives in
-  [src/translations.ts](src/translations.ts) (EN / FR / zh-Hans / zh-Hant). Text
-  measurement/layout is done with `@chenglou/pretext` in
+  [src/translations.ts](src/translations.ts) (EN / FR / pt-PT / es-ES / zh-Hans
+  / zh-Hant — the regional variants are deliberate, see that file's header).
+  Text measurement/layout is done with `@chenglou/pretext` in
   [src/measure.ts](src/measure.ts).
 - **UI architecture:** an ordinary scrolling document — no deck, no scroll
   jacking, no canvas background. [src/render.ts](src/render.ts) emits stacked
