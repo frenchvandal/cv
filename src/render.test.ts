@@ -93,10 +93,26 @@ test.each(
     [["zh"], null, "zh.html"],
     [["zh-Hant"], null, "zh-hant.html"],
     [["zh-TW"], null, "zh-hant.html"],
+    [["zh-SG"], null, "zh.html"],
     // Hong Kong and Macau read Traditional too, so they must be matched BEFORE
     // the broader Traditional test — otherwise it swallows them.
     [["zh-HK"], null, "zh-hk.html"],
     [["zh-MO"], null, "zh-hk.html"],
+    // Script and region can arrive together, in any combination. An explicit
+    // Hans outranks the region: a Simplified reader living in Hong Kong must
+    // not be handed the Traditional page.
+    [["zh-Hans"], null, "zh.html"],
+    [["zh-Hans-CN"], null, "zh.html"],
+    [["zh-Hans-HK"], null, "zh.html"],
+    [["zh-Hans-MO"], null, "zh.html"],
+    [["zh-Hans-SG"], null, "zh.html"],
+    [["zh-Hant-HK"], null, "zh-hk.html"],
+    [["zh-Hant-MO"], null, "zh-hk.html"],
+    [["zh-Hant-TW"], null, "zh-hant.html"],
+    // Cantonese is not mapped on purpose: it falls through like any other
+    // unsupported tag and the reader picks a language from the switcher.
+    [["yue-HK"], null, null],
+    [["yue"], null, null],
     // Unsupported languages are skipped in order, not defaulted on sight.
     [["de", "fr"], null, "fr.html"],
     [["de-AT", "ja"], null, null],

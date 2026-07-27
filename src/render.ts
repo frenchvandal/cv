@@ -81,12 +81,30 @@ export const STORAGE_LANG_KEY = "cv-lang";
  *
  * Tags match on their primary subtag, so `fr-CA` reads French and `es-MX` reads
  * the (peninsular) Spanish page: a regional mismatch is still the right
- * language, and far better than English. Chinese is the exception, since there
- * the primary subtag decides neither script nor vocabulary — `zh-HK` and
- * `zh-MO` get the Hong Kong page, `zh-Hant`/`zh-TW` the Taiwan one, and
- * everything else including a bare `zh` gets Simplified, which has by far the
- * most readers. Hong Kong is checked first: `zh-HK` is Traditional too, so the
- * broader test would swallow it.
+ * language, and far better than English.
+ *
+ * Chinese is the exception, because there the primary subtag decides neither
+ * script nor vocabulary, and the subtags can arrive in any combination
+ * (`zh-HK`, `zh-Hant-HK`, `zh-Hans-HK`…). Hence, in order:
+ *   - an explicit `Hans` wins outright — `zh-Hans-HK` is a Simplified reader who
+ *     merely lives in Hong Kong, and must not be handed Traditional;
+ *   - `HK`/`MO` then take the Hong Kong page, checked before the broader
+ *     Traditional test, which would otherwise swallow them;
+ *   - `Hant`/`TW` take the Taiwan page;
+ *   - bare `zh` gets Simplified, which has by far the most readers.
+ *
+ * Which resolves the nine tags a browser can actually send:
+ *
+ *   zh-Hans, zh-Hans-CN, zh-Hans-HK, zh-Hans-MO, zh-Hans-SG → zh.html
+ *   zh-Hant, zh-Hant-TW                                     → zh-hant.html
+ *   zh-Hant-HK, zh-Hant-MO                                  → zh-hk.html
+ *
+ * plus the older region-only forms (`zh-CN`, `zh-TW`, `zh-HK`, `zh-MO`,
+ * `zh-SG`), which many devices still send and which land the same way.
+ *
+ * `yue` (Cantonese) is deliberately NOT mapped: it falls through to English
+ * like any other unsupported tag, and the reader picks a language from the
+ * switcher.
  *
  * This is plain ES5 in a string because it must run before the bundle exists.
  * [src/render.test.ts](src/render.test.ts) executes this exact generated source
@@ -107,14 +125,17 @@ export function languageNegotiationScript(): string {
       var list = navigator.languages || [navigator.language || ""];
       for (var i = 0; i < list.length && !pick; i++) {
         var parts = String(list[i]).toLowerCase().split("-");
-        if (parts[0] === "zh") {
-          pick = parts.indexOf("hk") > 0 || parts.indexOf("mo") > 0
+        var primary = parts[0];
+        if (primary === "zh") {
+          pick = parts.indexOf("hans") > 0
+            ? "zh"
+            : parts.indexOf("hk") > 0 || parts.indexOf("mo") > 0
             ? "zh-hk"
             : parts.indexOf("hant") > 0 || parts.indexOf("tw") > 0
             ? "zh-hant"
             : "zh";
-        } else if (urls[parts[0]]) {
-          pick = parts[0];
+        } else if (urls[primary]) {
+          pick = primary;
         }
       }
     }
