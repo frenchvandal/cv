@@ -21,6 +21,7 @@ import {
   LANGS,
   PROFILE,
   PROFILE_URLS,
+  SWITCHER_LANGS,
   type Translation,
   translations,
 } from "./translations.ts";
@@ -61,6 +62,68 @@ export function langFromPath(path: string): Lang | null {
   return isLang(slug) ? slug : null;
 }
 
+/** localStorage key holding a language the visitor picked by hand. */
+export const STORAGE_LANG_KEY = "cv-lang";
+
+/**
+ * The `<head>` script that sends a visitor arriving at the site ROOT to the
+ * page in their language. Injected by [scripts/build.ts](scripts/build.ts) into
+ * `index.html` only — a URL that names a language (`fr.html`) must always be
+ * honoured, or shared links would silently change language on the recipient.
+ *
+ * It runs inline, before the body renders, and uses `location.replace` so the
+ * root never becomes a history entry: without that, Back from the language page
+ * would land on the root, be redirected again, and the button would look broken.
+ *
+ * A hand-picked language (localStorage) outranks the browser's list, so the
+ * switcher is always the last word. English needs no redirect — it is what the
+ * root already serves.
+ *
+ * Tags match on their primary subtag, so `fr-CA` reads French and `es-MX` reads
+ * the (peninsular) Spanish page: a regional mismatch is still the right
+ * language, and far better than English. Chinese is the exception, since there
+ * the primary subtag decides neither script nor vocabulary — `zh-HK` and
+ * `zh-MO` get the Hong Kong page, `zh-Hant`/`zh-TW` the Taiwan one, and
+ * everything else including a bare `zh` gets Simplified, which has by far the
+ * most readers. Hong Kong is checked first: `zh-HK` is Traditional too, so the
+ * broader test would swallow it.
+ *
+ * This is plain ES5 in a string because it must run before the bundle exists.
+ * [src/render.test.ts](src/render.test.ts) executes this exact generated source
+ * against a stubbed browser, so the shipped rule is the tested one.
+ */
+export function languageNegotiationScript(): string {
+  const urls = Object.fromEntries(LANGS.map((lang) => [lang, langUrl(lang)]));
+  return `<script>
+(function () {
+  try {
+    var urls = ${JSON.stringify(urls).replace(/</g, "\\u003C")};
+    var pick = null;
+    try {
+      var saved = localStorage.getItem(${JSON.stringify(STORAGE_LANG_KEY)});
+      if (saved && urls[saved]) pick = saved;
+    } catch (e) {}
+    if (!pick) {
+      var list = navigator.languages || [navigator.language || ""];
+      for (var i = 0; i < list.length && !pick; i++) {
+        var parts = String(list[i]).toLowerCase().split("-");
+        if (parts[0] === "zh") {
+          pick = parts.indexOf("hk") > 0 || parts.indexOf("mo") > 0
+            ? "zh-hk"
+            : parts.indexOf("hant") > 0 || parts.indexOf("tw") > 0
+            ? "zh-hant"
+            : "zh";
+        } else if (urls[parts[0]]) {
+          pick = parts[0];
+        }
+      }
+    }
+    if (pick && pick !== "en") location.replace(urls[pick]);
+  } catch (e) {}
+})();
+</script>`;
+}
+
 /** Document title for a language's page — shared by the SSG build and the client. */
 export function pageTitle(t: Translation): string {
   return `${t.name.display} — ${t.hero.title}`;
@@ -82,12 +145,16 @@ function nav(t: Translation, lang: Lang, theme: Theme): string {
     (id) => `<a class="nav__link" href="#${id}">${escapeHtml(t.nav[id])}</a>`,
   ).join("");
 
-  const languages = LANGS.map(
+  // zh-hk has no button of its own — it is Traditional Chinese, so the 繁 entry
+  // is the one that represents the page a Hong Kong reader is on.
+  const current = lang === "zh-hk" ? "zh-hant" : lang;
+
+  const languages = SWITCHER_LANGS.map(
     (code) => `
         <a href="${langUrl(code)}" hreflang="${
       HTML_LANG[code]
     }" data-lang="${code}"${
-      lang === code ? ' aria-current="page"' : ""
+      current === code ? ' aria-current="page"' : ""
     } aria-label="${escapeHtml(LANG_NAME[code])}">
           <span lang="${HTML_LANG[code]}">${LANG_LABEL[code]}</span>
         </a>`,

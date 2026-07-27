@@ -39,6 +39,7 @@ test.each(
     ["Noto Sans", sets.latin],
     ["Noto Sans SC", sets.sc],
     ["Noto Sans TC", sets.tc],
+    ["Noto Sans HK", sets.hk],
   ] as const,
 )(
   "%s subset covers every glyph its pages can render",

@@ -40,7 +40,8 @@ modify.
 - Use `/** ... */` for public APIs or important contracts only.
 - Avoid decorative, noisy, or overly verbose comments.
 
-If a comment is needed to make the code understandable, first try to simplify the code itself
+If a comment is needed to make the code understandable, first try to simplify
+the code itself
 
 ## 1. Stack & shape
 
@@ -48,7 +49,7 @@ If a comment is needed to make the code understandable, first try to simplify th
   Webpack.
   - `bun run dev` → `bun ./index.html` (dev server + HMR,
     http://localhost:3000/).
-  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render the six
+  - `bun run build` → `bun scripts/build.ts` (bundle + pre-render the seven
     language pages into `dist/`; runs `tsgo --noEmit` concurrently and gates on
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
@@ -60,8 +61,10 @@ If a comment is needed to make the code understandable, first try to simplify th
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
   emitted by [src/render.ts](src/render.ts). Content lives in
   [src/translations.ts](src/translations.ts) (EN / FR / pt-PT / es-ES / zh-Hans
-  / zh-Hant — the regional variants are deliberate, see that file's header).
-  Text measurement/layout is done with `@chenglou/pretext` in
+  / zh-Hant / zh-HK — the regional variants are deliberate, see that file's
+  header; `zh-hk` is a lexicon projection of `zh-hant`, not a hand-written
+  translation, and is the one language absent from `SWITCHER_LANGS`). Text
+  measurement/layout is done with `@chenglou/pretext` in
   [src/measure.ts](src/measure.ts).
 - **UI architecture:** an ordinary scrolling document — no deck, no scroll
   jacking, no canvas background. [src/render.ts](src/render.ts) emits stacked

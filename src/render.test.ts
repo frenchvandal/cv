@@ -1,13 +1,19 @@
 /*
  * render.ts unit tests — the pure SSG core. No DOM needed: renderApp returns
  * markup strings, so escaping, id uniqueness and anchor resolution are asserted
- * directly on the output for all six languages (the exact markup
+ * directly on the output for all seven languages (the exact markup
  * scripts/build.ts pre-renders into dist/).
  */
 
 import { expect, test } from "bun:test";
 import { escapeHtml } from "./dom.ts";
-import { langFromPath, langUrl, pageTitle, renderApp } from "./render.ts";
+import {
+  langFromPath,
+  languageNegotiationScript,
+  langUrl,
+  pageTitle,
+  renderApp,
+} from "./render.ts";
 import { type Lang, LANGS, translations } from "./translations.ts";
 
 test("escapeHtml escapes every markup-significant character", () => {
@@ -50,6 +56,62 @@ test.each([...LANGS])(
   (lang) => {
     const path = lang === "en" ? "/" : `/${langUrl(lang)}`;
     expect(langFromPath(path) ?? "en").toBe(lang);
+  },
+);
+
+/**
+ * Runs the root page's real negotiation script against a stubbed browser and
+ * reports where it would send the visitor — null meaning it stays on the root.
+ * The script ships as a string of ES5, so this executes the shipped source
+ * itself rather than a second copy of the rule.
+ */
+function negotiationTarget(
+  languages: readonly string[],
+  saved: string | null,
+): string | null {
+  const source = languageNegotiationScript()
+    .replace(/^<script>/, "")
+    .replace(/<\/script>$/, "");
+  let target: string | null = null;
+  new Function("navigator", "localStorage", "location", source)(
+    { languages, language: languages[0] ?? "" },
+    { getItem: () => saved },
+    { replace: (url: string) => void (target = url) },
+  );
+  return target;
+}
+
+test.each(
+  [
+    // The browser's language decides; English is the root, so it never redirects.
+    [["fr-CA"], null, "fr.html"],
+    [["pt-BR"], null, "pt.html"],
+    [["es-MX"], null, "es.html"],
+    [["en-US"], null, null],
+    // Chinese resolves by script, not by primary subtag.
+    [["zh-CN"], null, "zh.html"],
+    [["zh"], null, "zh.html"],
+    [["zh-Hant"], null, "zh-hant.html"],
+    [["zh-TW"], null, "zh-hant.html"],
+    // Hong Kong and Macau read Traditional too, so they must be matched BEFORE
+    // the broader Traditional test — otherwise it swallows them.
+    [["zh-HK"], null, "zh-hk.html"],
+    [["zh-MO"], null, "zh-hk.html"],
+    // Unsupported languages are skipped in order, not defaulted on sight.
+    [["de", "fr"], null, "fr.html"],
+    [["de-AT", "ja"], null, null],
+    [[], null, null],
+    // A hand-picked language outranks the browser list, in both directions.
+    [["fr-FR"], "es", "es.html"],
+    [["de"], "zh-hant", "zh-hant.html"],
+    [["fr-FR"], "en", null],
+    // A stored value we don't build is ignored, and the browser decides again.
+    [["fr-FR"], "klingon", "fr.html"],
+  ] as const,
+)(
+  "root negotiation: languages=%j stored=%s sends the visitor to %s",
+  (languages, saved, expected) => {
+    expect(negotiationTarget(languages, saved)).toBe(expected);
   },
 );
 

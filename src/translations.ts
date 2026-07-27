@@ -1,5 +1,5 @@
 /**
- * Portfolio content, fully typed and available in six languages.
+ * Portfolio content, fully typed and available in seven languages.
  *
  * The English object `en` is the source of truth: its inferred type is
  * {@link Translation}, so every other translation must expose the exact same
@@ -11,15 +11,37 @@
  *   - `zh` (Simplified) and `zh-hant` (Traditional) are independent, not script
  *     conversions of each other — vocabulary differs (软件/軟體, 业务分析师/
  *     商業分析師, 待办列表/待辦清單…). Both use Philippe's Chinese name, 李北洛.
- *     `zh-hant` follows Taiwan usage (軟體, 專案), not Hong Kong/Macau (軟件,
- *     項目), matching the Noto Sans TC glyph forms the page ships.
+ *     `zh-hant` follows Taiwan usage (軟體, 專案), matching the Noto Sans TC
+ *     glyph forms that page ships; Hong Kong and Macau get `zh-hk`, which is a
+ *     five-term projection of it (see HK_LEXICON at the bottom of this file)
+ *     rendered in Noto Sans HK. `zh-hk` is built and indexed but deliberately
+ *     absent from the switcher — see SWITCHER_LANGS.
  *   - `pt` is European Portuguese in the PRE-1990 orthography (see its own
  *     header), never Brazilian.
  *   - `es` is peninsular Spanish.
  */
 
-export const LANGS = ["en", "fr", "pt", "es", "zh", "zh-hant"] as const;
+export const LANGS = [
+  "en",
+  "fr",
+  "pt",
+  "es",
+  "zh",
+  "zh-hant",
+  "zh-hk",
+] as const;
 export type Lang = (typeof LANGS)[number];
+
+/**
+ * The languages the switcher offers. `zh-hk` is built, indexed and reachable by
+ * browser negotiation, but it is not a button: it is the same Traditional
+ * Chinese page in Hong Kong / Macau vocabulary, and a reader who needs it is
+ * already sent there by their own browser. A seventh button would also push a
+ * bar that measures 382px at six past the width of a phone (see src/styles.css).
+ */
+export const SWITCHER_LANGS: readonly Lang[] = LANGS.filter(
+  (lang) => lang !== "zh-hk",
+);
 
 /** Type guard for language values coming from the DOM or the URL (dataset, path). */
 export function isLang(value: string | undefined): value is Lang {
@@ -36,9 +58,16 @@ export const HTML_LANG: Record<Lang, string> = {
   es: "es-ES",
   zh: "zh-Hans",
   "zh-hant": "zh-Hant",
+  // Region rather than script: it is the same Traditional script as zh-Hant,
+  // and the region is exactly what distinguishes it. Macau browsers (zh-MO)
+  // are sent here too, by the negotiation script.
+  "zh-hk": "zh-HK",
 };
 
-/** Human-readable endonyms for the language switcher. */
+/**
+ * Human-readable endonyms for the language switcher. `zh-hk` carries one for
+ * completeness, but it is not in `SWITCHER_LANGS`, so it never renders.
+ */
 export const LANG_LABEL: Record<Lang, string> = {
   en: "EN",
   fr: "FR",
@@ -46,6 +75,7 @@ export const LANG_LABEL: Record<Lang, string> = {
   es: "ES",
   zh: "简",
   "zh-hant": "繁",
+  "zh-hk": "繁",
 };
 
 /** Full language names (endonyms) for accessible labels on the switcher links. */
@@ -56,6 +86,7 @@ export const LANG_NAME: Record<Lang, string> = {
   es: "Español",
   zh: "简体中文",
   "zh-hant": "繁體中文",
+  "zh-hk": "繁體中文",
 };
 
 /** Language-invariant profile constants (proper nouns, contact, structured data). */
@@ -1671,6 +1702,47 @@ const zhHant: Translation = {
   },
 };
 
+/*
+ * Hong Kong and Macau read the same Traditional script as Taiwan but not the
+ * same technical vocabulary. These five terms are the whole difference across
+ * this CV — measured, not guessed — so the HK page is a projection of the
+ * Taiwan one rather than a seventh hand-written translation: a copy would mean
+ * making every future edit twice, for five words.
+ *
+ * Deliberately NOT included: 品質 → 質素. 質素 is the distinctly Hong Kong word
+ * for quality, but in the one place the CV uses it — 品質意識, "quality
+ * mindset" — 品質 is idiomatic in Hong Kong too, and a CV is the wrong place
+ * for a substitution that is merely defensible.
+ */
+const HK_LEXICON: Record<string, string> = {
+  軟體: "軟件",
+  專案: "項目",
+  網路: "網絡",
+  入口網站: "門戶網站",
+  契約: "合約",
+};
+
+/**
+ * The Hong Kong / Macau reading of the Traditional page. The round trip goes
+ * through JSON because the content is plain data — strings, arrays and objects,
+ * no dates, functions or classes — which makes one `replaceAll` per term the
+ * whole implementation. The cast is the one place a `JSON.parse` of our own
+ * serialization is what it claims to be; `translations.test.ts` pins that down
+ * by asserting the result still matches the Taiwan page structurally.
+ */
+function toHongKong(t: Translation): Translation {
+  let json = JSON.stringify(t);
+  for (const [taiwan, hongKong] of Object.entries(HK_LEXICON)) {
+    json = json.replaceAll(taiwan, hongKong);
+  }
+  return JSON.parse(json) as Translation;
+}
+
+/** The Taiwan→Hong Kong terms, exposed so the tests can hold the pair to it. */
+export const HK_TERMS: readonly (readonly [string, string])[] = Object.entries(
+  HK_LEXICON,
+);
+
 export const translations: Record<Lang, Translation> = {
   en,
   fr,
@@ -1678,4 +1750,5 @@ export const translations: Record<Lang, Translation> = {
   es,
   zh,
   "zh-hant": zhHant,
+  "zh-hk": toHongKong(zhHant),
 };

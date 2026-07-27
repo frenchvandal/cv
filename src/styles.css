@@ -84,6 +84,15 @@
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
+/* Hong Kong / Macau: same Traditional script, but Noto Sans HK draws it to the
+   Hong Kong standard character forms (骨, 過, 溫 differ from the Taiwan MOE
+   shapes), so naming TC here would render Taiwan glyphs to a reader who does
+   not use them. Naming only this family also keeps SC and TC undownloaded. */
+:root[data-lang='zh-hk'] {
+  --font: 'Noto Sans', 'Noto Sans HK', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
 /* Dark appearance: not an inversion — a re-balance. Pure black ground so the
    content surfaces read as raised, and a brighter blue, since the light-mode
    blue turns muddy against black. Scoped to screens: printers strip the black

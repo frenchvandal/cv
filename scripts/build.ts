@@ -2,7 +2,7 @@
  * Static site generator (run by Bun: `bun scripts/build.ts`).
  *
  * 1. Bun.build bundles the HTML entry → JS/CSS/font assets with hashed names.
- * 2. For each of the six languages we take the built shell, inject the
+ * 2. For each of the seven languages we take the built shell, inject the
  *    pre-rendered markup (the same pure `renderApp` the client uses) plus
  *    per-language <head> meta and the @font-face rules (so fonts load before
  *    any JS, and no-JS visitors get them too), and write sibling pages at the
@@ -16,7 +16,12 @@
  */
 
 import { readdir, rm } from "node:fs/promises";
-import { langUrl, pageTitle, renderApp } from "../src/render.ts";
+import {
+  languageNegotiationScript,
+  langUrl,
+  pageTitle,
+  renderApp,
+} from "../src/render.ts";
 // The same escaper the renderer uses — one implementation, so the two can't
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
@@ -63,6 +68,7 @@ const OG_LOCALE: Record<Lang, string> = {
   es: "es_ES",
   zh: "zh_CN",
   "zh-hant": "zh_TW",
+  "zh-hk": "zh_HK",
 };
 
 /** Public URL of a language's page — relative by default, absolute when SITE_URL is set. */
@@ -71,8 +77,22 @@ function href(lang: Lang): string {
   return lang === "en" ? `${SITE}/` : `${SITE}/${lang}.html`;
 }
 
-function outFile(lang: Lang): string {
-  return lang === "en" ? `${OUT}/index.html` : `${OUT}/${lang}.html`;
+/**
+ * The file(s) a language is written to. English gets two: the site root, which
+ * is the negotiated entry point, and an explicit `en.html` for anyone who wants
+ * a stable English URL that no browser setting can redirect. Same content, and
+ * both carry `href("en")` as their canonical — the root — so search engines
+ * consolidate them instead of reading a duplicate. Only the root negotiates: a
+ * URL naming a language must always be honoured.
+ */
+function outFiles(lang: Lang): { file: string; negotiates: boolean }[] {
+  if (lang !== "en") {
+    return [{ file: `${OUT}/${lang}.html`, negotiates: false }];
+  }
+  return [
+    { file: `${OUT}/index.html`, negotiates: true },
+    { file: `${OUT}/en.html`, negotiates: false },
+  ];
 }
 
 // The typecheck gates the build but shares no data with it, so it runs
@@ -178,7 +198,11 @@ for (const lang of LANGS) {
     knowsLanguage: PROFILE.knowsLanguage,
   }).replace(/</g, "\\u003C");
 
-  const headExtra = `
+  // The negotiation script goes first so a redirect is not preceded by a font
+  // preload we are about to abandon. It is passed in per output file, not per
+  // language: `en.html` is English too, but it must never redirect.
+  const headExtra = (negotiation: string) => `
+    ${negotiation}
     ${fontPreload}
     ${fontsStyle}
     <link rel="canonical" href="${escapeHtml(href(lang))}" />
@@ -206,27 +230,30 @@ for (const lang of LANGS) {
   }
     <script type="application/ld+json">${jsonLd}</script>`;
 
-  const html = await new HTMLRewriter()
-    .on("html", {
-      element(el) {
-        el.setAttribute("lang", HTML_LANG[lang]);
-        el.setAttribute("data-lang", lang);
-      },
-    })
-    .on("title", { element: (el) => void el.setInnerContent(title) })
-    .on('meta[name="description"]', {
-      element: (el) => void el.setAttribute("content", description),
-    })
-    .on("style[data-loader]", { element: (el) => void el.remove() })
-    .on("head", { element: (el) => void el.append(headExtra, { html: true }) })
-    .on("#app", {
-      element: (el) => void el.setInnerContent(content, { html: true }),
-    })
-    .transform(new Response(shell))
-    .text();
+  for (const { file, negotiates } of outFiles(lang)) {
+    const head = headExtra(negotiates ? languageNegotiationScript() : "");
+    const html = await new HTMLRewriter()
+      .on("html", {
+        element(el) {
+          el.setAttribute("lang", HTML_LANG[lang]);
+          el.setAttribute("data-lang", lang);
+        },
+      })
+      .on("title", { element: (el) => void el.setInnerContent(title) })
+      .on('meta[name="description"]', {
+        element: (el) => void el.setAttribute("content", description),
+      })
+      .on("style[data-loader]", { element: (el) => void el.remove() })
+      .on("head", { element: (el) => void el.append(head, { html: true }) })
+      .on("#app", {
+        element: (el) => void el.setInnerContent(content, { html: true }),
+      })
+      .transform(new Response(shell))
+      .text();
 
-  await Bun.write(outFile(lang), html);
-  console.log(`  ${outFile(lang)}  (${lang})`);
+    await Bun.write(file, html);
+    console.log(`  ${file}  (${lang})`);
+  }
 }
 
 // Robots + sitemap (the sitemap needs absolute URLs, so it is SITE_URL-gated).
@@ -298,7 +325,7 @@ if ((await typecheck.exited) !== 0) {
 }
 
 console.log(
-  `\n✓ Pre-rendered ${LANGS.length} pages into ${OUT}/${
+  `\n✓ Pre-rendered ${LANGS.flatMap(outFiles).length} pages into ${OUT}/${
     SITE ? "" : " (relative URLs — set SITE_URL for canonical/hreflang/sitemap)"
   }`,
 );

@@ -6,7 +6,12 @@
  * as escapeHtml in [src/dom.ts](../src/dom.ts).
  */
 
-import { LANG_LABEL, LANG_NAME, translations } from "../src/translations.ts";
+import {
+  LANG_LABEL,
+  LANG_NAME,
+  SWITCHER_LANGS,
+  translations,
+} from "../src/translations.ts";
 
 /** Files whose string literals can reach the page in the Latin-script languages. */
 const LATIN_SOURCES = ["src/translations.ts", "src/render.ts"];
@@ -39,8 +44,10 @@ const isCjk = (cp: number, ch: string): boolean =>
  * per-language translation objects, so scanning those alone missed them and the
  * switcher fell back to a system font mid-line.
  */
-const switcher = Object.values(LANG_LABEL).join("") +
-  Object.values(LANG_NAME).join("");
+const switcher = SWITCHER_LANGS.map((lang) =>
+  LANG_LABEL[lang] + LANG_NAME[lang]
+)
+  .join("");
 
 /**
  * The exact character set each face must carry. Latin glyphs are scanned from
@@ -52,7 +59,7 @@ const switcher = Object.values(LANG_LABEL).join("") +
  * each ship only their own script.
  */
 export async function glyphSets(): Promise<
-  { latin: string; sc: string; tc: string }
+  { latin: string; sc: string; tc: string; hk: string }
 > {
   const root = `${import.meta.dir}/..`;
   const sources = (
@@ -64,5 +71,9 @@ export async function glyphSets(): Promise<
     latin: unique(sources, (cp) => isLatin(cp)),
     sc: unique(JSON.stringify(translations.zh) + switcher, isCjk),
     tc: unique(JSON.stringify(translations["zh-hant"]) + switcher, isCjk),
+    // Hong Kong shares Taiwan's script but not all its glyph FORMS (骨, 過, 溫
+    // are drawn to a different standard), so it gets its own subset rather than
+    // reusing the TC one — and its own vocabulary means its own character set.
+    hk: unique(JSON.stringify(translations["zh-hk"]) + switcher, isCjk),
   };
 }

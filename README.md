@@ -1,12 +1,13 @@
 # Philippe Ribeiro — CV
 
-A six-language (EN / FR / PT / ES / 简体 / 繁體) portfolio, pre-rendered to
-static HTML and progressively enhanced with pretext-driven typography. No
-framework.
+A seven-language portfolio — EN / FR / PT / ES / 简体 / 繁體, plus a Hong Kong
+reading of the Traditional page that is served by browser language rather than
+offered as a seventh button — pre-rendered to static HTML and progressively
+enhanced with pretext-driven typography. No framework.
 
 The regional variants are deliberate: Portuguese is European and follows the
-pre-1990 orthography, Spanish is peninsular, and Traditional Chinese follows
-Taiwan usage.
+pre-1990 orthography, Spanish is peninsular, Traditional Chinese follows Taiwan
+usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
 
 ## Stack
 
@@ -23,23 +24,33 @@ Taiwan usage.
 ## Features
 
 - **SSG pre-render** — [scripts/build.ts](scripts/build.ts) emits `index.html`,
-  `fr.html`, `pt.html`, `es.html`, `zh.html` and `zh-hant.html` with the content
-  already in the HTML (SEO, link previews, works with JS off). The client
-  hydrates and swaps language instantly — no reload — syncing the URL via
-  `history`.
+  `en.html`, `fr.html`, `pt.html`, `es.html`, `zh.html`, `zh-hant.html` and
+  `zh-hk.html` with the content already in the HTML (SEO, link previews, works
+  with JS off). The client hydrates and swaps language instantly — no reload —
+  syncing the URL via `history`.
+- **A Hong Kong / Macau reading** of the Traditional page (`zh-hk.html`), in
+  local vocabulary (軟件, 項目, 網絡…) and Noto Sans HK's character forms. It is
+  a five-term projection of the Taiwan page, not a seventh translation to
+  maintain, and it has no button in the switcher: browsers asking for `zh-HK` or
+  `zh-MO` are sent there, and `hreflang="zh-HK"` points search engines at it.
 - **Measurement-driven layout** ([src/measure.ts](src/measure.ts)) — pretext
   fits the hero name to the viewport width and sizes the section titles to their
-  column (uniform, no ellipsis truncation) across all six languages. A dev-only
-  console audit flags any title that would overflow.
+  column (uniform, no ellipsis truncation) across all seven languages. A
+  dev-only console audit flags any title that would overflow.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the
   About paragraphs are re-typeset with TeX-style optimal line breaking and
   syllable hyphenation, over pretext-measured boxes/glue (Latin languages;
   Chinese wraps natively). The hyphenation patterns load per language, on
   demand.
-- **Self-hosted fonts** — Noto Sans + Noto Sans SC/TC, subset per language to
+- **Self-hosted fonts** — Noto Sans + Noto Sans SC/TC/HK, subset per language to
   the glyphs actually used and imported so Bun emits them as external hashed
   files; `unicode-range` and per-page font stacks keep each Chinese subset lazy.
   No web-font CDN, no runtime network dependency.
+- **Language negotiation** — a visitor landing on the site root is sent to the
+  page in their browser's language (English when none matches); a language they
+  pick by hand is remembered and outranks the browser from then on. URLs that
+  name a language (`fr.html`) are never redirected, so shared links keep their
+  language.
 - **Light / dark theme**, reveal-on-scroll, animated stats.
 
 ## Commands
@@ -47,7 +58,7 @@ Taiwan usage.
 ```bash
 bun install            # install dependencies
 bun run dev            # dev server with HMR → http://localhost:3000/
-bun run build          # type-check + pre-render the 6 pages into dist/
+bun run build          # type-check + pre-render the 8 pages into dist/
 bun run check          # tsgo --noEmit (TypeScript 7 native compiler, the type gate)
 bun test               # Knuth–Plass unit tests (canvas-free, injected measure)
 bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
@@ -70,7 +81,7 @@ workflow type-checks, tests and builds every pull request.
 
 ## Editing content
 
-All copy lives in [src/translations.ts](src/translations.ts), typed so the six
+All copy lives in [src/translations.ts](src/translations.ts), typed so the seven
 languages stay in structural sync. See [AGENTS.md](AGENTS.md) for the code
 conventions.
 

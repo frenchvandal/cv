@@ -77,6 +77,7 @@ function importPatterns(
     // Chinese wraps per character; there are no syllable patterns to fetch.
     case "zh":
     case "zh-hant":
+    case "zh-hk":
       return null;
   }
 }

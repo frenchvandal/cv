@@ -21,6 +21,7 @@ import {
   langUrl,
   pageTitle,
   renderApp,
+  STORAGE_LANG_KEY,
   type Theme,
 } from "./render.ts";
 import { escapeHtml, reducedMotion } from "./dom.ts";
@@ -62,6 +63,21 @@ function setLang(next: Lang): void {
   currentLang = next;
   root.lang = HTML_LANG[next];
   root.dataset.lang = next;
+}
+
+/**
+ * Remember a language the visitor picked by hand. The root page's negotiation
+ * script (see `languageNegotiationScript` in [src/render.ts](src/render.ts))
+ * reads this and lets it outrank the browser's own list, so the switcher always
+ * has the last word.
+ */
+function storeLang(lang: Lang): void {
+  try {
+    localStorage.setItem(STORAGE_LANG_KEY, lang);
+  } catch {
+    // Storage may be unavailable (private mode) — the switch still works, it
+    // just won't survive the visit.
+  }
 }
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
@@ -393,6 +409,12 @@ function bindEvents(): void {
         return;
       }
       event.preventDefault();
+      // Record the choice even when nothing changes on screen. A French-browser
+      // visitor sent to fr.html who clicks EN lands back on the root, where
+      // `next === currentLang` — without storing first, the next visit would
+      // negotiate them straight back to French and the switcher would look
+      // broken. Only an explicit click stores; popstate never does.
+      storeLang(next);
       if (next === currentLang) return;
       setLang(next);
       history.pushState({ lang: next }, "", langUrl(next));

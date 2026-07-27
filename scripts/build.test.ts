@@ -47,6 +47,16 @@ test(
     for (const extra of ["404.html", "robots.txt", "og-image.png"]) {
       expect(existsSync(`${ROOT}/dist/${extra}`)).toBe(true);
     }
+
+    // English is served twice: the root negotiates the visitor's language,
+    // en.html is the stable URL that never does. Same page, one canonical.
+    const root = await Bun.file(`${ROOT}/dist/index.html`).text();
+    const english = await Bun.file(`${ROOT}/dist/en.html`).text();
+    expect(root).toContain("location.replace");
+    expect(english).not.toContain("location.replace");
+    const canonical = (html: string) =>
+      html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
+    expect(canonical(english)).toBe(canonical(root));
   },
   120_000,
 );
