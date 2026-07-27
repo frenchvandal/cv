@@ -110,7 +110,12 @@ await Bun.build({
   outdir: OUT,
   minify: true,
   sourcemap: "linked",
-  publicPath: "./",
+  // No publicPath: it is not needed (the emitted HTML already references
+  // `./assets/…`, and chunks import each other by bare sibling name), and
+  // `"./"` actively breaks the sourcemaps — Bun prefixes it to the full output
+  // path, emitting `sourceMappingURL=./assets/index-….js.map` inside a file
+  // that already lives in assets/. Browsers resolve that against the script's
+  // own URL, ask for /assets/assets/… and log a 404 for every chunk.
   // Dynamic imports (the per-language hyphenation patterns) become their own
   // chunks: a visitor only downloads the patterns of the language they read.
   splitting: true,
