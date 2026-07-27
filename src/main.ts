@@ -22,6 +22,7 @@ import {
   langFromPath,
   langUrl,
   NAV_LINKS,
+  pageLang,
   pageTitle,
   renderApp,
   STORAGE_LANG_KEY,
@@ -52,17 +53,6 @@ const app = document.getElementById("app");
 
 let currentLang: Lang = "en";
 let theme: Theme = "light";
-
-/**
- * Language of the page as first loaded: the pre-rendered `<html data-lang>`
- * answers first, since it is what the markup on screen actually is, and the URL
- * only settles the dev shell (which carries no data-lang). Valid at startup
- * ONLY — see `onPopState` for why nothing later may read that attribute.
- */
-function pageLang(): Lang {
-  if (isLang(root.dataset.lang)) return root.dataset.lang;
-  return langFromPath(location.pathname) ?? "en";
-}
 
 function setLang(next: Lang): void {
   currentLang = next;
@@ -598,7 +588,7 @@ function onPopState(): void {
 }
 
 function init(): void {
-  setLang(pageLang());
+  setLang(pageLang(root.dataset.lang, location.pathname));
   const chosen = storedTheme();
   applyTheme(chosen ?? systemTheme(), false);
 

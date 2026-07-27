@@ -62,6 +62,28 @@ export function langFromPath(path: string): Lang | null {
   return isLang(slug) ? slug : null;
 }
 
+/**
+ * The language a freshly loaded page is in, from the two facts the document
+ * carries: the pre-rendered `<html data-lang>` and the URL. The attribute wins,
+ * because it is what the markup on screen actually *is*; the URL only has to
+ * answer for the dev shell, which is served at `/` with no `data-lang` of its
+ * own. English is the fallback both miss.
+ *
+ * Startup only. `setLang` overwrites `data-lang` on every switch, so from the
+ * first switch onward this would report the language already on screen — which
+ * is exactly why back/forward reads `langFromPath` directly instead (see
+ * `onPopState` in [src/main.ts](src/main.ts)). Split out of main.ts and taking
+ * its two inputs as plain strings so the precedence is testable without a
+ * document.
+ */
+export function pageLang(
+  datasetLang: string | undefined,
+  path: string,
+): Lang {
+  if (isLang(datasetLang)) return datasetLang;
+  return langFromPath(path) ?? "en";
+}
+
 /** localStorage key holding a language the visitor picked by hand. */
 export const STORAGE_LANG_KEY = "cv-lang";
 

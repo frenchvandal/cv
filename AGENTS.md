@@ -254,7 +254,14 @@ this site targets modern browsers only, so don't down-level.
   production build passes `features: ["PROD"]`) compiles the title audit down to
   `if (false)` and tree-shakes it out. Use the same gate for any new diagnostic
   rather than a `NODE_ENV` check.
-- **No print stylesheet** — screen-only by design.
+- **Print is a real target, narrowly.** A CV gets printed, and the reveal system
+  is scroll-driven: without the `@media print` block in
+  [src/styles.css](src/styles.css), every `.animate` section below the fold
+  prints at `opacity: 0` — blank pages. That block does four things and should
+  not grow past them: force the reveals visible, hide chrome that means nothing
+  on paper (nav, skip link, hero actions, copy button), let the hero size to its
+  content, and keep events and cards whole across page breaks. The dark palette
+  is scoped to `@media screen` for the same reason.
 
 ## 8. `experiments/` — a slot, currently empty
 

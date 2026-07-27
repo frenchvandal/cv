@@ -20,6 +20,23 @@ import { glyphSets } from "./glyphs.ts";
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 
+/**
+ * Fail rather than hang. This script is run by hand and its output is committed,
+ * so a stalled socket is worse than an error: it looks like work in progress.
+ */
+const FETCH_TIMEOUT_MS = 30_000;
+
+async function fetchOk(url: string, what: string): Promise<Response> {
+  const response = await fetch(url, {
+    headers: { "User-Agent": UA },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    throw new Error(`${what} failed: HTTP ${response.status}`);
+  }
+  return response;
+}
+
 const { latin, sc, tc, hk } = await glyphSets();
 
 console.log(
@@ -33,12 +50,7 @@ async function subset(
   const cssUrl =
     `https://fonts.googleapis.com/css2?family=${family}:wght@400..800` +
     `&text=${encodeURIComponent(text)}&display=swap`;
-  const response = await fetch(cssUrl, { headers: { "User-Agent": UA } });
-  if (!response.ok) {
-    throw new Error(
-      `Fetching CSS for ${family} failed: HTTP ${response.status}`,
-    );
-  }
+  const response = await fetchOk(cssUrl, `Fetching CSS for ${family}`);
   const css = await response.text();
   const url = css.match(/url\((https:\/\/[^)]+)\)/)?.[1];
   const range = css.match(/unicode-range:\s*([^;]+);/)?.[1]?.trim();
@@ -55,20 +67,32 @@ const [latinFont, scFont, tcFont, hkFont] = await Promise.all([
   subset("Noto+Sans+HK", hk),
 ]);
 
-async function download(url: string, path: string): Promise<void> {
-  const response = await fetch(url, { headers: { "User-Agent": UA } });
-  if (!response.ok) {
-    throw new Error(`Downloading ${url} failed: HTTP ${response.status}`);
-  }
-  const bytes = await response.arrayBuffer();
+/*
+ * Every subset is fetched before any of them is written. Downloading and
+ * writing one at a time would, on a network drop halfway through, leave the
+ * tree in a state no successful run ever produces: two fresh .woff2 files
+ * beside a src/fonts.ts still carrying the previous unicode-ranges. The
+ * coverage guard would eventually catch that, but the fix is to not create it —
+ * once this array resolves, the write phase does no I/O that can fail partway.
+ */
+const subsets = await Promise.all(
+  (
+    [
+      ["src/fonts/noto-sans-latin.woff2", latinFont],
+      ["src/fonts/noto-sans-sc.woff2", scFont],
+      ["src/fonts/noto-sans-tc.woff2", tcFont],
+      ["src/fonts/noto-sans-hk.woff2", hkFont],
+    ] as const
+  ).map(async ([path, font]) => {
+    const response = await fetchOk(font.url, `Downloading ${font.url}`);
+    return { path, bytes: await response.arrayBuffer() };
+  }),
+);
+
+for (const { path, bytes } of subsets) {
   await Bun.write(path, bytes);
   console.log(`  wrote ${path} (${Math.round(bytes.byteLength / 1024)} KB)`);
 }
-
-await download(latinFont.url, "src/fonts/noto-sans-latin.woff2");
-await download(scFont.url, "src/fonts/noto-sans-sc.woff2");
-await download(tcFont.url, "src/fonts/noto-sans-tc.woff2");
-await download(hkFont.url, "src/fonts/noto-sans-hk.woff2");
 
 const fontsTs = `/*
  * Self-hosted Noto Sans (Latin) + Noto Sans SC/TC/HK (subset to the glyphs used).

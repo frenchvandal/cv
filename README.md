@@ -56,6 +56,14 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
 
 ## Commands
 
+Bun ≥ 1.3.14 is the only requirement to build, test and serve the site.
+[Deno](https://deno.com) is a second, **optional** prerequisite: it is the
+project's formatter and linter (`deno fmt` then `deno lint`, run from the root
+at the end of a change — there is no config, the defaults are the contract), and
+`bun run fonts:update` shells out to `deno fmt` to normalize the file it
+generates. That call is `.nothrow()`, so without Deno the regeneration still
+succeeds and merely shows up as formatting churn in the diff.
+
 ```bash
 bun install            # install dependencies
 bun run dev            # dev server with HMR → http://localhost:3000/

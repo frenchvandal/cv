@@ -11,6 +11,7 @@ import {
   langFromPath,
   languageNegotiationScript,
   langUrl,
+  pageLang,
   pageTitle,
   renderApp,
 } from "./render.ts";
@@ -49,6 +50,32 @@ test("langFromPath reads the language out of a URL path", () => {
   // A path that merely starts with a slug is not that language.
   expect(langFromPath("/french.html")).toBeNull();
   expect(langFromPath("/zh-hans.html")).toBeNull();
+});
+
+test("pageLang lets the rendered markup outrank the URL", () => {
+  // Every pre-rendered page: the two agree, and the attribute is read.
+  expect(pageLang("fr", "/fr.html")).toBe("fr");
+  expect(pageLang("zh-hant", "/zh-hant.html")).toBe("zh-hant");
+
+  // The precedence itself. If the URL won here, a page whose markup is already
+  // Spanish would be declared English and `init()` would hydrate against
+  // markup that is not what it thinks it is.
+  expect(pageLang("es", "/")).toBe("es");
+  expect(pageLang("zh", "/fr.html")).toBe("zh");
+
+  // The dev shell is served at `/` with no data-lang; so is the English root.
+  expect(pageLang(undefined, "/")).toBe("en");
+  expect(pageLang(undefined, "/index.html")).toBe("en");
+
+  // No attribute: the URL answers, and English is the fallback both miss.
+  expect(pageLang(undefined, "/pt.html")).toBe("pt");
+  expect(pageLang(undefined, "/french.html")).toBe("en");
+
+  // An attribute that is not a language is not a language — fall through to
+  // the URL rather than trusting the DOM.
+  expect(pageLang("", "/fr.html")).toBe("fr");
+  expect(pageLang("zh-hans", "/pt.html")).toBe("pt");
+  expect(pageLang("en-GB", "/")).toBe("en");
 });
 
 test.each([...LANGS])(
