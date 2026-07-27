@@ -618,7 +618,10 @@ function phoneChrome(t: Translation): { status: string; bar: string } {
  * sender prefix is for screen readers only).
  *
  * The phone around them is what makes the thread read as a thread rather than
- * as two columns of coloured boxes, and the width control under it is the
+ * as two columns of coloured boxes. Its screen is a fixed 19.5:9, so the thread
+ * scrolls inside it as it would on the device — which is why `.chat` carries
+ * `tabindex="0"`: a scrollable region has to be reachable by keyboard, and the
+ * `role="group"` it already had does not make it focusable. The width control is the
  * pretext demo's own (chenglou.me/pretext/bubbles): dragging it re-tightens
  * every bubble live, which is the whole point of measuring instead of
  * guessing. It is `.js`-gated in CSS, since a range input that moves nothing
@@ -646,9 +649,12 @@ function dialogue(t: Translation): string {
         <div class="phone">
           <div class="phone__body">
             <div class="phone__screen">${status}${bar}
-              <div class="chat" role="group" aria-label="${
-      escapeHtml(t.nav.dialogue)
-    }">${rows}
+              <div
+                class="chat"
+                role="group"
+                aria-label="${escapeHtml(t.nav.dialogue)}"
+                tabindex="0"
+              >${rows}
               </div>
               <div class="phone__composer" aria-hidden="true">
                 <span class="phone__plus">${ICON_PLUS}</span>

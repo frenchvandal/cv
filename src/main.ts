@@ -2,6 +2,7 @@ import { feature } from "bun:bundle";
 import { FONT_FACES } from "./fonts.ts";
 import "./styles.css";
 import {
+  CHAT_WIDTH,
   DISPLAY_FONT,
   HERO_FIT,
   NAV_FIT,
@@ -187,6 +188,39 @@ function applyMeasuredLayout(): void {
 
   const linksEl = app.querySelector<HTMLElement>(".nav__links");
   if (linksEl) fitNavLinks(linksEl, { ...NAV_FONT, family, ...NAV_FIT });
+}
+
+/**
+ * Screen width of the Dialogue phone once the reader has moved its slider, kept
+ * across a language switch: the re-render brings the markup back at its default
+ * width, and a width someone chose should survive the swap.
+ */
+let chatWidthPx: number | null = null;
+
+/** Write a width to the phone and its readout. Does not re-measure. */
+function applyChatWidth(px: number): void {
+  const clamped = Math.min(CHAT_WIDTH.max, Math.max(CHAT_WIDTH.min, px));
+  chatWidthPx = clamped;
+  app?.querySelector<HTMLElement>(".phone")?.style.setProperty(
+    "--phone-w",
+    `${clamped}px`,
+  );
+  const readout = app?.querySelector<HTMLElement>("[data-chat-width-value]");
+  if (readout) readout.textContent = `${clamped} px`;
+}
+
+/** The slider's handler: a new width, then the bubbles re-tightened to it. */
+function setChatWidth(px: number): void {
+  applyChatWidth(px);
+  enhanceChat();
+}
+
+/** Put a previously chosen width back on freshly rendered markup. */
+function restoreChatWidth(): void {
+  if (chatWidthPx === null) return;
+  const range = app?.querySelector<HTMLInputElement>("[data-chat-width]");
+  if (range) range.value = String(chatWidthPx);
+  applyChatWidth(chatWidthPx);
 }
 
 /**
@@ -501,6 +535,14 @@ function bindEvents(): void {
     applyTheme(theme === "light" ? "dark" : "light", true);
   });
 
+  // Dialogue: the phone's width control. Every drag re-tightens the bubbles,
+  // which is the point — the widths come from a measurement, so they can follow
+  // a width the reader chooses instead of the one the stylesheet assumed.
+  const widthRange = app?.querySelector<HTMLInputElement>("[data-chat-width]");
+  widthRange?.addEventListener("input", () => {
+    setChatWidth(Number(widthRange.value));
+  });
+
   // Contact closer: copy the WeChat id, flash the copied label on the button.
   const copyBtn = app?.querySelector<HTMLButtonElement>("[data-copy-wechat]");
   if (copyBtn) {
@@ -529,6 +571,7 @@ function afterPaint(): void {
   observeSections();
   whenFontsReady(() => {
     applyMeasuredLayout();
+    restoreChatWidth();
     enhanceChat();
     void enhanceAboutKp();
   });
