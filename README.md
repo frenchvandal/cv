@@ -82,7 +82,12 @@ configuration (and works on GitHub Pages too). Set
 `hreflang` URLs, a sitemap, and the `og:image` / Twitter-card tags for social
 link previews (search engines and social scrapers require absolute URLs there).
 The preview image itself is [public/og-image.png](public/og-image.png), copied
-to the site root at build time.
+to the site root at build time. To see what a scraper would show for a built
+page, read the tags back out of it:
+
+```bash
+bun scripts/social-meta.ts dist/index.html dist/fr.html
+```
 
 The included GitHub Actions workflow builds with Bun and publishes `dist/` to
 Pages; it sets `SITE_URL` automatically from the Pages base URL. A second

@@ -54,6 +54,11 @@ the code itself
     `en.html` — plus `404.html`; runs `tsgo --noEmit` concurrently and gates on
     it).
   - `bun run check` → `tsgo --noEmit` (the type gate). `bun test` → unit tests.
+  - `bun scripts/social-meta.ts dist/index.html …` → prints the link preview a
+    scraper would build from a page. Same HTMLRewriter extraction backs the
+    social-card assertions in [scripts/build.test.ts](scripts/build.test.ts), so
+    the tags the build writes are checked by something that reads them the way
+    their consumers do.
   - `bun run fonts:update` → `bun scripts/update-fonts.ts`, which re-subsets the
     vendored Noto `.woff2` files from the characters actually used in the source
     literals. Run it after changing copy in
