@@ -13,6 +13,8 @@ import { HTML_LANG, LANGS, translations } from "../src/translations.ts";
 import { escapeHtml } from "../src/dom.ts";
 import { pageTitle } from "../src/render.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
+import { contentLastmod, parseSitemap } from "./sitemap.ts";
+import { entryPublished, FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
 
@@ -61,6 +63,17 @@ test(
 
     for (const extra of ["404.html", "robots.txt", "og-image.png"]) {
       expect(existsSync(`${ROOT}/dist/${extra}`)).toBe(true);
+    }
+
+    // A sitemap and a feed need absolute URLs, so without SITE_URL there is
+    // neither — and nothing may advertise a file that was not written.
+    expect(existsSync(`${ROOT}/dist/sitemap.xml`)).toBe(false);
+    expect(existsSync(`${ROOT}/dist/feed.json`)).toBe(false);
+    expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
+      .not.toContain("Sitemap:");
+    for (const lang of LANGS) {
+      const html = await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text();
+      expect(html).not.toContain(FEED_MIME);
     }
 
     // English is served twice: the root negotiates the visitor's language,
@@ -141,6 +154,70 @@ test(
     expect(await cardOf(`${ROOT}/dist/en.html`)).toEqual(
       await cardOf(`${ROOT}/dist/index.html`),
     );
+
+    // The sitemap lists every language page once, at its canonical URL, and
+    // nothing else: en.html is a duplicate of the root and 404.html is
+    // noindex. Same order as LANGS, so a diff of the file stays readable.
+    const entries = await parseSitemap(
+      await Bun.file(`${ROOT}/dist/sitemap.xml`).text(),
+    );
+    expect(entries.map((e) => e.loc)).toEqual(
+      LANGS.map((lang) =>
+        lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`
+      ),
+    );
+
+    // Every canonical in the pages is in the sitemap, and vice versa.
+    const canonicals = await Promise.all(
+      LANGS.map(async (lang) =>
+        (await extractSocialTags(
+          await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text(),
+        )).canonical
+      ),
+    );
+    expect(new Set(entries.map((e) => e.loc))).toEqual(new Set(canonicals));
+
+    // lastmod is the content's date from git, not the build's — the whole
+    // point of the field. Compared against the same source the build read, so
+    // a checkout that cannot answer (shallow clone) expects no field at all.
+    const lastmod = await contentLastmod();
+    for (const entry of entries) expect(entry.lastmod).toBe(lastmod);
+    if (lastmod) {
+      expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
+    }
+
+    // robots.txt points crawlers at it, absolutely.
+    expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
+      .toContain(`Sitemap: ${SITE}/sitemap.xml`);
+
+    // One JSON Feed per language, discoverable from its own page and dated
+    // from git — the same source the sitemap's <lastmod> comes from, so a
+    // checkout without history yields no date rather than a wrong one.
+    const published = await entryPublished(translations.en);
+    for (const lang of LANGS) {
+      const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
+      expect(feed.version).toBe(FEED_VERSION);
+      expect(feed.feed_url).toBe(`${SITE}/${feedFile(lang)}`);
+      expect(feed.home_page_url).toBe(
+        lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`,
+      );
+      expect(feed.items.length).toBeGreaterThan(0);
+      expect(
+        feed.items.filter((i: { date_published?: string }) => i.date_published),
+      ).toHaveLength(published.size);
+      // The bundler emits a hashed favicon; the feed must point at that asset,
+      // not at the source path the shell references.
+      expect(feed.favicon).toMatch(
+        new RegExp(`^${SITE}/assets/favicon-[^/]+\\.svg$`),
+      );
+
+      // Discovery: the page declares the feed with the spec's type.
+      const html = await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text();
+      expect(html).toContain(
+        `<link rel="alternate" type="${FEED_MIME}" title=`,
+      );
+      expect(html).toContain(`href="${SITE}/${feedFile(lang)}"`);
+    }
   },
   120_000,
 );

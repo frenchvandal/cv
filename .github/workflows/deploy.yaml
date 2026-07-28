@@ -28,6 +28,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Full history: the sitemap dates each page from the last commit that
+          # touched the rendered content (scripts/sitemap.ts). The default
+          # shallow clone has one commit, so that lookup would usually come back
+          # empty and every deploy would ship a sitemap without <lastmod>.
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

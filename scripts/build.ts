@@ -25,6 +25,14 @@ import {
 // The same escaper the renderer uses — one implementation, so the two can't
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
+import { contentLastmod, sitemapXml } from "./sitemap.ts";
+import {
+  entryPublished,
+  FEED_MIME,
+  feedFile,
+  feedJson,
+  jsonFeed,
+} from "./feed.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
 import { THEME_COLOR } from "../src/config.ts";
 import {
@@ -135,9 +143,8 @@ await Bun.build({
  * the families and unicode ranges; the URLs there are runtime file paths, so we
  * remap each source basename to its emitted hashed asset in dist/assets.
  */
-const fontAssets = (await readdir(`${OUT}/assets`)).filter((name) =>
-  name.endsWith(".woff2")
-);
+const assets = await readdir(`${OUT}/assets`);
+const fontAssets = assets.filter((name) => name.endsWith(".woff2"));
 
 function distFontUrl(sourceUrl: string): string {
   const base = sourceUrl.split("/").pop()!.replace(/\.woff2$/, "");
@@ -171,6 +178,17 @@ const OG_IMAGE = "og-image.png";
 await Bun.write(`${OUT}/${OG_IMAGE}`, Bun.file(`public/${OG_IMAGE}`));
 
 const shell = await Bun.file(`${OUT}/index.html`).text();
+
+/*
+ * JSON Feed. Gated on SITE_URL like the sitemap — `feed_url` is the feed's own
+ * identifier, and item ids are built from the page URL, so neither means
+ * anything relative. The per-entry publication dates are one git lookup per
+ * entry, not per language: the keys they search for are the same in all seven.
+ */
+const faviconAsset = assets.find((name) => name.startsWith("favicon-"));
+const published = SITE
+  ? await entryPublished(translations.en)
+  : new Map<string, string>();
 
 for (const lang of LANGS) {
   const t = translations[lang];
@@ -214,7 +232,14 @@ for (const lang of LANGS) {
     ${alternates}
     <link rel="alternate" hreflang="x-default" href="${
     escapeHtml(href("en"))
-  }" />
+  }" />${
+    SITE
+      ? `
+    <link rel="alternate" type="${FEED_MIME}" title="${
+        escapeHtml(title)
+      }" href="${escapeHtml(`${SITE}/${feedFile(lang)}`)}" />`
+      : ""
+  }
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
@@ -259,6 +284,22 @@ for (const lang of LANGS) {
     await Bun.write(file, html);
     console.log(`  ${file}  (${lang})`);
   }
+
+  if (SITE) {
+    const file = `${OUT}/${feedFile(lang)}`;
+    await Bun.write(
+      file,
+      feedJson(jsonFeed({
+        lang,
+        t,
+        homePageUrl: href(lang),
+        feedUrl: `${SITE}/${feedFile(lang)}`,
+        ...(faviconAsset ? { favicon: `${SITE}/assets/${faviconAsset}` } : {}),
+        published,
+      })),
+    );
+    console.log(`  ${file}  (${lang})`);
+  }
 }
 
 // Robots + sitemap (the sitemap needs absolute URLs, so it is SITE_URL-gated).
@@ -272,12 +313,20 @@ await Bun.write(`${OUT}/robots.txt`, robots.join("\n"));
 console.log(`  ${OUT}/robots.txt`);
 
 if (SITE) {
-  const urls = LANGS.map(
-    (lang) => `  <url>\n    <loc>${escapeHtml(href(lang))}</loc>\n  </url>`,
-  ).join("\n");
-  const sitemap =
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
-  await Bun.write(`${OUT}/sitemap.xml`, sitemap);
+  // One URL per language. `en.html` is not listed: it is the same page as the
+  // root and points its canonical there, so listing it would offer a crawler a
+  // duplicate it is meant to discard. 404.html is noindex.
+  const lastmod = await contentLastmod();
+  if (!lastmod) {
+    console.warn(
+      "  ! git could not date the content — <lastmod> omitted (shallow clone?)",
+    );
+  }
+  const entries = LANGS.map((lang) => ({
+    loc: href(lang),
+    ...(lastmod ? { lastmod } : {}),
+  }));
+  await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
   console.log(`  ${OUT}/sitemap.xml`);
 }
 

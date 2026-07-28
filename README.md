@@ -89,9 +89,28 @@ page, read the tags back out of it:
 bun scripts/social-meta.ts dist/index.html dist/fr.html
 ```
 
+`dist/sitemap.xml` follows the
+[sitemaps.org 0.9 protocol](https://www.sitemaps.org/protocol.html): one `<url>`
+per language, at the URL that page declares canonical, each with a `<lastmod>`
+read from the last commit that touched the rendered content — not the build
+date. `<changefreq>` and `<priority>` are deliberately absent (see the header of
+[scripts/sitemap.ts](scripts/sitemap.ts)). Read it back the way a crawler would:
+
+```bash
+bun scripts/sitemap.ts dist/sitemap.xml
+```
+
+Each page also links a [JSON Feed 1.1](https://www.jsonfeed.org/version/1.1/)
+(`dist/feed.json` for English, `dist/feed.<lang>.json` otherwise). Its items are
+the CV's professional record — the roles, the schools, the certifications — each
+with a `date_published` taken from the commit that first published that entry.
+Which fields are emitted, and why the optional ones it leaves out are left out,
+is documented at the top of [scripts/feed.ts](scripts/feed.ts).
+
 The included GitHub Actions workflow builds with Bun and publishes `dist/` to
-Pages; it sets `SITE_URL` automatically from the Pages base URL. A second
-workflow type-checks, tests and builds every pull request.
+Pages; it sets `SITE_URL` automatically from the Pages base URL, and checks out
+the full history so `<lastmod>` can be dated. A second workflow type-checks,
+tests and builds every pull request.
 
 ## Editing content
 

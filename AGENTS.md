@@ -59,6 +59,20 @@ the code itself
     social-card assertions in [scripts/build.test.ts](scripts/build.test.ts), so
     the tags the build writes are checked by something that reads them the way
     their consumers do.
+  - `bun scripts/sitemap.ts dist/sitemap.xml` → reads a sitemap back the same
+    way. [scripts/sitemap.ts](scripts/sitemap.ts) also **writes** it (the build
+    imports it under `SITE_URL`); its header records which protocol fields are
+    emitted and why the other two are not — read it before adding one.
+    `<lastmod>` comes from `git log` over the paths that reach a visitor, so
+    deploy.yaml checks out with `fetch-depth: 0`; without history the field is
+    omitted rather than guessed.
+  - [scripts/feed.ts](scripts/feed.ts) writes one JSON Feed 1.1 per language,
+    also `SITE_URL`-gated. Same rule as the sitemap, and the same header
+    convention: every field is justified there, and **no date is ever
+    synthesized** — the CV's own ranges ("2019 – Present") are localized free
+    text, so `date_published` is the `git log -S` date of the commit that first
+    added the entry's key, and is dropped when git cannot answer. The item set
+    is read off the translation objects, so a new role needs no second list.
   - `bun run fonts:update` → `bun scripts/update-fonts.ts`, which re-subsets the
     vendored Noto `.woff2` files from the characters actually used in the source
     literals. Run it after changing copy in
