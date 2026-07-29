@@ -1,8 +1,8 @@
 # Daily dependency refresh. `bun update --latest` deliberately goes PAST the
 # package.json ranges: it rewrites the ranges themselves, so a dependency can
-# cross a major here (pretext and tsgo both can). That is the intent — this repo
+# cross a major here (pretext and tsgo both can). That is the intent—this repo
 # tracks four dependencies and would rather see a breaking bump fail loudly in
-# CI than sit on a stale tree — but it means the only thing between a published
+# CI than sit on a stale tree—but it means the only thing between a published
 # major and `main` is the test suite below. When something changed, the full
 # suite (typecheck + real build included) gates the commit, so a broken bump
 # never lands.
@@ -11,7 +11,7 @@
 # `schedule` (shipped March 2026). Do not "helpfully" hand-convert it to UTC.
 #
 # Pushes made with GITHUB_TOKEN do not trigger other workflows, so this job
-# dispatches deploy.yaml itself after pushing — without that the site would
+# dispatches deploy.yaml itself after pushing—without that the site would
 # stay on the old dependencies until the next manual push.
 name: Update dependencies
 

@@ -1,5 +1,5 @@
 /*
- * Reads the social-preview metadata back out of a page — Bun's "extract social
+ * Reads the social-preview metadata back out of a page—Bun's "extract social
  * share metadata" HTMLRewriter pattern, pointed at our own `dist/` instead of a
  * remote URL (the pages are on disk at build time; fetching them would only add
  * a server).
@@ -7,7 +7,7 @@
  * [scripts/build.ts](scripts/build.ts) *writes* those tags; until now nothing
  * read them back, and every way they can break is silent: a misspelt property
  * (`og:titel`), a description that lost its language, or an `og:image` that
- * stayed relative all end the same way — the scraper drops the field, no build
+ * stayed relative all end the same way—the scraper drops the field, no build
  * error anywhere, and the first sign is a bare link in someone's chat window.
  * [scripts/build.test.ts](scripts/build.test.ts) asserts against `previewCard`,
  * which resolves the tags the way a scraper does.
@@ -19,15 +19,15 @@
 
 /** Raw tags found in a page, keyed without their `og:` / `twitter:` prefix. */
 export interface SocialTags {
-  /** `<meta property="og:…">` — e.g. `title`, `image`, `image:width`. */
+  /** `<meta property="og:…">`—e.g., `title`, `image`, `image:width`. */
   og: Record<string, string>;
-  /** `<meta name="twitter:…">` — e.g. `card`, `image`. */
+  /** `<meta name="twitter:…">`—e.g., `card`, `image`. */
   twitter: Record<string, string>;
   /** `<title>` text. */
   title: string;
   /** `<meta name="description">`. */
   description: string;
-  /** `<link rel="canonical">` — relative unless the build ran with SITE_URL. */
+  /** `<link rel="canonical">`—relative unless the build ran with SITE_URL. */
   canonical: string;
 }
 
@@ -83,13 +83,13 @@ export interface PreviewCard {
   url: string | undefined;
   type: string | undefined;
   locale: string | undefined;
-  /** `twitter:card` — `summary_large_image` only counts with an image. */
+  /** `twitter:card`—`summary_large_image` only counts with an image. */
   card: string | undefined;
 }
 
 /**
  * Open Graph first, Twitter Card as the fallback, plain `<title>` /
- * `<meta name="description">` last — the order the scrapers themselves use.
+ * `<meta name="description">` last—the order the scrapers themselves use.
  */
 export function previewCard(tags: SocialTags): PreviewCard {
   const image = tags.og.image ?? tags.twitter.image;

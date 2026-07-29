@@ -83,7 +83,7 @@ test("date_published is RFC 3339, and absent rather than invented", () => {
   const dated = feed.items.filter((item) => item.date_published !== undefined);
 
   // Only the key the fixture map carries is dated; the rest have no date at
-  // all — a CV date range like "2019 – Present" is never turned into one.
+  // all—a CV date range like "2019 – Present" is never turned into one.
   expect(dated).toHaveLength(1);
   expect(dated[0]?.id).toBe(`${SITE}/#experience-kapiaRgi`);
   expect(dated[0]?.date_published).toMatch(

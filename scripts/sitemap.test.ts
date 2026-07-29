@@ -1,5 +1,5 @@
 /*
- * The generator's protocol contract, asserted through `parseSitemap` — the
+ * The generator's protocol contract, asserted through `parseSitemap`—the
  * sitemap only exists to be read by machines we never see, so it is checked by
  * something that reads it back rather than by substring. The build-output side
  * (which URLs, which dates) lives in scripts/build.test.ts, on the dist/ the
@@ -49,7 +49,7 @@ test("escapes a <loc> per the protocol's entity table", async () => {
   expect(inner).not.toMatch(/[<>"']/);
   expect(inner).not.toMatch(/&(?!(amp|lt|gt|quot|#x27);)/);
   // parseSitemap returns text as written, so it is the escaped form that must
-  // round-trip — the URLs this build emits contain nothing escapable at all.
+  // round-trip—the URLs this build emits contain nothing escapable at all.
   expect(await parseSitemap(xml)).toEqual([{ loc: inner }]);
 });
 
@@ -58,7 +58,7 @@ test("points a browser at both stylesheets without disturbing a parser", async (
 
   // Where processing instructions belong: after the declaration, before the
   // root element, and relative so the set moves to any host or base path. XSL
-  // first — a browser that still runs XSLT must take that one, and only a
+  // first—a browser that still runs XSLT must take that one, and only a
   // browser that has dropped it falls through to the CSS.
   expect(xml).toMatch(
     /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<\?xml-stylesheet type="text\/xsl" href="sitemap\.xsl"\?>\n<\?xml-stylesheet type="text\/css" href="sitemap\.css"\?>\n<urlset/,
@@ -88,7 +88,7 @@ test("the stylesheet names every language the site publishes", () => {
   expect(xsl).toContain(`xmlns:s="${SITEMAP_NS}"`);
 
   for (const lang of LANGS) {
-    // The file names spelled out, not derived from `langUrl` a second time —
+    // The file names spelled out, not derived from `langUrl` a second time—
     // this is the assertion that a language page renamed on one side and not
     // the other has to fail against.
     const file = lang === "en" ? "" : `${lang}.html`;

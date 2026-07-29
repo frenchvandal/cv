@@ -1,9 +1,9 @@
 /*
- * JSON Feed 1.1 (https://www.jsonfeed.org/version/1.1/) — one feed per
+ * JSON Feed 1.1 (https://www.jsonfeed.org/version/1.1/)—one feed per
  * language, written next to the pages by scripts/build.ts under SITE_URL.
  *
  * WHAT THE ITEMS ARE. A CV is not a blog, so the first question is what counts
- * as an item. The answer here is the professional record — the entries the CV
+ * as an item. The answer here is the professional record—the entries the CV
  * states as discrete, dated facts: the five roles, the three schools, and the
  * certifications block. Skills, hobbies, the dialogue and the contact section
  * are prose and tag clouds; they are chapters of one document, not items, and
@@ -12,12 +12,12 @@
  * src/translations.ts is in the feed with no second list to update.
  *
  * THE FIELDS, top level:
- *   version        required — the 1.1 URL, verbatim.
- *   title          the page title, `pageTitle(t)` — the same string the <title>
+ *   version        required—the 1.1 URL, verbatim.
+ *   title          the page title, `pageTitle(t)`—the same string the <title>
  *                  carries, so a subscriber sees the name they bookmarked.
  *   home_page_url  the language's page. Optional in the spec, "strongly
  *                  recommended".
- *   feed_url       this file's own absolute URL — also the feed's identifier,
+ *   feed_url       this file's own absolute URL—also the feed's identifier,
  *                  which is why the whole feed is gated on SITE_URL: a
  *                  relative one identifies nothing.
  *   description    t.meta.description, the same sentence the <meta> carries.
@@ -26,17 +26,17 @@
  *                  person debugging the file, not the reader of the CV.
  *   favicon        the site icon, as emitted (hashed) by the bundler. It is an
  *                  SVG of viewBox 48x46 where the spec asks for a square
- *                  raster "not smaller than 64 x 64" — near enough that a
+ *                  raster "not smaller than 64 x 64"—near enough that a
  *                  reader renders it correctly, and it is the only icon this
  *                  project has. `icon` (the 512x512 timeline image) is omitted
  *                  rather than pointed at og-image.png, which is a 1200x630
  *                  social card and would be letterboxed or cropped.
- *   language       HTML_LANG[lang] — the same RFC 5646 tag as <html lang>.
+ *   language       HTML_LANG[lang]—the same RFC 5646 tag as <html lang>.
  *   authors        1.1's array form (1.0's singular `author` is deprecated).
  *                  The name is the localized display name, so the Chinese
  *                  feeds are authored by 李北洛, as those pages are.
  *   items          required.
- *   expired        omitted — the feed is live. `next_url` and `hubs` too:
+ *   expired        omitted—the feed is live. `next_url` and `hubs` too:
  *                  nine items need no pagination, and a static host has no hub
  *                  to push from.
  *
@@ -47,12 +47,12 @@
  *                  rewritten. Unique per feed, stable over time.
  *   url            the section anchor that actually exists on the page
  *                  (`#experience`), not the id's finer fragment.
- *   title          role — employer, or diploma — school.
+ *   title          role—employer, or diploma—school.
  *   content_text   the entry's own remaining fields, one per line. `text`
  *                  rather than `content_html` because these entries are flat
  *                  strings: emitting HTML would mean a second escaping path
  *                  for no gain, and the spec takes either.
- *   summary        the one line worth showing collapsed — the employer's
+ *   summary        the one line worth showing collapsed—the employer's
  *                  sector, or the school's subtitle. Absent where the entry
  *                  has neither.
  *   date_published from git (see `entryPublished`), never from the entry's own
@@ -61,7 +61,7 @@
  *                  says when the *job* started, which is not when the item was
  *                  published. Turning "2019" into 2019-01-01T00:00:00Z would
  *                  invent both a day and a meaning.
- *   date_modified  omitted — git can date an entry's first appearance but not
+ *   date_modified  omitted—git can date an entry's first appearance but not
  *                  a later edit to its wording (the copy lines do not contain
  *                  the key the pickaxe searches for), and a date_modified that
  *                  only ever equals date_published is noise.
@@ -78,7 +78,13 @@ import { $ } from "bun";
 import { HTML_LANG, type Lang, type Translation } from "../src/translations.ts";
 import { pageTitle } from "../src/render.ts";
 
+/** The `version` value 1.1 requires; the spec reads it as the format's identity. */
 export const FEED_VERSION = "https://jsonfeed.org/version/1.1";
+/**
+ * The type the spec registers, and what the `<link rel="alternate">` in
+ * [scripts/build.ts](scripts/build.ts) must advertise: a reader that trusts the
+ * attribute over sniffing will not subscribe to anything else.
+ */
 export const FEED_MIME = "application/feed+json";
 
 /**
@@ -122,7 +128,7 @@ export function feedFile(lang: Lang): string {
 
 /** A CV entry, flattened out of whichever section shape it came from. */
 interface Entry {
-  /** Translation key — language-independent, hence the id and the git needle. */
+  /** Translation key—language-independent, hence the id and the git needle. */
   key: string;
   section: "experience" | "education" | "certifications";
   title: string;
@@ -132,7 +138,7 @@ interface Entry {
 }
 
 /**
- * The published entries, in the order the CV lists them (newest first — object
+ * The published entries, in the order the CV lists them (newest first—object
  * key order in src/translations.ts is the reverse-chronological order the
  * renderer walks). Read from the translation rather than a hand-kept list, so
  * the feed cannot fall behind the page.
@@ -178,7 +184,7 @@ function entries(t: Translation): Entry[] {
  * `git log -S` (the pickaxe) reports the commits that change how many times a
  * string occurs in a file; the first of them is the commit that introduced the
  * entry. The needle is the entry's object-literal key (`kapiaRgi: {`), which is
- * language-independent — one lookup dates the item in all seven feeds — and
+ * language-independent—one lookup dates the item in all seven feeds—and
  * survives the copy being rewritten, since only a rename of the key itself
  * moves the date. That coupling to the source's shape is the cost, and the
  * reason a missing answer degrades to an omitted field rather than a guess: no
@@ -207,7 +213,7 @@ export interface FeedOptions {
   t: Translation;
   /** Absolute URL of this language's page. */
   homePageUrl: string;
-  /** Absolute URL of this feed — the spec's identifier for it. */
+  /** Absolute URL of this feed—the spec's identifier for it. */
   feedUrl: string;
   /** Absolute URL of the site icon, when the bundle emitted one. */
   favicon?: string;
@@ -215,6 +221,14 @@ export interface FeedOptions {
   published: ReadonlyMap<string, string>;
 }
 
+/**
+ * One language's feed. The items are read off the translation object rather
+ * than a list kept here, so a new role or school appears in all seven feeds by
+ * being written once; `date_published` is only set for the entries
+ * {@link entryPublished} could date, and is omitted for the rest rather than
+ * guessed. Throws when a URL is not absolute—a feed is consumed away from the
+ * site, where a relative one resolves against nothing.
+ */
 export function jsonFeed(options: FeedOptions): JsonFeed {
   const { lang, t, homePageUrl, feedUrl, favicon, published } = options;
 
@@ -225,7 +239,7 @@ export function jsonFeed(options: FeedOptions): JsonFeed {
   const items = entries(t).map(({ key, section, title, lines, summary }) => {
     const date = published.get(key);
     // Certifications are one item for the whole section, so its key *is* the
-    // section — no `#certifications-certifications`.
+    // section—no `#certifications-certifications`.
     const fragment = key === section ? section : `${section}-${key}`;
     return {
       id: `${homePageUrl}#${fragment}`,
@@ -262,7 +276,7 @@ export function jsonFeed(options: FeedOptions): JsonFeed {
   };
 }
 
-/** Two-space JSON, newline-terminated — a feed is often read by hand. */
+/** Two-space JSON, newline-terminated—a feed is often read by hand. */
 export function feedJson(feed: JsonFeed): string {
   return `${JSON.stringify(feed, null, 2)}\n`;
 }

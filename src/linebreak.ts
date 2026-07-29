@@ -36,7 +36,7 @@ const widthCache = new Map<string, number>();
 /**
  * Widths from pretext, for text tracked by `letterSpacing` px. The tracking is
  * a separate argument because CSS `letter-spacing` is not part of the `font`
- * shorthand pretext parses — measuring a tracked paragraph without it would
+ * shorthand pretext parses—measuring a tracked paragraph without it would
  * break its lines at the wrong column. It is keyed into the width cache for
  * the same reason.
  */
@@ -76,7 +76,7 @@ const hyphenators = new Map<Lang, Promise<Hyphenate | null>>();
 /**
  * The pattern module for a language, or null where hyphenation doesn't apply.
  * Every specifier is a literal so the bundler can see them and split each
- * language's patterns into its own chunk — build them from a variable and
+ * language's patterns into its own chunk—build them from a variable and
  * `splitting: true` has nothing to split. The switch is exhaustive over `Lang`,
  * so adding a language is a compile error here until it is answered for.
  */
@@ -124,8 +124,8 @@ function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
 /**
  * Split a word at the break opportunities it already carries: after an existing
  * hyphen (`customer-facing`, `cross-company`, `full-time`). The Liang patterns
- * never offer these — `hyphen` turns `customer-facing` into `cus-tomer-fac-ing`
- * and leaves the hard hyphen itself unbreakable — yet they are the cheapest
+ * never offer these—`hyphen` turns `customer-facing` into `cus-tomer-fac-ing`
+ * and leaves the hard hyphen itself unbreakable—yet they are the cheapest
  * breaks available, since the character is already printed. The hyphen stays on
  * the left fragment, so nothing extra is drawn.
  *
@@ -190,7 +190,7 @@ function buildItems(
       );
     });
     if (wordIndex < words.length - 1) {
-      // shrink: 0 — CSS `text-align: justify` can only stretch spaces, never
+      // shrink: 0—CSS `text-align: justify` can only stretch spaces, never
       // shrink them, so we forbid shrinking here too. Every chosen line is then
       // ≤ the target width and the browser fills it by stretching, never wraps.
       items.push({
@@ -393,8 +393,8 @@ function toLines(items: BreakItem[], breaks: number[]): string[] {
 
 /**
  * Break `text` into optimal justified lines for the given font and column width.
- * Resolves to null when the language isn't hyphenated here (e.g. Chinese) or no
- * feasible layout is found — the caller then keeps the plain paragraph.
+ * Resolves to null when the language isn't hyphenated here (e.g., Chinese) or no
+ * feasible layout is found—the caller then keeps the plain paragraph.
  * `measure` defaults to pretext (canvas) with no tracking; a caller whose
  * paragraph carries `letter-spacing` passes `pretextMeasure(px)` instead, and
  * tests inject a synthetic one.

@@ -1,8 +1,8 @@
-# Philippe Ribeiro — CV
+# Philippe Ribeiro—CV
 
-A seven-language portfolio — EN / FR / PT / ES / 简体 / 繁體, plus a Hong Kong
+A seven-language portfolio—EN / FR / PT / ES / 简体 / 繁體, plus a Hong Kong
 reading of the Traditional page that is served by browser language rather than
-offered as a seventh button — pre-rendered to static HTML and progressively
+offered as a seventh button—pre-rendered to static HTML and progressively
 enhanced with pretext-driven typography. No framework.
 
 The regional variants are deliberate: Portuguese is European and follows the
@@ -11,43 +11,42 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
 
 ## Stack
 
-- **[Bun](https://bun.com)** — package manager, dev server and bundler (no
+- **[Bun](https://bun.com)**—package manager, dev server and bundler (no
   Vite/Webpack).
 - **TypeScript** (vanilla, no UI framework). The UI is plain string templates in
   [src/render.ts](src/render.ts), rendered into `#app`.
-- **[@chenglou/pretext](https://github.com/chenglou/pretext)** — text
+- **[@chenglou/pretext](https://github.com/chenglou/pretext)**—text
   measurement/layout (canvas, no DOM reflow), driving the measurement features
   below.
-- **[hyphen](https://www.npmjs.com/package/hyphen)** — Liang syllable
-  hyphenation patterns.
+- **[hyphen](https://www.npmjs.com/package/hyphen)**—Liang syllable hyphenation
+  patterns.
 
 ## Features
 
-- **SSG pre-render** — [scripts/build.ts](scripts/build.ts) emits `index.html`,
+- **SSG pre-render**—[scripts/build.ts](scripts/build.ts) emits `index.html`,
   `en.html`, `fr.html`, `pt.html`, `es.html`, `zh.html`, `zh-hant.html` and
   `zh-hk.html` with the content already in the HTML (SEO, link previews, works
-  with JS off). The client hydrates and swaps language instantly — no reload —
+  with JS off). The client hydrates and swaps language instantly—no reload—
   syncing the URL via `history`.
 - **A Hong Kong / Macau reading** of the Traditional page (`zh-hk.html`), in
   local vocabulary (軟件, 項目, 網絡…) and Noto Sans HK's character forms. It is
   a five-term projection of the Taiwan page, not a seventh translation to
   maintain, and it has no button in the switcher: browsers asking for `zh-HK` or
   `zh-MO` are sent there, and `hreflang="zh-HK"` points search engines at it.
-- **Measurement-driven layout** ([src/measure.ts](src/measure.ts)) — pretext
-  fits the hero name to the viewport width, sizes the section titles to their
-  column (uniform, no ellipsis truncation), and tightens the nav shortcuts into
-  the fixed width the bar leaves them, across all seven languages. Dev-only
-  console audits flag any title or nav label that would overflow.
-- **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts)) — the
-  About paragraphs are re-typeset with TeX-style optimal line breaking and
-  syllable hyphenation, over pretext-measured boxes/glue (Latin languages;
-  Chinese wraps natively). The hyphenation patterns load per language, on
-  demand.
-- **Self-hosted fonts** — Noto Sans + Noto Sans SC/TC/HK, subset per language to
+- **Measurement-driven layout** ([src/measure.ts](src/measure.ts))—pretext fits
+  the hero name to the viewport width, sizes the section titles to their column
+  (uniform, no ellipsis truncation), and tightens the nav shortcuts into the
+  fixed width the bar leaves them, across all seven languages. Dev-only console
+  audits flag any title or nav label that would overflow.
+- **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts))—the About
+  paragraphs are re-typeset with TeX-style optimal line breaking and syllable
+  hyphenation, over pretext-measured boxes/glue (Latin languages; Chinese wraps
+  natively). The hyphenation patterns load per language, on demand.
+- **Self-hosted fonts**—Noto Sans + Noto Sans SC/TC/HK, subset per language to
   the glyphs actually used and imported so Bun emits them as external hashed
   files; `unicode-range` and per-page font stacks keep each Chinese subset lazy.
   No web-font CDN, no runtime network dependency.
-- **Language negotiation** — a visitor landing on the site root is sent to the
+- **Language negotiation**—a visitor landing on the site root is sent to the
   page in their browser's language (English when none matches); a language they
   pick by hand is remembered and outranks the browser from then on. URLs that
   name a language (`fr.html`) are never redirected, so shared links keep their
@@ -59,7 +58,7 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
 Bun ≥ 1.3.14 is the only requirement to build, test and serve the site.
 [Deno](https://deno.com) is a second, **optional** prerequisite: it is the
 project's formatter and linter (`deno fmt` then `deno lint`, run from the root
-at the end of a change — there is no config, the defaults are the contract), and
+at the end of a change—there is no config, the defaults are the contract), and
 `bun run fonts:update` shells out to `deno fmt` to normalize the file it
 generates. That call is `.nothrow()`, so without Deno the regeneration still
 succeeds and merely shows up as formatting churn in the diff.
@@ -76,7 +75,7 @@ bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are a
 ## Deploy
 
 `bun run build` produces a self-contained `dist/` with **relative asset paths**,
-so it uploads to any static host or cloud-storage bucket — at any path — with no
+so it uploads to any static host or cloud-storage bucket—at any path—with no
 configuration (and works on GitHub Pages too). Set
 `SITE_URL=https://example.com` before building to emit absolute canonical /
 `hreflang` URLs, a sitemap, and the `og:image` / Twitter-card tags for social
@@ -92,8 +91,8 @@ bun scripts/social-meta.ts dist/index.html dist/fr.html
 `dist/sitemap.xml` follows the
 [sitemaps.org 0.9 protocol](https://www.sitemaps.org/protocol.html): one `<url>`
 per language, at the URL that page declares canonical, each with a `<lastmod>`
-read from the last commit that touched the rendered content — not the build
-date. `<changefreq>` and `<priority>` are deliberately absent (see the header of
+read from the last commit that touched the rendered content—not the build date.
+`<changefreq>` and `<priority>` are deliberately absent (see the header of
 [scripts/sitemap.ts](scripts/sitemap.ts)). Read it back the way a crawler would:
 
 ```bash
@@ -109,9 +108,9 @@ crawlers and to `parseSitemap`:
   language, with the date. It is XSLT 1.0, the only version browsers implement,
   and Chrome removes XSLT altogether in 158 (17 November 2026), with Gecko and
   WebKit agreed to the same.
-- `dist/sitemap.css` styles the XML tree as it stands. It shows less — CSS
-  cannot turn `<loc>` into a link, and no selector reads element text, so there
-  is no language column — but it is not deprecated.
+- `dist/sitemap.css` styles the XML tree as it stands. It shows less—CSS cannot
+  turn `<loc>` into a link, and no selector reads element text, so there is no
+  language column—but it is not deprecated.
 
 A browser takes the first one it can apply, so the file degrades from the table
 to the styled list on its own the day XSLT goes, with nothing to do. Verify
@@ -123,7 +122,7 @@ open -a "Google Chrome" --args --disable-features=XSLT
 
 Each page also links a [JSON Feed 1.1](https://www.jsonfeed.org/version/1.1/)
 (`dist/feed.json` for English, `dist/feed.<lang>.json` otherwise). Its items are
-the CV's professional record — the roles, the schools, the certifications — each
+the CV's professional record—the roles, the schools, the certifications—each
 with a `date_published` taken from the commit that first published that entry.
 Which fields are emitted, and why the optional ones it leaves out are left out,
 is documented at the top of [scripts/feed.ts](scripts/feed.ts).

@@ -3,7 +3,7 @@
  * named by [scripts/sitemap.ts](scripts/sitemap.ts) in `<?xml-stylesheet?>`
  * instructions, because one of them is dated:
  *
- *   sitemap.xsl  XSLT 1.0 (the only version browsers implement) — transforms
+ *   sitemap.xsl  XSLT 1.0 (the only version browsers implement)—transforms
  *                the XML into a table with the URLs as links, the language of
  *                each page, and the date. What a browser renders today.
  *   sitemap.css  CSS applied to the XML tree as it stands. Much less: CSS
@@ -13,7 +13,7 @@
  *
  * Chrome removes XSLT in 158 (17 November 2026), with WebKit and Gecko agreed
  * to the same removal. Carrying both is not hedging: run Chrome with
- * `--disable-features=XSLT` — the state it ships in from 158 — and it ignores
+ * `--disable-features=XSLT`—the state it ships in from 158—and it ignores
  * the XSL instruction and applies the CSS one, so the file degrades from the
  * table to the list on its own, on the day, with nothing to do. When that day
  * comes, delete the XSLT half; the CSS half is not deprecated and stays.
@@ -36,7 +36,7 @@ import { HTML_LANG, LANG_NAME, LANGS, PROFILE } from "../src/translations.ts";
 import { SITEMAP_NS } from "./sitemap.ts";
 
 /**
- * One `<xsl:when>` per language, matching the last segment of a `<loc>` — `""`
+ * One `<xsl:when>` per language, matching the last segment of a `<loc>`—`""`
  * for English, which is the site root. Generated from `langUrl`, the same
  * function the pages and the sitemap take their URLs from, so a language cannot
  * be added to the site and be missing from this column.
@@ -51,7 +51,7 @@ const languageRows = LANGS.map((lang) => {
 /**
  * The stylesheet, as a standalone XML document. Values are interpolated from
  * the same constants the site is built from; none of them contains a character
- * XML would read as markup, but they go through `Bun.escapeHTML` anyway — the
+ * XML would read as markup, but they go through `Bun.escapeHTML` anyway—the
  * next endonym or name added might.
  */
 export function sitemapXsl(): string {
@@ -189,7 +189,7 @@ export function sitemapXsl(): string {
  * unprefixed `loc` selector matches nothing at all and the page renders as the
  * browser's bare XML tree.
  *
- * `<loc>` is deliberately not tinted like a link — CSS cannot make it one, and
+ * `<loc>` is deliberately not tinted like a link—CSS cannot make it one, and
  * blue text that does nothing when clicked is worse than plain text.
  */
 export function sitemapCss(): string {

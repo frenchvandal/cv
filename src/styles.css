@@ -1,4 +1,4 @@
-/* Portfolio styles — sober, in the spirit of the Apple Human Interface
+/* Portfolio styles—sober, in the spirit of the Apple Human Interface
    Guidelines (developer.apple.com/design/human-interface-guidelines).
 
    The three HIG principles drive every decision here:
@@ -14,7 +14,7 @@
 
    Practically that means: one neutral gray ramp, one accent (the system blue)
    used only for actions and links, continuous-looking rounded corners, and the
-   system-appearance-aware light/dark pair — light is the default, `data-theme`
+   system-appearance-aware light/dark pair—light is the default, `data-theme`
    on <html> is set before first paint from localStorage or the OS preference.
 
    Fonts: self-hosted Noto Sans + Noto Sans SC/TC (subset), declared in
@@ -62,8 +62,8 @@
   --space-2xl: 6.5rem;
 
   /* The one content width on the page, sized from the text rather than from the
-     window: 46rem of prose — the reading measure, ~85 characters at the body
-     size — plus `.wrap`'s padding on each side. Nav, hero, prose, cards, the
+     window: 46rem of prose—the reading measure, ~85 characters at the body
+     size—plus `.wrap`'s padding on each side. Nav, hero, prose, cards, the
      timeline, the stats strip and the footer all share it, so every block lines
      up on the same two edges and there is no second width to keep in sync.
      Widening this past the measure is what pulls the page apart: the prose has
@@ -72,7 +72,7 @@
   --wrap: 48.5rem;
   --nav-h: 3rem;
 
-  /* The system's own deceleration curve — motion that settles rather than stops. */
+  /* The system's own deceleration curve—motion that settles rather than stops. */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -93,7 +93,7 @@
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
-/* Dark appearance: not an inversion — a re-balance. Pure black ground so the
+/* Dark appearance: not an inversion—a re-balance. Pure black ground so the
    content surfaces read as raised, and a brighter blue, since the light-mode
    blue turns muddy against black. Scoped to screens: printers strip the black
    ground but keep the near-white text, so paper must always get the light ramp
@@ -146,7 +146,7 @@ html {
 
 body {
   font-family: var(--font);
-  font-size: 1.0625rem; /* 17px — the HIG body size */
+  font-size: 1.0625rem; /* 17px—the HIG body size */
   line-height: 1.55;
   background: var(--bg);
   color: var(--fg);
@@ -183,7 +183,7 @@ a:hover {
   min-height: 100vh;
   min-height: 100dvh;
   /* main.ts swaps the DOM after PAGE_SWAP_MS (220ms), just before this 250ms
-     fade completes — keep the two in sync. */
+     fade completes—keep the two in sync. */
   transition: opacity 0.25s var(--ease);
 }
 
@@ -226,7 +226,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Navigation bar — the page's one translucent material
+ * Navigation bar—the page's one translucent material
  * ------------------------------------------------------------------ */
 
 .nav {
@@ -268,7 +268,7 @@ a:hover {
 }
 
 /* Section links: the deck's progress dots, replaced by plain labelled anchors.
-   Hidden on narrow viewports — the document scrolls, so they are a shortcut,
+   Hidden on narrow viewports—the document scrolls, so they are a shortcut,
    never the only way through. */
 .nav__links {
   display: none;
@@ -278,7 +278,7 @@ a:hover {
   /* The floor under `fitNavLinks` (src/measure.ts), which is an enhancement and
      so may not run. `min-width: 0` lets this box shrink past its content, and
      the links are `nowrap`: without clipping they escape it and print over the
-     language switcher — which is exactly what pt/es/fr did, by 34 to 57px.
+     language switcher—which is exactly what pt/es/fr did, by 34 to 57px.
      Clipped is not pretty, but it is never illegible, and once the fitter has
      measured there is nothing left to clip. */
   overflow: hidden;
@@ -348,8 +348,8 @@ a:hover {
 }
 
 /* Six language links (193px) plus the theme toggle put the bar at a measured
-   382px minimum, so every viewport under 384px — iPhone SE at 375, plenty of
-   Androids at 360 — scrolled the whole page sideways once PT and ES joined.
+   382px minimum, so every viewport under 384px—iPhone SE at 375, plenty of
+   Androids at 360—scrolled the whole page sideways once PT and ES joined.
    The brand is 112px of that, and it is a scroll-to-top shortcut whose text
    the hero repeats two lines below: the one element here that can go, the same
    call `.nav__links` already makes at 56rem. */
@@ -360,7 +360,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Reveal on scroll — a confirmation, not an entrance
+ * Reveal on scroll—a confirmation, not an entrance
  * ------------------------------------------------------------------ */
 
 @keyframes fade-up {
@@ -464,7 +464,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Buttons — filled pill for the primary action, plain text for the rest
+ * Buttons—filled pill for the primary action, plain text for the rest
  * ------------------------------------------------------------------ */
 
 .button {
@@ -490,7 +490,7 @@ a:hover {
   text-decoration: none;
 }
 
-/* The secondary action is a link with a chevron, never a second filled pill —
+/* The secondary action is a link with a chevron, never a second filled pill—
    two equal-weight buttons would leave the reader with no primary path. */
 .button--plain {
   padding: 0.75rem 0;
@@ -564,7 +564,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Cards — a raised surface, no border and no shadow
+ * Cards—a raised surface, no border and no shadow
  * ------------------------------------------------------------------ */
 
 .card {
@@ -575,7 +575,7 @@ a:hover {
 
 /* The date stays pinned to the top-right on one line; the title wraps inside
    its own track instead. Wrapping the row would drop the date onto a line of
-   its own — above the role — and the cards would each align differently. */
+   its own—above the role—and the cards would each align differently. */
 .card__header {
   display: flex;
   justify-content: space-between;
@@ -620,7 +620,7 @@ a:hover {
   font-size: 0.9375rem;
 }
 
-/* Small round bullet, drawn rather than a glyph — no font-subset dependency. */
+/* Small round bullet, drawn rather than a glyph—no font-subset dependency. */
 .card__list li::before {
   content: '';
   position: absolute;
@@ -643,13 +643,13 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Timeline — Ant Design's Timeline, re-read through the HIG
+ * Timeline—Ant Design's Timeline, re-read through the HIG
  *
  * Ant's structure survives: a vertical rail, one node per event, the event's
- * content beside it, and — on wide viewports — the dates in a column of their
+ * content beside it, and—on wide viewports—the dates in a column of their
  * own (Ant's `label` mode). Everything decorative is the HIG's: the rail is a
  * hairline separator, the node a small ring in the neutral ramp, and the one
- * filled accent node is spent on the single fact it can carry — which role is
+ * filled accent node is spent on the single fact it can carry—which role is
  * still running. Deference: the content sits directly on the page, unboxed, so
  * the rail is the only structure the reader has to parse.
  * ------------------------------------------------------------------ */
@@ -662,12 +662,12 @@ a:hover {
      both centre on the node without a per-element magic offset. */
   --tl-lead: 1.55rem;
   /* The node's centre, from the top of the event. Narrow viewports open with
-     the date, whose line box is the body's — half of it puts the node on the
+     the date, whose line box is the body's—half of it puts the node on the
      date's optical centre. */
   --tl-node-y: 0.63rem;
   --tl-node: 0.5625rem;
   --tl-rail-col: 1.5rem;
-  /* Wide enough to hold the longest date on one line in every language — the
+  /* Wide enough to hold the longest date on one line in every language—the
      dual ranges ("2011 – 2014 · 2019 – aujourd'hui", the widest at 196px).
      Narrower and they wrap after the separator, leaving it dangling. */
   --tl-date-col: 13rem;
@@ -705,7 +705,7 @@ a:hover {
 }
 
 /* The line has to run the full height of the event *including* the gap below
-   it, or the rail breaks between events — a grid track stops at the content
+   it, or the rail breaks between events—a grid track stops at the content
    edge, and the spacing is the item's padding. Hence the negative `bottom`:
    it carries the line across the padding to meet the next event's. The first
    event's line starts at its node and the last one's ends there, so the rail
@@ -745,7 +745,7 @@ a:hover {
 }
 
 /* The event still running: filled and haloed with the accent, which is the
-   same job the accent does everywhere else on the page — state, never decor. */
+   same job the accent does everywhere else on the page—state, never decor. */
 .timeline__item--current .timeline__node {
   background: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
@@ -784,7 +784,7 @@ a:hover {
 }
 
 /*
- * Levels 2 and 3 of an experience entry — city then sector. They sit between
+ * Levels 2 and 3 of an experience entry—city then sector. They sit between
  * the employer and the role, so they take the tertiary ramp to keep the two
  * ends of the block (who, and what the job was) the ones that read first.
  */
@@ -829,7 +829,7 @@ a:hover {
   font-size: 0.9375rem;
 }
 
-/* Small round bullet, drawn rather than a glyph — no font-subset dependency. */
+/* Small round bullet, drawn rather than a glyph—no font-subset dependency. */
 .timeline__list li::before {
   content: '';
   position: absolute;
@@ -846,7 +846,7 @@ a:hover {
 }
 
 /* Wide enough for the dates to leave the content column: Ant's `label` mode.
-   Every event then opens on one line — date, node, heading — and the reader
+   Every event then opens on one line—date, node, heading—and the reader
    scans the years down one edge. */
 @media (min-width: 52rem) {
   .timeline__item {
@@ -875,7 +875,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Stats — one surface, hairline-divided, like a spec strip
+ * Stats—one surface, hairline-divided, like a spec strip
  * ------------------------------------------------------------------ */
 
 .stats {
@@ -934,7 +934,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Dialogue — a message thread, read the way the platform draws one
+ * Dialogue—a message thread, read the way the platform draws one
  * ------------------------------------------------------------------ */
 
 .chat__disclaimer {
@@ -945,7 +945,7 @@ a:hover {
 
 /* The thread is drawn on the device it belongs to: a phone in the middle of the
    column, its screen following the page appearance the way a real one follows
-   the system's. Everything inside is sized in px, not rem — this is a handset
+   the system's. Everything inside is sized in px, not rem—this is a handset
    at 1:1, so its chrome must not scale with the page's reading size.
 
    Only the frame is new; the bubbles keep answering to src/chat.ts, which sets
@@ -968,7 +968,7 @@ a:hover {
 }
 
 /* The chassis. A hairline inside the bezel is what keeps a black phone from
-   dissolving into a black page in dark mode — the one place this file draws a
+   dissolving into a black page in dark mode—the one place this file draws a
    border rather than letting a surface read on its own. */
 .phone__body {
   width: min(calc(var(--phone-w) + 20px), 100%);
@@ -980,7 +980,7 @@ a:hover {
 
 /* 19.5:9, the aspect every handset since the X has shipped (390 x 844pt here),
    so the frame keeps a phone's silhouette at any width the slider picks. The
-   thread scrolls inside it, the way it does on the device — which is the whole
+   thread scrolls inside it, the way it does on the device—which is the whole
    reason the height can be fixed rather than dictated by twelve messages.
    `aspect-ratio` rather than a height computed from `--phone-w`: on a narrow
    window the chassis is capped at 100% and is then *narrower* than the width
@@ -1102,8 +1102,8 @@ a:hover {
 }
 
 /* `min-height: 0` is what lets a flex child scroll instead of pushing the
-   screen taller. The scrollbar is hidden because the device has none — the
-   half-cut bubble at the fold is the affordance — and `overscroll-behavior`
+   screen taller. The scrollbar is hidden because the device has none—the
+   half-cut bubble at the fold is the affordance—and `overscroll-behavior`
    stays at its default so reaching the end of the thread hands the scroll back
    to the page rather than trapping a thumb inside the phone. */
 .chat {
@@ -1217,7 +1217,7 @@ a:hover {
 }
 
 /* The screen follows the page appearance, the way a handset follows the
-   system's. Scoped to `@media screen` like the rest of the dark ramp — paper
+   system's. Scoped to `@media screen` like the rest of the dark ramp—paper
    never gets it. */
 @media screen {
   :root[data-theme='dark'] .phone {
@@ -1289,7 +1289,7 @@ a:hover {
   }
 
   /* Below the fitter's threshold (TITLE_FIT.desktopMinRem) titles wrap
-     normally — src/measure.ts clears the inline size to match. */
+     normally—src/measure.ts clears the inline size to match. */
   .section__title {
     white-space: normal;
     overflow: visible;
@@ -1316,14 +1316,14 @@ a:hover {
 
 @media print {
   /* The reveal system is scroll-driven and print has no scroll: whatever the
-     reader had reached on screen, every section must print — without this,
+     reader had reached on screen, every section must print—without this,
      anything below the fold sits at opacity 0 and comes out as blank pages. */
   .js .animate {
     opacity: 1 !important;
     animation: none !important;
   }
 
-  /* Interactive chrome with no meaning on paper — including the phone the
+  /* Interactive chrome with no meaning on paper—including the phone the
      dialogue is drawn on, whose frame prints as an empty outline (backgrounds
      are dropped) and whose width slider cannot be dragged. The thread itself
      still prints. The slider is listed with its `.js` ancestor and all, since
@@ -1341,7 +1341,7 @@ a:hover {
     display: none;
   }
 
-  /* Without the chrome there is no phone left to draw, so the bezel goes too —
+  /* Without the chrome there is no phone left to draw, so the bezel goes too—
      and the screen drops its fixed height, or the thread would print as one
      cropped screenful with the rest scrolled out of reach. */
   .phone__body {

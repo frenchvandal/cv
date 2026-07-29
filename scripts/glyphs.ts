@@ -2,7 +2,7 @@
  * Glyph extraction shared by scripts/update-fonts.ts (which requests exactly
  * these characters from Google Fonts) and scripts/fonts-coverage.test.ts
  * (which asserts the committed unicode-ranges still cover them). One
- * implementation, so the generator and its guard can't drift — the same rule
+ * implementation, so the generator and its guard can't drift—the same rule
  * as escapeHtml in [src/dom.ts](../src/dom.ts).
  */
 
@@ -51,7 +51,7 @@ const switcher = SWITCHER_LANGS.map((lang) =>
 
 /**
  * The exact character set each face must carry. Latin glyphs are scanned from
- * every source file that contains user-visible literals — translations.ts AND
+ * every source file that contains user-visible literals—translations.ts AND
  * render.ts, since the markup carries text of its own (the `@handle` in
  * contact) that never passes through a translation object. The two Chinese
  * sets are extracted per language (from the imported translation objects, not
@@ -60,9 +60,9 @@ const switcher = SWITCHER_LANGS.map((lang) =>
  *
  * The theme-toggle glyphs ☾ ☀ (U+263E, U+2600) are the one deliberate
  * exclusion, and `isLatin` stopping at U+024F is what enforces it: Noto Sans
- * does not carry them. Measured against the Google Fonts API on 2026-07-26 —
+ * does not carry them. Measured against the Google Fonts API on 2026-07-26—
  * a `&text=☾☀` request returns a 1664-byte woff2, byte-for-byte the size of
- * the same request for 🍕, i.e. an empty font. Subsetting them in would ship
+ * the same request for 🍕, i.e., an empty font. Subsetting them in would ship
  * a file without the glyphs AND make `unicode-range` claim codepoints the
  * face lacks, turning a known gap into a false guarantee. They render in the
  * system symbol font; replacing them with inline SVG (as `LOGOS` already
@@ -83,7 +83,7 @@ export async function glyphSets(): Promise<
     tc: unique(JSON.stringify(translations["zh-hant"]) + switcher, isCjk),
     // Hong Kong shares Taiwan's script but not all its glyph FORMS (骨, 過, 溫
     // are drawn to a different standard), so it gets its own subset rather than
-    // reusing the TC one — and its own vocabulary means its own character set.
+    // reusing the TC one—and its own vocabulary means its own character set.
     hk: unique(JSON.stringify(translations["zh-hk"]) + switcher, isCjk),
   };
 }

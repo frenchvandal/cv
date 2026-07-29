@@ -4,7 +4,7 @@
  * contract inside one of them.
  *
  * Deliberately small: tuning constants stay next to the code they tune, and
- * purely visual values live in [src/styles.css](src/styles.css) — JS reads
+ * purely visual values live in [src/styles.css](src/styles.css)—JS reads
  * those from the computed styles (custom properties, the `.msg` max-width)
  * instead of keeping a copy here.
  */
@@ -63,14 +63,14 @@ export const NAV_FONT = { weight: 400, letterSpacingEm: 0 } as const;
 /**
  * Nav-shortcut fitting contract. Unlike the hero and the section titles, this
  * one has no responsive slack to play with: the bar shares `--wrap` with the
- * content, so `.nav__links` gets the same ~354px at every viewport — the window
+ * content, so `.nav__links` gets the same ~354px at every viewport—the window
  * can be 1728px wide and the budget does not move. Five labels at `maxPx` fit
  * that in English and Chinese with room to spare, and overrun it by 34–57px in
  * Portuguese, French and Spanish.
  *
  * The fitter therefore spends the gap first, down to `minGapPx`: whitespace
  * between shortcuts is the cheapest width on the bar. Only then does it touch
- * the type, and `minPx` stops one step below `maxPx` — 0.8125rem is already the
+ * the type, and `minPx` stops one step below `maxPx`—0.8125rem is already the
  * smallest size in the ramp, so anything under 12px is a new, lonelier step.
  *
  * `maxPx` mirrors `.nav__link`'s font-size and `maxGapPx` the `--space-md` gap;
@@ -89,7 +89,7 @@ export const NAV_FIT = {
  * The Dialogue phone's screen width, in px, and the range its control offers.
  *
  * `initial` is the pretext demo's own 340px, and the bounds stay inside what a
- * real handset measures — an iPhone SE is 320pt across, a Pro Max 430 — so the
+ * real handset measures—an iPhone SE is 320pt across, a Pro Max 430—so the
  * frame reads as a phone at either end of the slider rather than as a box that
  * happens to hold bubbles. `.phone` in [src/styles.css](src/styles.css) carries
  * `initial` as the CSS default, for every visitor whose JS never runs.
@@ -102,7 +102,7 @@ export const CHAT_WIDTH = {
 
 /**
  * Language-switch timing: [src/main.ts](src/main.ts) swaps the DOM this long
- * after arming the fade — just before the 250ms `#app` opacity transition in
+ * after arming the fade—just before the 250ms `#app` opacity transition in
  * [src/styles.css](src/styles.css) completes, so the fade-in already runs on
  * the new content. Keep the two in sync.
  */

@@ -1,13 +1,13 @@
 /*
  * Pure, side-effect-free rendering. Every function takes data and returns an
- * HTML string — no DOM access — so the exact same code runs in two places:
+ * HTML string—no DOM access—so the exact same code runs in two places:
  *   - the client ([src/main.ts](src/main.ts)) to (re)render on language change,
  *   - the static build ([scripts/build.ts](scripts/build.ts)) to pre-render each
  *     language page at build time (SEO, link previews, no-JS content).
  *
  * The page is an ordinary scrolling document: a sticky translucent nav bar, a
  * hero, then one `<section class="section">` per chapter, each holding a `.wrap`
- * content column. Nothing here depends on JS — the scripts only reveal sections
+ * content column. Nothing here depends on JS—the scripts only reveal sections
  * on scroll and refine typography. Every section is reachable by a stable hash
  * (`#experience`, …) carried by its heading, so deep links work everywhere.
  */
@@ -43,7 +43,7 @@ export type Theme = "light" | "dark";
 /**
  * Relative URL to a language's page. All six pages are siblings at the site
  * root (`index.html`, then `<lang>.html` for the rest), so the link is the
- * same from any page and works under any deploy path — no base tag, no absolute
+ * same from any page and works under any deploy path—no base tag, no absolute
  * origin.
  */
 export function langUrl(lang: Lang): string {
@@ -51,7 +51,7 @@ export function langUrl(lang: Lang): string {
 }
 
 /**
- * The language a URL path names, or null when it names none — the English root
+ * The language a URL path names, or null when it names none—the English root
  * (`/`, `/index.html`) and anything unrecognized. The exact inverse of
  * `langUrl`, kept beside it so the two can't drift apart, and pure so it is
  * testable without a document.
@@ -61,7 +61,7 @@ export function langUrl(lang: Lang): string {
  * whether the default applies (on first load `<html data-lang>` answers first).
  */
 export function langFromPath(path: string): Lang | null {
-  // The last path segment, minus any trailing slash and .html — compared whole,
+  // The last path segment, minus any trailing slash and .html—compared whole,
   // so `zh-hant.html` cannot be claimed by the shorter `zh` and `/french.html`
   // is not French. (This used to be a per-language regex ordered longest-slug-
   // first; an exact segment match removes the ordering subtlety entirely.)
@@ -80,7 +80,7 @@ export function langFromPath(path: string): Lang | null {
  * own. English is the fallback both miss.
  *
  * Startup only. `setLang` overwrites `data-lang` on every switch, so from the
- * first switch onward this would report the language already on screen — which
+ * first switch onward this would report the language already on screen—which
  * is exactly why back/forward reads `langFromPath` directly instead (see
  * `onPopState` in [src/main.ts](src/main.ts)). Split out of main.ts and taking
  * its two inputs as plain strings so the precedence is testable without a
@@ -100,7 +100,7 @@ export const STORAGE_LANG_KEY = "cv-lang";
 /**
  * The `<head>` script that sends a visitor arriving at the site ROOT to the
  * page in their language. Injected by [scripts/build.ts](scripts/build.ts) into
- * `index.html` only — a URL that names a language (`fr.html`) must always be
+ * `index.html` only—a URL that names a language (`fr.html`) must always be
  * honoured, or shared links would silently change language on the recipient.
  *
  * It runs inline, before the body renders, and uses `location.replace` so the
@@ -108,7 +108,7 @@ export const STORAGE_LANG_KEY = "cv-lang";
  * would land on the root, be redirected again, and the button would look broken.
  *
  * A hand-picked language (localStorage) outranks the browser's list, so the
- * switcher is always the last word. English needs no redirect — it is what the
+ * switcher is always the last word. English needs no redirect—it is what the
  * root already serves.
  *
  * Tags match on their primary subtag, so `fr-CA` reads French and `es-MX` reads
@@ -118,7 +118,7 @@ export const STORAGE_LANG_KEY = "cv-lang";
  * Chinese is the exception, because there the primary subtag decides neither
  * script nor vocabulary, and the subtags can arrive in any combination
  * (`zh-HK`, `zh-Hant-HK`, `zh-Hans-HK`…). Hence, in order:
- *   - an explicit `Hans` wins outright — `zh-Hans-HK` is a Simplified reader who
+ *   - an explicit `Hans` wins outright—`zh-Hans-HK` is a Simplified reader who
  *     merely lives in Hong Kong, and must not be handed Traditional;
  *   - `HK`/`MO` then take the Hong Kong page, checked before the broader
  *     Traditional test, which would otherwise swallow them;
@@ -177,13 +177,13 @@ export function languageNegotiationScript(): string {
 </script>`;
 }
 
-/** Document title for a language's page — shared by the SSG build and the client. */
+/** Document title for a language's page—shared by the SSG build and the client. */
 export function pageTitle(t: Translation): string {
   return `${t.name.display} — ${t.hero.title}`;
 }
 
 /**
- * Section shortcuts in the nav bar — a useful subset, not every heading.
+ * Section shortcuts in the nav bar—a useful subset, not every heading.
  * Exported for the dev-only nav audit in [src/main.ts](src/main.ts), which has
  * to measure the same five labels the bar renders.
  */
@@ -202,7 +202,7 @@ function nav(t: Translation, lang: Lang, theme: Theme): string {
     (id) => `<a class="nav__link" href="#${id}">${escapeHtml(t.nav[id])}</a>`,
   ).join("");
 
-  // zh-hk has no button of its own — it is Traditional Chinese, so the 繁 entry
+  // zh-hk has no button of its own—it is Traditional Chinese, so the 繁 entry
   // is the one that represents the page a Hong Kong reader is on.
   const current = lang === "zh-hk" ? "zh-hant" : lang;
 
@@ -331,9 +331,9 @@ function about(t: Translation): string {
  * of it. Careers and studies are both sequences, so they share the shape.
  */
 type TimelineEntry = {
-  /** Free text, not a machine date — the ranges read "2011 – 2014 · 2019 – Present". */
+  /** Free text, not a machine date—the ranges read "2011 – 2014 · 2019 – Present". */
   date: string;
-  /** The employer or the institution — the event's heading. */
+  /** The employer or the institution—the event's heading. */
   org: string;
   /** The role held, or the diploma earned. */
   role: string;
@@ -346,14 +346,14 @@ type TimelineEntry = {
   sector?: string;
   items?: readonly string[];
   desc?: string;
-  /** The one event still running — the only node drawn in the accent. */
+  /** The one event still running—the only node drawn in the accent. */
   current?: boolean;
 };
 
 /**
  * An event, rendered as Ant Design's Timeline item read through the HIG.
  *
- * Ant's structure survives — a rail, one node per event, the content beside it,
+ * Ant's structure survives—a rail, one node per event, the content beside it,
  * dates in their own column (Ant's `label` mode, on wide viewports only). Its
  * decoration does not: the node is a hairline ring in the neutral ramp, the
  * filled accent node is spent on the single fact it can carry (which role is
@@ -366,7 +366,7 @@ type TimelineEntry = {
  * the name a second time.
  *
  * `index` only staggers the reveal, reusing the shared `animate--delayed-*`
- * steps — the events fade in top to bottom, the way the rail is read.
+ * steps—the events fade in top to bottom, the way the rail is read.
  */
 function timelineItem(entry: TimelineEntry, index: number): string {
   const detail = entry.items
@@ -411,7 +411,7 @@ function timelineItem(entry: TimelineEntry, index: number): string {
 
 /**
  * The rail itself. `role="list"` restores the semantics that `list-style: none`
- * strips in Safari/VoiceOver, and the ordering is meaningful — an `<ol>`.
+ * strips in Safari/VoiceOver, and the ordering is meaningful—an `<ol>`.
  */
 function timeline(entries: readonly TimelineEntry[], modifier = ""): string {
   return `
@@ -431,8 +431,8 @@ const EXPERIENCE: readonly (keyof Translation["experience"])[] = [
 ];
 
 /**
- * Every employer is described by the same four levels — company (carrying its
- * current name in parentheses when it has been renamed), city, sector, role —
+ * Every employer is described by the same four levels—company (carrying its
+ * current name in parentheses when it has been renamed), city, sector, role—
  * so the entries are a projection rather than five hand-written literals.
  */
 function experience(t: Translation): string {
@@ -578,7 +578,7 @@ function hobbies(t: Translation): string {
 
 /**
  * The device the thread is drawn inside: status bar, conversation bar, and the
- * composer under it. Pure decoration — every part of it is `aria-hidden`, so a
+ * composer under it. Pure decoration—every part of it is `aria-hidden`, so a
  * screen reader hears the thread and nothing about the phone around it. `9:41`
  * is Apple's own canonical time and is language-invariant, as are the glyphs;
  * the only translated string is the contact name, which is the visitor, since
@@ -619,7 +619,7 @@ function phoneChrome(t: Translation): { status: string; bar: string } {
  *
  * The phone around them is what makes the thread read as a thread rather than
  * as two columns of coloured boxes. Its screen is a fixed 19.5:9, so the thread
- * scrolls inside it as it would on the device — which is why `.chat` carries
+ * scrolls inside it as it would on the device—which is why `.chat` carries
  * `tabindex="0"`: a scrollable region has to be reachable by keyboard, and the
  * `role="group"` it already had does not make it focusable. The width control is the
  * pretext demo's own (chenglou.me/pretext/bubbles): dragging it re-tightens

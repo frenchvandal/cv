@@ -1,5 +1,5 @@
 /*
- * render.ts unit tests — the pure SSG core. No DOM needed: renderApp returns
+ * render.ts unit tests—the pure SSG core. No DOM needed: renderApp returns
  * markup strings, so escaping, id uniqueness and anchor resolution are asserted
  * directly on the output for all seven languages (the exact markup
  * scripts/build.ts pre-renders into dist/).
@@ -32,7 +32,7 @@ test("langUrl points at sibling pages (English is the directory root)", () => {
 });
 
 test("langFromPath reads the language out of a URL path", () => {
-  // The English root names no language — the caller applies the default.
+  // The English root names no language—the caller applies the default.
   expect(langFromPath("/")).toBeNull();
   expect(langFromPath("/index.html")).toBeNull();
 
@@ -71,7 +71,7 @@ test("pageLang lets the rendered markup outrank the URL", () => {
   expect(pageLang(undefined, "/pt.html")).toBe("pt");
   expect(pageLang(undefined, "/french.html")).toBe("en");
 
-  // An attribute that is not a language is not a language — fall through to
+  // An attribute that is not a language is not a language—fall through to
   // the URL rather than trusting the DOM.
   expect(pageLang("", "/fr.html")).toBe("fr");
   expect(pageLang("zh-hans", "/pt.html")).toBe("pt");
@@ -88,7 +88,7 @@ test.each([...LANGS])(
 
 /**
  * Runs the root page's real negotiation script against a stubbed browser and
- * reports where it would send the visitor — null meaning it stays on the root.
+ * reports where it would send the visitor—null meaning it stays on the root.
  * The script ships as a string of ES5, so this executes the shipped source
  * itself rather than a second copy of the rule.
  */
@@ -122,7 +122,7 @@ test.each(
     [["zh-TW"], null, "zh-hant.html"],
     [["zh-SG"], null, "zh.html"],
     // Hong Kong and Macau read Traditional too, so they must be matched BEFORE
-    // the broader Traditional test — otherwise it swallows them.
+    // the broader Traditional test—otherwise it swallows them.
     [["zh-HK"], null, "zh-hk.html"],
     [["zh-MO"], null, "zh-hk.html"],
     // Script and region can arrive together, in any combination. An explicit

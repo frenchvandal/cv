@@ -45,7 +45,7 @@ import { enhanceChat } from "./chat.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
 // hides content for the reveal animations, so flipping the class any earlier
-// (e.g. from an inline <head> script) would blank the pre-rendered page for the
+// (e.g., from an inline <head> script) would blank the pre-rendered page for the
 // whole duration of the bundle download.
 document.documentElement.classList.add("js");
 
@@ -72,7 +72,7 @@ function storeLang(lang: Lang): void {
   try {
     localStorage.setItem(STORAGE_LANG_KEY, lang);
   } catch {
-    // Storage may be unavailable (private mode) — the switch still works, it
+    // Storage may be unavailable (private mode)—the switch still works, it
     // just won't survive the visit.
   }
 }
@@ -109,7 +109,7 @@ function syncThemeToggle(): void {
 
 /**
  * `persist` separates the two ways the appearance can change: the visitor
- * flipping the toggle (remembered) versus the page following the OS (not — so
+ * flipping the toggle (remembered) versus the page following the OS (not—so
  * a later system change still lands).
  */
 function applyTheme(next: Theme, persist: boolean): void {
@@ -127,7 +127,7 @@ function applyTheme(next: Theme, persist: boolean): void {
     try {
       localStorage.setItem(STORAGE_THEME_KEY, next);
     } catch {
-      // storage may be unavailable (private mode) — the attribute on <html> is enough.
+      // storage may be unavailable (private mode)—the attribute on <html> is enough.
     }
   }
   syncThemeToggle();
@@ -225,7 +225,7 @@ function restoreChatWidth(): void {
 
 /**
  * Narrowest column worth justifying. Phones sit around 280–390px here, which is
- * a ~40-character measure — tight, but paperbacks justify at that width all the
+ * a ~40-character measure—tight, but paperbacks justify at that width all the
  * time, and with hyphenation on it holds up (measured: spaces stretch ~2x on a
  * phone against ~1.3x on desktop, no line overflowing its column).
  *
@@ -233,7 +233,7 @@ function restoreChatWidth(): void {
  * were real, but their cause was a missing break opportunity, not the narrow
  * measure: nothing could break `customer-facing` at its own hyphen, so whole
  * paragraphs had no tight layout available (see splitOnHardBreaks in
- * linebreak.ts). Below 280 the paragraph stays plain — there ragged-right
+ * linebreak.ts). Below 280 the paragraph stays plain—there ragged-right
  * really is more legible.
  */
 const KP_MIN_WIDTH_PX = 280;
@@ -347,7 +347,7 @@ function auditTitles(): void {
  * Dev-only, pretext-powered QA for the nav bar: report, from any page and
  * without switching languages, how much room the shortcuts get once the brand
  * and the language switcher are paid for, and what `fitNavLinks` has to do to
- * them. `clipped` is the one that matters — it means the CSS floor is doing the
+ * them. `clipped` is the one that matters—it means the CSS floor is doing the
  * work and a label is actually being cut.
  *
  * The bar's geometry comes from the live DOM rather than from constants: the
@@ -411,7 +411,7 @@ function inViewport(el: Element): boolean {
   return rect.top < globalThis.innerHeight && rect.bottom > 0;
 }
 
-/** Count one stat up to its value — once, and instantly under reduced motion. */
+/** Count one stat up to its value—once, and instantly under reduced motion. */
 function startStat(stat: HTMLElement): void {
   if (stat.dataset.animated) return;
   stat.dataset.animated = "true";
@@ -471,7 +471,7 @@ function observeSections(): void {
   }
 
   // The hero and anything already in the viewport shows immediately; stats in
-  // view start counting now — the rest waits for its section to scroll in.
+  // view start counting now—the rest waits for its section to scroll in.
   app.querySelectorAll(".hero .animate").forEach((el) =>
     el.classList.add("is-revealed")
   );
@@ -508,7 +508,7 @@ function bindEvents(): void {
   app?.querySelectorAll<HTMLAnchorElement>("a[data-lang]").forEach((link) => {
     link.addEventListener("click", (event) => {
       const next = link.dataset.lang;
-      // Let the browser handle every modified click itself — new tab/window
+      // Let the browser handle every modified click itself—new tab/window
       // (meta/ctrl/shift) and download (alt) all mean "not an in-page switch".
       if (
         !isLang(next) ||
@@ -519,7 +519,7 @@ function bindEvents(): void {
       event.preventDefault();
       // Record the choice even when nothing changes on screen. A French-browser
       // visitor sent to fr.html who clicks EN lands back on the root, where
-      // `next === currentLang` — without storing first, the next visit would
+      // `next === currentLang`—without storing first, the next visit would
       // negotiate them straight back to French and the switcher would look
       // broken. Only an explicit click stores; popstate never does.
       storeLang(next);
@@ -536,7 +536,7 @@ function bindEvents(): void {
   });
 
   // Dialogue: the phone's width control. Every drag re-tightens the bubbles,
-  // which is the point — the widths come from a measurement, so they can follow
+  // which is the point—the widths come from a measurement, so they can follow
   // a width the reader chooses instead of the one the stylesheet assumed.
   const widthRange = app?.querySelector<HTMLInputElement>("[data-chat-width]");
   widthRange?.addEventListener("input", () => {
@@ -561,7 +561,7 @@ function bindEvents(): void {
           copyBtn.classList.remove("is-copied");
         }, 1600);
       }).catch(() => {
-        // Clipboard denied — the id is printed right above the button anyway.
+        // Clipboard denied—the id is printed right above the button anyway.
       });
     });
   }
@@ -579,8 +579,8 @@ function afterPaint(): void {
 
 /**
  * The armed fade-out of a transition that hasn't painted yet. Two switches
- * inside PAGE_SWAP_MS would otherwise stack two paints, and the first one —
- * rendering an already-stale language — would land after the second.
+ * inside PAGE_SWAP_MS would otherwise stack two paints, and the first one—
+ * rendering an already-stale language—would land after the second.
  */
 let pendingPaint: ReturnType<typeof setTimeout> | null = null;
 
@@ -613,7 +613,7 @@ function render(transition: boolean): void {
 
 /**
  * First load of a pre-rendered page: the markup is already exactly what
- * `renderApp` would produce, so don't rebuild it — just bind events, sync the
+ * `renderApp` would produce, so don't rebuild it—just bind events, sync the
  * theme toggle (pre-rendered as light) and start the enhancements.
  */
 function hydrate(): void {
@@ -623,7 +623,7 @@ function hydrate(): void {
 }
 
 /**
- * Back/forward move the URL, so the URL is what says which language to show —
+ * Back/forward move the URL, so the URL is what says which language to show—
  * never `<html data-lang>`. `setLang` overwrites that attribute on every switch,
  * so reading it here would report the language already on screen, every
  * comparison below would come out equal, and the history entry would be silently

@@ -2,8 +2,8 @@
  * Coverage guard for the vendored font subsets: every character the pages can
  * display must fall inside the unicode-range of the face meant to render it.
  * This fails exactly when user-visible text gained a glyph the committed
- * .woff2 subsets don't carry — the browser would silently fall back to a
- * system font for it (and pretext would measure the wrong face) — i.e. when a
+ * .woff2 subsets don't carry—the browser would silently fall back to a
+ * system font for it (and pretext would measure the wrong face)—i.e., when a
  * text change forgot `bun run fonts:update`. Pure string work: no canvas, no
  * network, safe for CI.
  */
@@ -57,7 +57,7 @@ test.each(
 /*
  * The test above inherits `glyphSets`' blind spot: `isLatin`/`isCjk` decide
  * which characters are collected, and the assertion then checks the collected
- * ones — so a character both predicates reject is not "covered", it is
+ * ones—so a character both predicates reject is not "covered", it is
  * invisible, and no assertion can ever fail on it. That is how ☾ and ☀ sat
  * outside every subset while the guard stayed green.
  *
@@ -70,7 +70,7 @@ test.each(
 
 /**
  * Characters deliberately left to the visitor's system font. ☾ ☀ are the theme
- * toggle: Noto Sans does not carry U+263E/U+2600 (measured — a Google Fonts
+ * toggle: Noto Sans does not carry U+263E/U+2600 (measured—a Google Fonts
  * `&text=☾☀` request returns the same 1664-byte empty woff2 as a request for
  * an emoji it certainly lacks), so subsetting them in would ship a file without
  * the glyphs and make `unicode-range` claim codepoints the face does not have.
@@ -84,7 +84,7 @@ const COVERED_BY_SOME_FACE = FONT_FACES.map((face) => coveredBy(face.range));
 /**
  * The text a page actually shows: markup and its attributes stripped, entities
  * decoded back to the characters a browser would draw. Scanning rendered output
- * rather than source files is the point — the sources are read as raw text, so
+ * rather than source files is the point—the sources are read as raw text, so
  * an arrow in a code comment reads as page content when it is nothing of the
  * kind.
  */
@@ -125,8 +125,8 @@ test.each([...LANGS])(
 
     // Failing here means new copy introduced a character no committed subset
     // carries. Fix by running `bun run fonts:update` (and widening the
-    // predicates in glyphs.ts if it is a new script), or — if the system font
-    // is genuinely the right answer — by adding it to FALLBACK_GLYPHS with a
+    // predicates in glyphs.ts if it is a new script), or—if the system font
+    // is genuinely the right answer—by adding it to FALLBACK_GLYPHS with a
     // reason.
     expect(unaccounted).toEqual([]);
   },

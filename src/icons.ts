@@ -3,14 +3,14 @@
  * glyphs, the two navigation chevrons, and the composer's controls.
  *
  * Drawn here rather than vendored as files (the way [src/logos.ts](src/logos.ts)
- * carries the school marks): these are a handful of primitives — bars, arcs, a
- * rounded rect — small enough that the path data *is* the drawing, and a file
+ * carries the school marks): these are a handful of primitives—bars, arcs, a
+ * rounded rect—small enough that the path data *is* the drawing, and a file
  * per glyph would hide seven twenty-byte shapes behind seven imports. They
  * follow the same two rules the logos do: one flat `currentColor` so light and
  * dark need no second asset, and a viewBox tight to the ink so the CSS sizes
  * them by height alone.
  *
- * Every glyph is decorative — the thread carries the meaning, and the frame is
+ * Every glyph is decorative—the thread carries the meaning, and the frame is
  * hidden from assistive tech at the container (see `dialogue` in
  * [src/render.ts](src/render.ts)), so none of them needs a title.
  */
@@ -25,7 +25,7 @@ export const ICON_WIFI =
 
 /**
  * Battery: shell, fill and cap. The shell and cap are dimmed rather than drawn
- * in a second colour — the palette here is one neutral plus the accent.
+ * in a second colour—the palette here is one neutral plus the accent.
  */
 export const ICON_BATTERY =
   `<svg class="phone__ico phone__ico--battery" viewBox="0 0 25 12" aria-hidden="true"><rect x="0.6" y="0.6" width="21" height="10.8" rx="3.2" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.4"/><rect x="2.2" y="2.2" width="15" height="7.6" rx="2" fill="currentColor"/><path d="M23.2 4.4a2.2 2.2 0 0 1 0 3.2Z" fill="currentColor" opacity="0.4"/></svg>`;

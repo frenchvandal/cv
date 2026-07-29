@@ -1,6 +1,6 @@
 /*
  * Build smoke test: run the real SSG (scripts/build.ts) and assert the emitted
- * dist/ pages carry their pre-rendered content, SEO head tags and font rules —
+ * dist/ pages carry their pre-rendered content, SEO head tags and font rules—
  * the contract deploys rely on. A full bundle plus eight pre-renders costs
  * ~110ms locally; the explicit timeout is headroom for a cold CI runner, not a
  * sign this is slow. SITE_URL is stripped from the env so the assertions don't
@@ -58,7 +58,7 @@ test(
       expect(new Set(ids).size).toBe(ids.length);
 
       // Without SITE_URL there is no absolute base, so the image tags stay off
-      // entirely rather than shipping a relative URL no scraper can resolve —
+      // entirely rather than shipping a relative URL no scraper can resolve—
       // and the card degrades to `summary`, which needs none.
       const tags = await extractSocialTags(html);
       expect(tags.og.image).toBeUndefined();
@@ -71,7 +71,7 @@ test(
     }
 
     // A sitemap and a feed need absolute URLs, so without SITE_URL there is
-    // neither — and nothing may advertise a file that was not written.
+    // neither—and nothing may advertise a file that was not written.
     expect(existsSync(`${ROOT}/dist/sitemap.xml`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_XSL_FILE}`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(false);
@@ -102,7 +102,7 @@ test(
  * only exist to be consumed by machines we never see, so asserting them by
  * substring is how a card silently loses a field; `previewCard` resolves them
  * with the scrapers' own precedence instead. dist/ is left holding these test
- * URLs — both workflows rebuild after `bun test`, so nothing deploys them.
+ * URLs—both workflows rebuild after `bun test`, so nothing deploys them.
  */
 test(
   "the SITE_URL build ships a complete, per-language social card",
@@ -183,7 +183,7 @@ test(
     );
     expect(new Set(entries.map((e) => e.loc))).toEqual(new Set(canonicals));
 
-    // lastmod is the content's date from git, not the build's — the whole
+    // lastmod is the content's date from git, not the build's—the whole
     // point of the field. Compared against the same source the build read, so
     // a checkout that cannot answer (shallow clone) expects no field at all.
     const lastmod = await contentLastmod();
@@ -208,7 +208,7 @@ test(
       .toContain(`Sitemap: ${SITE}/sitemap.xml`);
 
     // One JSON Feed per language, discoverable from its own page and dated
-    // from git — the same source the sitemap's <lastmod> comes from, so a
+    // from git—the same source the sitemap's <lastmod> comes from, so a
     // checkout without history yields no date rather than a wrong one.
     const published = await entryPublished(translations.en);
     for (const lang of LANGS) {

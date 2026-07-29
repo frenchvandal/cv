@@ -1,8 +1,8 @@
 /*
  * The Hong Kong page is a projection of the Taiwan one, not a translation of
  * its own (see HK_LEXICON in translations.ts). A projection can rot in two
- * silent ways — a term that no longer appears in the source, so the swap does
- * nothing, and a term that survives the swap — and neither would fail the type
+ * silent ways—a term that no longer appears in the source, so the swap does
+ * nothing, and a term that survives the swap—and neither would fail the type
  * checker, since both pages have the same shape by construction. These tests
  * are what stands in for the review a hand-written translation would get.
  */
@@ -29,7 +29,7 @@ test.each([...HK_TERMS])(
 );
 
 test("the projection changes vocabulary only, never structure", () => {
-  // Same keys, same nesting, same array lengths — the shape the Translation
+  // Same keys, same nesting, same array lengths—the shape the Translation
   // type guarantees for hand-written pages must hold for the derived one too.
   const shape = (value: unknown): unknown =>
     Array.isArray(value)

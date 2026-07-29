@@ -6,7 +6,7 @@
  * as its widest line, so the last line often trails visual slack. For each
  * bubble we instead binary-search the smallest wrap width that keeps the line
  * count the max-width wrap produces, and set the bubble's width to that line's
- * real width — same break points, no wasted pixels.
+ * real width—same break points, no wasted pixels.
  *
  * Pure progressive enhancement: the pre-rendered bubbles are plain max-width
  * boxes that look fine without JS; this only tightens them. Like every other
@@ -29,7 +29,7 @@ import { fontSpecFrom } from "./measure.ts";
  */
 const BUBBLE_MAX_FALLBACK_RATIO = 0.8;
 
-/** The CSS `max-width` of a bubble, in px — `%` resolves against the chat width. */
+/** The CSS `max-width` of a bubble, in px—`%` resolves against the chat width. */
 function bubbleMaxWidth(style: CSSStyleDeclaration, chatWidth: number): number {
   const raw = style.maxWidth;
   const value = parseFloat(raw);
@@ -42,7 +42,7 @@ function bubbleMaxWidth(style: CSSStyleDeclaration, chatWidth: number): number {
 }
 
 /**
- * prepareWithSegments is the expensive pass — cache it per font+text, as
+ * prepareWithSegments is the expensive pass—cache it per font+text, as
  * bubbles re-tighten on every resize but their texts only change per language.
  * The tracking is keyed in too: it is measured into the widths, so two
  * trackings must never share a prepared text.

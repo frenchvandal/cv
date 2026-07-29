@@ -4,7 +4,7 @@ name: CI
 on:
   pull_request:
 
-# This job only reads the tree — it never pushes, comments or deploys.
+# This job only reads the tree—it never pushes, comments or deploys.
 permissions:
   contents: read
 

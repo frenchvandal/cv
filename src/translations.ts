@@ -3,19 +3,19 @@
  *
  * The English object `en` is the source of truth: its inferred type is
  * {@link Translation}, so every other translation must expose the exact same
- * shape — a missing or misnamed key is a compile-time error. This guarantees
+ * shape—a missing or misnamed key is a compile-time error. This guarantees
  * parity across languages without hand-writing a large interface.
  *
  * Each translation is written for its own audience rather than converted from
  * a neighbour, and several are region-locked on purpose:
  *   - `zh` (Simplified) and `zh-hant` (Traditional) are independent, not script
- *     conversions of each other — vocabulary differs (软件/軟體, 业务分析师/
+ *     conversions of each other—vocabulary differs (软件/軟體, 业务分析师/
  *     商業分析師, 待办列表/待辦清單…). Both use Philippe's Chinese name, 李北洛.
  *     `zh-hant` follows Taiwan usage (軟體, 專案), matching the Noto Sans TC
  *     glyph forms that page ships; Hong Kong and Macau get `zh-hk`, which is a
  *     five-term projection of it (see HK_LEXICON at the bottom of this file)
  *     rendered in Noto Sans HK. `zh-hk` is built and indexed but deliberately
- *     absent from the switcher — see SWITCHER_LANGS.
+ *     absent from the switcher—see SWITCHER_LANGS.
  *   - `pt` is European Portuguese in the PRE-1990 orthography (see its own
  *     header), never Brazilian.
  *   - `es` is peninsular Spanish.
@@ -52,7 +52,7 @@ export function isLang(value: string | undefined): value is Lang {
 export const HTML_LANG: Record<Lang, string> = {
   en: "en",
   fr: "fr",
-  // Region-tagged: the copy is deliberately European, not Brazilian/American —
+  // Region-tagged: the copy is deliberately European, not Brazilian/American—
   // `pt` follows the pre-1990 orthography and `es` is peninsular Spanish.
   pt: "pt-PT",
   es: "es-ES",
@@ -659,9 +659,9 @@ const fr: Translation = {
 
 /*
  * European Portuguese in the PRE-1990 orthography (pré-Acordo Ortográfico), on
- * purpose: the silent consonants the reform dropped are kept — "projecto" not
+ * purpose: the silent consonants the reform dropped are kept—"projecto" not
  * "projeto", "objectivo" not "objetivo", "sector" not "setor", "actual" not
- * "atual", "acção" not "ação" — and month names stay capitalised ("Julho").
+ * "atual", "acção" not "ação"—and month names stay capitalised ("Julho").
  * Consonants that ARE pronounced in Portugal never fell under the reform, so
  * "contacto", "facto" and "secção" are spelled the same either way and are not
  * evidence of one norm or the other.
@@ -1711,13 +1711,13 @@ const zhHant: Translation = {
 /*
  * Hong Kong and Macau read the same Traditional script as Taiwan but not the
  * same technical vocabulary. These five terms are the whole difference across
- * this CV — measured, not guessed — so the HK page is a projection of the
+ * this CV—measured, not guessed—so the HK page is a projection of the
  * Taiwan one rather than a seventh hand-written translation: a copy would mean
  * making every future edit twice, for five words.
  *
  * Deliberately NOT included: 品質 → 質素. 質素 is the distinctly Hong Kong word
- * for quality, but in the one place the CV uses it — 品質意識, "quality
- * mindset" — 品質 is idiomatic in Hong Kong too, and a CV is the wrong place
+ * for quality, but in the one place the CV uses it—品質意識, "quality
+ * mindset"—品質 is idiomatic in Hong Kong too, and a CV is the wrong place
  * for a substitution that is merely defensible.
  */
 const HK_LEXICON: Record<string, string> = {
@@ -1730,8 +1730,8 @@ const HK_LEXICON: Record<string, string> = {
 
 /**
  * The Hong Kong / Macau reading of the Traditional page. The round trip goes
- * through JSON because the content is plain data — strings, arrays and objects,
- * no dates, functions or classes — which makes one `replaceAll` per term the
+ * through JSON because the content is plain data—strings, arrays and objects,
+ * no dates, functions or classes—which makes one `replaceAll` per term the
  * whole implementation. The cast is the one place a `JSON.parse` of our own
  * serialization is what it claims to be; `translations.test.ts` pins that down
  * by asserting the result still matches the Taiwan page structurally.

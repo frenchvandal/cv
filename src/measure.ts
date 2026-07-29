@@ -5,13 +5,13 @@
  * the DOM, so there is no layout reflow. We use it for three real, multilingual
  * fit problems that plain CSS `clamp()` only approximates:
  *
- *   1. fitHeroName  — scale the hero name so its widest line fills the width.
- *   2. fitSectionTitles — size the sticky section titles so the longest one fits
+ *   1. fitHeroName —scale the hero name so its widest line fills the width.
+ *   2. fitSectionTitles—size the sticky section titles so the longest one fits
  *      its column at every language, instead of being truncated with an ellipsis.
- *   3. fitNavLinks — tighten the nav shortcuts into the fixed width the bar
+ *   3. fitNavLinks—tighten the nav shortcuts into the fixed width the bar
  *      leaves them, instead of letting them print over the language switcher.
  *
- * The site renders with self-hosted Noto Sans / Noto Sans SC/TC — named fonts,
+ * The site renders with self-hosted Noto Sans / Noto Sans SC/TC—named fonts,
  * which pretext requires for accuracy (system-ui is explicitly unsafe). Callers
  * pass the page's computed font stack via `FitFont.family` so CJK text is
  * measured with the family it actually renders in (SC on zh, TC on zh-hant).
@@ -26,7 +26,7 @@ import { measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext";
 /** Font size, in px, at which widths are measured before being scaled. */
 const REFERENCE_PX = 100;
 
-/** Fraction we shrink every fit by, as insurance against rounding — invisible, never overflows. */
+/** Fraction we shrink every fit by, as insurance against rounding—invisible, never overflows. */
 const MEASURE_SAFETY = 0.98;
 
 /**
@@ -35,18 +35,26 @@ const MEASURE_SAFETY = 0.98;
  */
 const FONT_STACK = "'Noto Sans', system-ui, -apple-system, sans-serif";
 
+/**
+ * The type a fit measures against, and a contract with the stylesheet: the
+ * values come from `DISPLAY_FONT` / `NAV_FONT` in [src/config.ts](src/config.ts)
+ * and must match the CSS rule being fitted, or the measurement describes a font
+ * the page never draws.
+ */
 export interface FitFont {
   weight: number;
   /** CSS `letter-spacing` in em (scales with font size). */
   letterSpacingEm: number;
+  /** Defaults to the Latin stack; pass the page's computed one on CJK pages. */
   family?: string;
+  /** CSS `font-style`. Defaults to `normal`. */
   style?: string;
 }
 
 /**
  * Width of `text` per 1px of font size, for the given font. Cached: pretext's
  * `prepare` pass is the expensive part, so we never repeat it for the same
- * (text, font) — exactly what the library asks for.
+ * (text, font)—exactly what the library asks for.
  */
 const widthPerPxCache = new Map<string, number>();
 
@@ -86,7 +94,7 @@ export interface FitHeroOptions extends FitFont {
 /**
  * Sizes `nameEl` so its widest child line fills the available width. The element
  * is a block, so `clientWidth` tracks the container (not its nowrap text) and
- * never feeds back into the size we set — no measurement loop.
+ * never feeds back into the size we set—no measurement loop.
  */
 export function fitHeroName(
   nameEl: HTMLElement,
@@ -118,7 +126,7 @@ export interface FitTitlesOptions extends FitFont {
   columnRem: number;
   /** Only fit at or above this viewport width (rem); below it, titles wrap. */
   desktopMinRem: number;
-  /** Extract the measurable label from a title element (its index span is skipped). */
+  /** The measurable label of a title element: its own text, ignoring any child. */
   label: (el: HTMLElement) => string;
 }
 
@@ -126,7 +134,7 @@ export interface FitTitlesOptions extends FitFont {
  * Gives every section title one uniform size: the largest size (capped at
  * `maxPx`) at which the *longest* title still fits the column. Prevents the
  * ellipsis truncation the CSS falls back to, and keeps titles visually
- * consistent as you scroll — across all seven languages. On narrow viewports
+ * consistent as you scroll—across all seven languages. On narrow viewports
  * the titles wrap normally, so any inline size is cleared.
  */
 export function fitSectionTitles(
@@ -182,8 +190,8 @@ export interface NavFit {
  * second. Returns the fit for the dev audit, or `null` when there is nothing to
  * do (no links, or below the breakpoint where they are hidden).
  *
- * `.nav__links` is `flex: 1` off a zero basis, so its width comes from the bar —
- * the brand and the language switcher — and never from the labels inside it.
+ * `.nav__links` is `flex: 1` off a zero basis, so its width comes from the bar—
+ * the brand and the language switcher—and never from the labels inside it.
  * That is what makes `clientWidth` safe to measure against here: shrinking the
  * text cannot widen the box and start a feedback loop.
  */
@@ -266,7 +274,7 @@ export interface NavAuditOptions {
   rowPx: number;
   /** Gap between the bar's three parts, in px. */
   rowGapPx: number;
-  /** Width of the right-hand cluster — switcher plus theme toggle, in px. */
+  /** Width of the right-hand cluster—switcher plus theme toggle, in px. */
   actionsPx: number;
   /** The brand's type, whose width is the one part of the bar that varies by language. */
   brand: FitFont & { sizePx: number };
@@ -326,13 +334,13 @@ export function auditNavLinks(
 
 /**
  * The two measurement inputs an element's computed style implies: the CSS
- * `font` shorthand, and the tracking — which pretext takes as a separate
+ * `font` shorthand, and the tracking—which pretext takes as a separate
  * option, because `letter-spacing` is not part of that shorthand and would be
  * dropped on the floor by a caller that only builds the string.
  *
  * The fits above take their font from a `FitFont` constant kept in sync with
  * the stylesheet by hand ([src/config.ts](src/config.ts)); the two callers that
- * measure body text — the chat bubbles and the justified KP paragraphs — read
+ * measure body text—the chat bubbles and the justified KP paragraphs—read
  * theirs from the live computed style instead, and this is what keeps that read
  * complete. Both elements happen to inherit no tracking today, so the widths
  * are right either way; adding `letter-spacing` to body text is what this
@@ -344,7 +352,7 @@ export function fontSpecFrom(
   return {
     font:
       `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`,
-    // `normal` — the initial value, and what an untracked element reports —
+    // `normal`—the initial value, and what an untracked element reports—
     // parses to NaN, which `||` turns into the 0 px pretext expects.
     letterSpacing: parseFloat(style.letterSpacing) || 0,
   };
@@ -383,7 +391,7 @@ export interface AuditEntry {
 /**
  * Dev-only, pretext-powered QA: without switching languages or touching the DOM,
  * report any section title that cannot render at `maxPx` within its column in
- * any of the seven languages — i.e. that the fitter must shrink. Catches a
+ * any of the seven languages—i.e., that the fitter must shrink. Catches a
  * localized label that would otherwise overflow, browser-tab-free.
  */
 export function auditSectionTitles(

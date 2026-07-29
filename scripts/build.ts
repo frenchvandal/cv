@@ -11,7 +11,7 @@
  * The pages are siblings (same depth) so every asset path stays relative
  * (`./assets/…`) and the whole `dist/` uploads to any host/bucket path
  * unchanged. Set SITE_URL=https://example.com to emit absolute canonical /
- * hreflang URLs and a sitemap — search engines require absolute URLs there,
+ * hreflang URLs and a sitemap—search engines require absolute URLs there,
  * so the GitHub Actions workflow sets it from the Pages base URL.
  */
 
@@ -22,7 +22,7 @@ import {
   pageTitle,
   renderApp,
 } from "../src/render.ts";
-// The same escaper the renderer uses — one implementation, so the two can't
+// The same escaper the renderer uses—one implementation, so the two can't
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
 import {
@@ -85,7 +85,7 @@ const OG_LOCALE: Record<Lang, string> = {
   "zh-hk": "zh_HK",
 };
 
-/** Public URL of a language's page — relative by default, absolute when SITE_URL is set. */
+/** Public URL of a language's page—relative by default, absolute when SITE_URL is set. */
 function href(lang: Lang): string {
   if (!SITE) return langUrl(lang);
   return lang === "en" ? `${SITE}/` : `${SITE}/${lang}.html`;
@@ -95,7 +95,7 @@ function href(lang: Lang): string {
  * The file(s) a language is written to. English gets two: the site root, which
  * is the negotiated entry point, and an explicit `en.html` for anyone who wants
  * a stable English URL that no browser setting can redirect. Same content, and
- * both carry `href("en")` as their canonical — the root — so search engines
+ * both carry `href("en")` as their canonical—the root—so search engines
  * consolidate them instead of reading a duplicate. Only the root negotiates: a
  * URL naming a language must always be honoured.
  */
@@ -126,7 +126,7 @@ await Bun.build({
   sourcemap: "linked",
   // No publicPath: it is not needed (the emitted HTML already references
   // `./assets/…`, and chunks import each other by bare sibling name), and
-  // `"./"` actively breaks the sourcemaps — Bun prefixes it to the full output
+  // `"./"` actively breaks the sourcemaps—Bun prefixes it to the full output
   // path, emitting `sourceMappingURL=./assets/index-….js.map` inside a file
   // that already lives in assets/. Browsers resolve that against the script's
   // own URL, ask for /assets/assets/… and log a 404 for every chunk.
@@ -176,7 +176,7 @@ const fontPreload = `<link rel="preload" href="${
 
 /*
  * Social preview image. Not referenced by the bundle (it only appears in meta
- * tags), so it is copied by hand — unhashed, because scrapers cache by URL and
+ * tags), so it is copied by hand—unhashed, because scrapers cache by URL and
  * the tags need a stable name. Scrapers also require an absolute URL, so the
  * og:image/twitter tags are SITE_URL-gated like the sitemap.
  */
@@ -186,7 +186,7 @@ await Bun.write(`${OUT}/${OG_IMAGE}`, Bun.file(`public/${OG_IMAGE}`));
 const shell = await Bun.file(`${OUT}/index.html`).text();
 
 /*
- * JSON Feed. Gated on SITE_URL like the sitemap — `feed_url` is the feed's own
+ * JSON Feed. Gated on SITE_URL like the sitemap—`feed_url` is the feed's own
  * identifier, and item ids are built from the page URL, so neither means
  * anything relative. The per-entry publication dates are one git lookup per
  * entry, not per language: the keys they search for are the same in all seven.
@@ -335,7 +335,7 @@ if (SITE) {
   await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
   console.log(`  ${OUT}/sitemap.xml`);
   // The sitemap points at both by relative name, so the three ship together or
-  // not at all — a dangling stylesheet reference is a console error on a file
+  // not at all—a dangling stylesheet reference is a console error on a file
   // whose whole job is to be machine-read without incident.
   await Bun.write(`${OUT}/${SITEMAP_XSL_FILE}`, sitemapXsl());
   console.log(`  ${OUT}/${SITEMAP_XSL_FILE}`);
@@ -343,7 +343,7 @@ if (SITE) {
   console.log(`  ${OUT}/${SITEMAP_CSS_FILE}`);
 }
 
-// Friendly 404 for GitHub Pages, served for any unknown path — including
+// Friendly 404 for GitHub Pages, served for any unknown path—including
 // nested ones (/foo/bar), where a relative "./" would resolve to the still-
 // missing directory and 404 again. href("en") is absolute whenever SITE_URL is
 // set (every real deploy); the relative fallback only matters for local dist/

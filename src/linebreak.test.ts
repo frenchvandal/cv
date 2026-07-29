@@ -1,7 +1,7 @@
 /*
  * Knuth–Plass unit tests, canvas-free: a synthetic monospace measure (10px per
- * character) is injected instead of pretext, so the algorithm itself — break
- * feasibility, width limits, hyphenation, NBSP handling — is what's under test.
+ * character) is injected instead of pretext, so the algorithm itself—break
+ * feasibility, width limits, hyphenation, NBSP handling—is what's under test.
  */
 
 import { expect, test } from "bun:test";
@@ -38,7 +38,7 @@ test("breaks a paragraph into multiple lines that all fit the width", async () =
   expect(lines).not.toBeNull();
   expect(lines!.length).toBeGreaterThan(1);
   for (const line of lines!) {
-    // shrink: 0 — every chosen line must fit; justify only ever stretches.
+    // shrink: 0—every chosen line must fit; justify only ever stretches.
     expect(mono(line, FONT)).toBeLessThanOrEqual(width);
     expect(line.length).toBeGreaterThan(0);
   }
@@ -85,7 +85,7 @@ test("never splits a slash-joined acronym pair", async () => {
   for (const width of [150, 200, 250]) {
     const lines = await breakIntoLines(text, FONT, width, "en", mono);
     expect(lines).not.toBeNull();
-    // Split over two lines it would read as "SAML/" then "OIDC" — worse than a
+    // Split over two lines it would read as "SAML/" then "OIDC"—worse than a
     // loose line, so the slash is deliberately not a break point.
     expect(lines!.some((line) => line.includes("SAML/OIDC"))).toBe(true);
     expect(lines!.some((line) => line.endsWith("/"))).toBe(false);
