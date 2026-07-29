@@ -8,6 +8,8 @@
 
 import { expect, test } from "bun:test";
 import { parseSitemap, SITEMAP_NS, sitemapXml } from "./sitemap.ts";
+import { sitemapXsl } from "./sitemap-style.ts";
+import { HTML_LANG, LANG_NAME, LANGS } from "../src/translations.ts";
 
 const BASE = "https://example.test/cv";
 const ENTRIES = [
@@ -49,6 +51,39 @@ test("escapes a <loc> per the protocol's entity table", async () => {
   // parseSitemap returns text as written, so it is the escaped form that must
   // round-trip — the URLs this build emits contain nothing escapable at all.
   expect(await parseSitemap(xml)).toEqual([{ loc: inner }]);
+});
+
+test("points a browser at the stylesheet without disturbing a parser", async () => {
+  const xml = sitemapXml(BASE, ENTRIES);
+
+  // Where a processing instruction belongs: after the declaration, before the
+  // root element. Relative, so the pair moves to any host or base path.
+  expect(xml).toMatch(
+    /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<\?xml-stylesheet type="text\/xsl" href="sitemap\.xsl"\?>\n<urlset/,
+  );
+  // And it is invisible to everything that reads the sitemap as a sitemap.
+  expect(await parseSitemap(xml)).toEqual(ENTRIES);
+});
+
+test("the stylesheet names every language the site publishes", () => {
+  const xsl = sitemapXsl();
+
+  expect(xsl.startsWith('<?xml version="1.0" encoding="UTF-8"?>\n')).toBe(true);
+  // Version and namespaces are the whole contract with the browser: any other
+  // version, or a template bound to no namespace, transforms to a blank page.
+  expect(xsl).toContain('<xsl:stylesheet version="1.0"');
+  expect(xsl).toContain(`xmlns:s="${SITEMAP_NS}"`);
+
+  for (const lang of LANGS) {
+    // The file names spelled out, not derived from `langUrl` a second time —
+    // this is the assertion that a language page renamed on one side and not
+    // the other has to fail against.
+    const file = lang === "en" ? "" : `${lang}.html`;
+    expect(xsl).toContain(`test="$file = '${file}'"`);
+    expect(xsl).toContain(
+      `<span lang="${HTML_LANG[lang]}">${LANG_NAME[lang]}</span>`,
+    );
+  }
 });
 
 test("rejects anything the protocol would make a crawler discard", () => {

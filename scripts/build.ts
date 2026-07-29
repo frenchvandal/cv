@@ -26,6 +26,7 @@ import {
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
 import { contentLastmod, sitemapXml } from "./sitemap.ts";
+import { SITEMAP_XSL_FILE, sitemapXsl } from "./sitemap-style.ts";
 import {
   entryPublished,
   FEED_MIME,
@@ -328,6 +329,11 @@ if (SITE) {
   }));
   await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
   console.log(`  ${OUT}/sitemap.xml`);
+  // The sitemap points at this by relative name, so the two ship together or
+  // not at all — a dangling stylesheet reference is a console error on a file
+  // whose whole job is to be machine-read without incident.
+  await Bun.write(`${OUT}/${SITEMAP_XSL_FILE}`, sitemapXsl());
+  console.log(`  ${OUT}/${SITEMAP_XSL_FILE}`);
 }
 
 // Friendly 404 for GitHub Pages, served for any unknown path — including

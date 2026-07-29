@@ -27,6 +27,11 @@
  * LANGS loop, and one method is enough. A second copy would be one more thing
  * to keep in step.
  *
+ * The one thing outside the vocabulary is the `<?xml-stylesheet?>` instruction,
+ * which asks a *browser* to render the file as a table instead of a tag tree
+ * (see [scripts/sitemap-style.ts](scripts/sitemap-style.ts)). It is inert to
+ * every consumer that matters: crawlers parse the XML, not the PI.
+ *
  * As a CLI it reads a sitemap back the way a crawler does — same
  * HTMLRewriter-over-our-own-output shape as scripts/social-meta.ts:
  *
@@ -34,6 +39,7 @@
  */
 
 import { $ } from "bun";
+import { SITEMAP_XSL_FILE } from "./sitemap-style.ts";
 
 /** The namespace the protocol requires on `<urlset>`. */
 export const SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
@@ -130,8 +136,10 @@ export function sitemapXml(
   }).join("\n");
 
   // 50,000 URLs / 50MB is the per-file ceiling; eight pages will not approach
-  // it, so there is no sitemap index and no gzip variant.
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
+  // it, so there is no sitemap index and no gzip variant. The stylesheet href
+  // is relative, and resolves against the sitemap's own URL — the two files are
+  // written side by side, so the site can still move to any host or base path.
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="${SITEMAP_XSL_FILE}"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
 }
 
 /**

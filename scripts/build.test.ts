@@ -14,6 +14,7 @@ import { escapeHtml } from "../src/dom.ts";
 import { pageTitle } from "../src/render.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
 import { contentLastmod, parseSitemap } from "./sitemap.ts";
+import { SITEMAP_XSL_FILE } from "./sitemap-style.ts";
 import { entryPublished, FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
@@ -68,6 +69,7 @@ test(
     // A sitemap and a feed need absolute URLs, so without SITE_URL there is
     // neither — and nothing may advertise a file that was not written.
     expect(existsSync(`${ROOT}/dist/sitemap.xml`)).toBe(false);
+    expect(existsSync(`${ROOT}/dist/${SITEMAP_XSL_FILE}`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/feed.json`)).toBe(false);
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
       .not.toContain("Sitemap:");
@@ -158,9 +160,8 @@ test(
     // The sitemap lists every language page once, at its canonical URL, and
     // nothing else: en.html is a duplicate of the root and 404.html is
     // noindex. Same order as LANGS, so a diff of the file stays readable.
-    const entries = await parseSitemap(
-      await Bun.file(`${ROOT}/dist/sitemap.xml`).text(),
-    );
+    const sitemap = await Bun.file(`${ROOT}/dist/sitemap.xml`).text();
+    const entries = await parseSitemap(sitemap);
     expect(entries.map((e) => e.loc)).toEqual(
       LANGS.map((lang) =>
         lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`
@@ -184,6 +185,15 @@ test(
     for (const entry of entries) expect(entry.lastmod).toBe(lastmod);
     if (lastmod) {
       expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
+    }
+
+    // The browser stylesheet ships beside the sitemap that references it, and
+    // carries a row for every URL in it: a <loc> the transform has no case for
+    // renders a blank language cell to whoever opens the file.
+    const xsl = await Bun.file(`${ROOT}/dist/${SITEMAP_XSL_FILE}`).text();
+    expect(sitemap).toContain(`href="${SITEMAP_XSL_FILE}"`);
+    for (const { loc } of entries) {
+      expect(xsl).toContain(`test="$file = '${loc.slice(SITE.length + 1)}'"`);
     }
 
     // robots.txt points crawlers at it, absolutely.
