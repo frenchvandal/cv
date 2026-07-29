@@ -100,6 +100,15 @@ date. `<changefreq>` and `<priority>` are deliberately absent (see the header of
 bun scripts/sitemap.ts dist/sitemap.xml
 ```
 
+Opening that URL in a browser shows a table instead of a tag tree: the file
+carries an `<?xml-stylesheet?>` pointing at `dist/sitemap.xsl`
+([scripts/sitemap-style.ts](scripts/sitemap-style.ts)), which crawlers ignore
+and `parseSitemap` reads straight past. It is XSLT 1.0, the only version any
+browser implements — and Chrome removes XSLT altogether in 158 (17 November
+2026), with Gecko and WebKit agreed to follow. Nothing breaks that day: an
+unapplied stylesheet leaves the browser showing the raw XML, which is what it
+showed before. Delete the module and the instruction then.
+
 Each page also links a [JSON Feed 1.1](https://www.jsonfeed.org/version/1.1/)
 (`dist/feed.json` for English, `dist/feed.<lang>.json` otherwise). Its items are
 the CV's professional record — the roles, the schools, the certifications — each

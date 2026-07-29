@@ -23,12 +23,7 @@
 
 import { THEME_COLOR } from "../src/config.ts";
 import { langUrl } from "../src/render.ts";
-import {
-  HTML_LANG,
-  LANG_NAME,
-  LANGS,
-  PROFILE,
-} from "../src/translations.ts";
+import { HTML_LANG, LANG_NAME, LANGS, PROFILE } from "../src/translations.ts";
 
 /** Written next to sitemap.xml, which points at it by this relative name. */
 export const SITEMAP_XSL_FILE = "sitemap.xsl";

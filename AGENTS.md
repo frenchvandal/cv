@@ -66,6 +66,15 @@ the code itself
     `<lastmod>` comes from `git log` over the paths that reach a visitor, so
     deploy.yaml checks out with `fetch-depth: 0`; without history the field is
     omitted rather than guessed.
+  - [scripts/sitemap-style.ts](scripts/sitemap-style.ts) writes the browser
+    stylesheet the sitemap names in its `<?xml-stylesheet?>` instruction
+    (`bun scripts/sitemap-style.ts` prints it; `xsltproc` and `xmllint` are how
+    it gets checked, neither is a repo dependency). The two files ship together
+    or not at all. It is XSLT **1.0** — the only version browsers run — and it
+    has an end date: Chrome removes XSLT in 158 (17 November 2026), Gecko and
+    WebKit agreed to the same. When that lands, delete the module and the
+    instruction; the URL falls back to raw XML by itself, which is what it
+    showed before, so there is nothing to work around.
   - [scripts/feed.ts](scripts/feed.ts) writes one JSON Feed 1.1 per language,
     also `SITE_URL`-gated. Same rule as the sitemap, and the same header
     convention: every field is justified there, and **no date is ever
