@@ -426,12 +426,29 @@ a:hover {
 
 .hero__name {
   /* Sized by pretext (src/measure.ts) so the longest line fills the column in
-     every language; the clamp is the pre-measurement value. */
-  font-size: clamp(2.75rem, 9vw, 5.5rem);
+     every language. This clamp is what the page shows until that runs—on first
+     paint, and again for the ~30ms after a language switch replaces #app—so it
+     is not a rough guess but the same curve, solved in CSS: `fitHeroName`
+     computes `available * HERO_FIT.fill / widest`, where `available` is
+     `100vw` less `.wrap`'s 2.5rem of padding until `--wrap` caps it, and
+     `widest` is 7.477em for "Philippe Ribeiro" at this weight and tracking.
+     0.12305 is `fill / widest`; the bounds are HERO_FIT.minPx and maxPx.
+     Reproduces the fitter to 0.1px from 360px up, where it used to overshoot
+     by 12px at 1440 and undershoot by 13px at 700. Re-measure this coefficient
+     if the name or the display font changes; nothing else here depends on it. */
+  font-size: clamp(2.125rem, calc((100vw - 2.5rem) * 0.12305), 4.75rem);
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.02em;
   width: 100%;
+}
+
+/* 李北洛 is three full-width glyphs, so the fit is at HERO_FIT.maxPx from 360px
+   up—the Latin curve above would start it 32px too small on a phone and 12px
+   too large on a desktop. Measured identical at 360, 500, 700, 900, 1100, 1440
+   and 1728px, which is why this is a constant and not a second clamp. */
+:root[data-lang^='zh'] .hero__name {
+  font-size: 4.75rem;
 }
 
 .hero__name-line {
