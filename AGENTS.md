@@ -66,15 +66,17 @@ the code itself
     `<lastmod>` comes from `git log` over the paths that reach a visitor, so
     deploy.yaml checks out with `fetch-depth: 0`; without history the field is
     omitted rather than guessed.
-  - [scripts/sitemap-style.ts](scripts/sitemap-style.ts) writes the browser
-    stylesheet the sitemap names in its `<?xml-stylesheet?>` instruction
-    (`bun scripts/sitemap-style.ts` prints it; `xsltproc` and `xmllint` are how
-    it gets checked, neither is a repo dependency). The two files ship together
-    or not at all. It is XSLT **1.0** — the only version browsers run — and it
-    has an end date: Chrome removes XSLT in 158 (17 November 2026), Gecko and
-    WebKit agreed to the same. When that lands, delete the module and the
-    instruction; the URL falls back to raw XML by itself, which is what it
-    showed before, so there is nothing to work around.
+  - [scripts/sitemap-style.ts](scripts/sitemap-style.ts) writes the two browser
+    stylesheets the sitemap names in its `<?xml-stylesheet?>` instructions
+    (`bun scripts/sitemap-style.ts [css]` prints either; `xmllint` and
+    `xsltproc` are how they get checked, and neither is a repo dependency). All
+    three files ship together or not at all. The XSLT half is **1.0**, the only
+    version browsers run, and it has an end date: Chrome removes XSLT in 158 (17
+    November 2026), with Gecko and WebKit agreed to the same. The CSS half is
+    the successor, already in place — run Chrome with `--disable-features=XSLT`
+    and the file renders through it, which is the only way to see the
+    post-removal page today. When the removal lands, delete the XSLT half and
+    its instruction; do not try to keep XSLT alive.
   - [scripts/feed.ts](scripts/feed.ts) writes one JSON Feed 1.1 per language,
     also `SITE_URL`-gated. Same rule as the sitemap, and the same header
     convention: every field is justified there, and **no date is ever

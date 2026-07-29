@@ -8,7 +8,7 @@
 
 import { expect, test } from "bun:test";
 import { parseSitemap, SITEMAP_NS, sitemapXml } from "./sitemap.ts";
-import { sitemapXsl } from "./sitemap-style.ts";
+import { sitemapCss, sitemapXsl } from "./sitemap-style.ts";
 import { HTML_LANG, LANG_NAME, LANGS } from "../src/translations.ts";
 
 const BASE = "https://example.test/cv";
@@ -53,16 +53,29 @@ test("escapes a <loc> per the protocol's entity table", async () => {
   expect(await parseSitemap(xml)).toEqual([{ loc: inner }]);
 });
 
-test("points a browser at the stylesheet without disturbing a parser", async () => {
+test("points a browser at both stylesheets without disturbing a parser", async () => {
   const xml = sitemapXml(BASE, ENTRIES);
 
-  // Where a processing instruction belongs: after the declaration, before the
-  // root element. Relative, so the pair moves to any host or base path.
+  // Where processing instructions belong: after the declaration, before the
+  // root element, and relative so the set moves to any host or base path. XSL
+  // first — a browser that still runs XSLT must take that one, and only a
+  // browser that has dropped it falls through to the CSS.
   expect(xml).toMatch(
-    /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<\?xml-stylesheet type="text\/xsl" href="sitemap\.xsl"\?>\n<urlset/,
+    /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<\?xml-stylesheet type="text\/xsl" href="sitemap\.xsl"\?>\n<\?xml-stylesheet type="text\/css" href="sitemap\.css"\?>\n<urlset/,
   );
-  // And it is invisible to everything that reads the sitemap as a sitemap.
+  // And they are invisible to everything that reads the sitemap as a sitemap.
   expect(await parseSitemap(xml)).toEqual(ENTRIES);
+});
+
+test("the CSS fallback is bound to the sitemap namespace", () => {
+  const css = sitemapCss();
+
+  // Without this, every selector below matches nothing and the fallback
+  // silently renders as the browser's bare XML tree.
+  expect(css.startsWith(`@namespace url(${SITEMAP_NS});`)).toBe(true);
+  for (const selector of ["urlset", "url", "loc", "lastmod"]) {
+    expect(css).toContain(`\n${selector} {`);
+  }
 });
 
 test("the stylesheet names every language the site publishes", () => {

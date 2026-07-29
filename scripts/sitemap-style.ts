@@ -1,32 +1,39 @@
 /*
- * sitemap.xsl — the stylesheet a browser applies to dist/sitemap.xml.
+ * How dist/sitemap.xml looks to a person who opens it. Two stylesheets, both
+ * named by [scripts/sitemap.ts](scripts/sitemap.ts) in `<?xml-stylesheet?>`
+ * instructions, because one of them is dated:
  *
- * A sitemap is written for crawlers, but its URL is public and people do open
- * it. `<?xml-stylesheet?>` (emitted by [scripts/sitemap.ts](scripts/sitemap.ts))
- * makes the browser transform the XML into the table below before painting it,
- * while every machine that matters — the crawlers, and `parseSitemap` — reads
- * the same bytes it always did: the processing instruction is not part of the
- * sitemaps.org 0.9 vocabulary and nothing in the protocol parses it.
+ *   sitemap.xsl  XSLT 1.0 (the only version browsers implement) — transforms
+ *                the XML into a table with the URLs as links, the language of
+ *                each page, and the date. What a browser renders today.
+ *   sitemap.css  CSS applied to the XML tree as it stands. Much less: CSS
+ *                cannot create a link, and no selector can read element text,
+ *                so the URLs are inert and there is no language column. What a
+ *                browser renders once XSLT is gone.
  *
- * XSLT **1.0**, because that is the only version any browser implements, and
- * with a shelf life: Chrome removes XSLT entirely in 158 (17 November 2026),
- * with WebKit and Gecko having agreed to the same removal. Nothing breaks on
- * that date — an unresolvable stylesheet leaves the browser showing the raw XML,
- * which is what it showed before this file existed — so the right move then is
- * to delete this module and the PI, not to work around the removal.
+ * Chrome removes XSLT in 158 (17 November 2026), with WebKit and Gecko agreed
+ * to the same removal. Carrying both is not hedging: run Chrome with
+ * `--disable-features=XSLT` — the state it ships in from 158 — and it ignores
+ * the XSL instruction and applies the CSS one, so the file degrades from the
+ * table to the list on its own, on the day, with nothing to do. When that day
+ * comes, delete the XSLT half; the CSS half is not deprecated and stays.
  *
- * The page is chrome, not content, so it borrows the site's palette but not its
+ * Both are chrome, not content, so they borrow the site's palette but not its
  * fonts: the hashed `assets/noto-sans-*.woff2` names are only known to the
  * bundler, and a stylesheet that guessed at one would ship a 404. Same call, and
  * the same system stack, as the 404 page in [scripts/build.ts](scripts/build.ts).
+ *
+ * None of this reaches a machine. The instructions are not part of the
+ * sitemaps.org 0.9 vocabulary; crawlers and `parseSitemap` read the same bytes
+ * they always did.
  */
 
 import { THEME_COLOR } from "../src/config.ts";
 import { langUrl } from "../src/render.ts";
 import { HTML_LANG, LANG_NAME, LANGS, PROFILE } from "../src/translations.ts";
-
-/** Written next to sitemap.xml, which points at it by this relative name. */
-export const SITEMAP_XSL_FILE = "sitemap.xsl";
+// The names live with the file that references them, so the dependency runs
+// one way: this module produces what sitemap.ts declares.
+import { SITEMAP_NS } from "./sitemap.ts";
 
 /**
  * One `<xsl:when>` per language, matching the last segment of a `<loc>` — `""`
@@ -176,6 +183,90 @@ export function sitemapXsl(): string {
 `;
 }
 
+/**
+ * The fallback, styling the sitemap's own elements. `@namespace` is the whole
+ * trick and the whole risk: `<loc>` is in the sitemaps.org namespace, so an
+ * unprefixed `loc` selector matches nothing at all and the page renders as the
+ * browser's bare XML tree.
+ *
+ * `<loc>` is deliberately not tinted like a link — CSS cannot make it one, and
+ * blue text that does nothing when clicked is worse than plain text.
+ */
+export function sitemapCss(): string {
+  return `@namespace url(${SITEMAP_NS});
+
+/* The root element's background propagates to the canvas, so this fills the
+   viewport even though the box is centred and capped. */
+urlset {
+  display: block;
+  box-sizing: border-box;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem;
+  background: ${THEME_COLOR.light};
+  color: #1d1d1f;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  counter-reset: entry;
+}
+
+urlset::before {
+  content: 'Sitemap';
+  display: block;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+url {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  counter-increment: entry;
+}
+
+url::before {
+  content: counter(entry);
+  color: #6e6e73;
+  font-variant-numeric: tabular-nums;
+}
+
+loc {
+  overflow-wrap: anywhere;
+}
+
+/* Absent whenever git could not date the content, which is a two-column row. */
+lastmod {
+  color: #6e6e73;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  urlset {
+    background: ${THEME_COLOR.dark};
+    color: #f5f5f7;
+  }
+
+  url {
+    border-bottom-color: rgba(255, 255, 255, 0.16);
+  }
+
+  url::before,
+  lastmod {
+    color: #86868b;
+  }
+}
+`;
+}
+
 if (import.meta.main) {
-  console.log(sitemapXsl());
+  console.log(Bun.argv[2] === "css" ? sitemapCss() : sitemapXsl());
 }

@@ -13,8 +13,12 @@ import { HTML_LANG, LANGS, translations } from "../src/translations.ts";
 import { escapeHtml } from "../src/dom.ts";
 import { pageTitle } from "../src/render.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
-import { contentLastmod, parseSitemap } from "./sitemap.ts";
-import { SITEMAP_XSL_FILE } from "./sitemap-style.ts";
+import {
+  contentLastmod,
+  parseSitemap,
+  SITEMAP_CSS_FILE,
+  SITEMAP_XSL_FILE,
+} from "./sitemap.ts";
 import { entryPublished, FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
@@ -70,6 +74,7 @@ test(
     // neither — and nothing may advertise a file that was not written.
     expect(existsSync(`${ROOT}/dist/sitemap.xml`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_XSL_FILE}`)).toBe(false);
+    expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/feed.json`)).toBe(false);
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
       .not.toContain("Sitemap:");
@@ -187,11 +192,13 @@ test(
       expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
     }
 
-    // The browser stylesheet ships beside the sitemap that references it, and
-    // carries a row for every URL in it: a <loc> the transform has no case for
-    // renders a blank language cell to whoever opens the file.
+    // Both browser stylesheets ship beside the sitemap that references them,
+    // and the XSLT one carries a row for every URL in it: a <loc> the transform
+    // has no case for renders a blank language cell to whoever opens the file.
     const xsl = await Bun.file(`${ROOT}/dist/${SITEMAP_XSL_FILE}`).text();
     expect(sitemap).toContain(`href="${SITEMAP_XSL_FILE}"`);
+    expect(sitemap).toContain(`href="${SITEMAP_CSS_FILE}"`);
+    expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(true);
     for (const { loc } of entries) {
       expect(xsl).toContain(`test="$file = '${loc.slice(SITE.length + 1)}'"`);
     }

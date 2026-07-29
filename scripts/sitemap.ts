@@ -27,10 +27,11 @@
  * LANGS loop, and one method is enough. A second copy would be one more thing
  * to keep in step.
  *
- * The one thing outside the vocabulary is the `<?xml-stylesheet?>` instruction,
- * which asks a *browser* to render the file as a table instead of a tag tree
- * (see [scripts/sitemap-style.ts](scripts/sitemap-style.ts)). It is inert to
- * every consumer that matters: crawlers parse the XML, not the PI.
+ * The one thing outside the vocabulary is the pair of `<?xml-stylesheet?>`
+ * instructions, which ask a *browser* to render the file as something other
+ * than a tag tree (see [scripts/sitemap-style.ts](scripts/sitemap-style.ts) for
+ * why there are two, and which one survives). Both are inert to every consumer
+ * that matters: crawlers parse the XML, not the PIs.
  *
  * As a CLI it reads a sitemap back the way a crawler does — same
  * HTMLRewriter-over-our-own-output shape as scripts/social-meta.ts:
@@ -39,10 +40,18 @@
  */
 
 import { $ } from "bun";
-import { SITEMAP_XSL_FILE } from "./sitemap-style.ts";
 
 /** The namespace the protocol requires on `<urlset>`. */
 export const SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
+
+/**
+ * The two browser stylesheets this file points at, written beside it by
+ * [scripts/sitemap-style.ts](scripts/sitemap-style.ts). Declared here, where the
+ * references are emitted, so that module can generate them without importing
+ * back into this one.
+ */
+export const SITEMAP_XSL_FILE = "sitemap.xsl";
+export const SITEMAP_CSS_FILE = "sitemap.css";
 
 export interface SitemapEntry {
   /** Absolute URL, same host and same-or-deeper path as the sitemap itself. */
@@ -136,10 +145,12 @@ export function sitemapXml(
   }).join("\n");
 
   // 50,000 URLs / 50MB is the per-file ceiling; eight pages will not approach
-  // it, so there is no sitemap index and no gzip variant. The stylesheet href
-  // is relative, and resolves against the sitemap's own URL — the two files are
-  // written side by side, so the site can still move to any host or base path.
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="${SITEMAP_XSL_FILE}"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
+  // it, so there is no sitemap index and no gzip variant. The stylesheet hrefs
+  // are relative, and resolve against the sitemap's own URL — the three files
+  // are written side by side, so the site can still move to any host or base
+  // path. XSL first: a browser that still has XSLT takes it and never reaches
+  // the CSS, and one that does not skips to the CSS.
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="${SITEMAP_XSL_FILE}"?>\n<?xml-stylesheet type="text/css" href="${SITEMAP_CSS_FILE}"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
 }
 
 /**

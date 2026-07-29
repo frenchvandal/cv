@@ -25,8 +25,13 @@ import {
 // The same escaper the renderer uses — one implementation, so the two can't
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
-import { contentLastmod, sitemapXml } from "./sitemap.ts";
-import { SITEMAP_XSL_FILE, sitemapXsl } from "./sitemap-style.ts";
+import {
+  contentLastmod,
+  SITEMAP_CSS_FILE,
+  SITEMAP_XSL_FILE,
+  sitemapXml,
+} from "./sitemap.ts";
+import { sitemapCss, sitemapXsl } from "./sitemap-style.ts";
 import {
   entryPublished,
   FEED_MIME,
@@ -329,11 +334,13 @@ if (SITE) {
   }));
   await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
   console.log(`  ${OUT}/sitemap.xml`);
-  // The sitemap points at this by relative name, so the two ship together or
+  // The sitemap points at both by relative name, so the three ship together or
   // not at all — a dangling stylesheet reference is a console error on a file
   // whose whole job is to be machine-read without incident.
   await Bun.write(`${OUT}/${SITEMAP_XSL_FILE}`, sitemapXsl());
   console.log(`  ${OUT}/${SITEMAP_XSL_FILE}`);
+  await Bun.write(`${OUT}/${SITEMAP_CSS_FILE}`, sitemapCss());
+  console.log(`  ${OUT}/${SITEMAP_CSS_FILE}`);
 }
 
 // Friendly 404 for GitHub Pages, served for any unknown path — including
