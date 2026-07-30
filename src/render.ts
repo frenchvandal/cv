@@ -171,7 +171,7 @@ export function languageNegotiationScript(): string {
         }
       }
     }
-    if (pick && pick !== "en") location.replace(urls[pick]);
+    if (pick && pick !== "en") location.replace(urls[pick] + location.search + location.hash);
   } catch (e) {}
 })();
 </script>`;

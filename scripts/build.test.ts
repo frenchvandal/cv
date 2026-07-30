@@ -7,6 +7,7 @@
  * depend on the caller's setup.
  */
 
+import { $ } from "bun";
 import { expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { HTML_LANG, LANGS, translations } from "../src/translations.ts";
@@ -22,6 +23,20 @@ import {
 import { entryPublished, FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
+
+/**
+ * Whether this checkout can answer git history questions. In a shallow clone
+ * (or outside a repository) the pickaxe lookups used for <lastmod> and
+ * date_published return nothing, and the assertions below would compare empty
+ * to empty—green without saying anything. When history IS there, dates must
+ * be found, so a silent regression in those lookups turns red instead.
+ */
+const hasHistory = await $`git rev-parse --is-shallow-repository`
+  .cwd(ROOT)
+  .quiet()
+  .nothrow()
+  .text()
+  .then((out) => out.trim() === "false", () => false);
 
 /** The page a language is written to, and read back from, in dist/. */
 const outFile = (lang: string) => lang === "en" ? "index.html" : `${lang}.html`;
@@ -191,6 +206,11 @@ test(
     if (lastmod) {
       expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
     }
+    // Independent truth: with history available, the field must exist. The
+    // loop above compares the build's answer to the same function's answer,
+    // so a broken git lookup would otherwise pass vacuously (undefined ===
+    // undefined) in exactly the shallow clones the gates used to run.
+    if (hasHistory) expect(lastmod).toBeDefined();
 
     // Both browser stylesheets ship beside the sitemap that references them,
     // and the XSLT one carries a row for every URL in it: a <loc> the transform
@@ -211,6 +231,16 @@ test(
     // from git—the same source the sitemap's <lastmod> comes from, so a
     // checkout without history yields no date rather than a wrong one.
     const published = await entryPublished(translations.en);
+    // Independent truth: the expected item count is derived from the
+    // translation data, not from the code under test—so with history a git
+    // lookup that silently answers nothing (reformatted literal, broken
+    // pickaxe) fails here instead of passing as `0 === 0` below.
+    if (hasHistory) {
+      const en = translations.en;
+      const itemCount = Object.keys(en.experience).length +
+        Object.keys(en.education).length + 1;
+      expect(published.size).toBe(itemCount);
+    }
     for (const lang of LANGS) {
       const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
       expect(feed.version).toBe(FEED_VERSION);

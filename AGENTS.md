@@ -63,9 +63,12 @@ the code itself
     way. [scripts/sitemap.ts](scripts/sitemap.ts) also **writes** it (the build
     imports it under `SITE_URL`); its header records which protocol fields are
     emitted and why the other two are not—read it before adding one. `<lastmod>`
-    comes from `git log` over the paths that reach a visitor, so deploy.yaml
-    checks out with `fetch-depth: 0`; without history the field is omitted
-    rather than guessed.
+    comes from `git log` over the paths that reach a visitor, so **all three
+    workflows** check out with `fetch-depth: 0`; without history the field is
+    omitted rather than guessed, and the assertions in
+    [scripts/build.test.ts](scripts/build.test.ts) that compare the build to
+    that same lookup would pass on empty against empty. That is why the gates
+    need the history too, not just the deploy.
   - [scripts/sitemap-style.ts](scripts/sitemap-style.ts) writes the two browser
     stylesheets the sitemap names in its `<?xml-stylesheet?>` instructions
     (`bun scripts/sitemap-style.ts [css]` prints either; `xmllint` and
@@ -231,6 +234,19 @@ this site targets modern browsers only, so don't down-level.
   any page (the brand is 112px in Latin but 161px in Chinese, so the budget is
   not one number), and `.nav__links { overflow: hidden }` is the floor under it
   for a visitor whose JS never runs.
+- **A fitter's answer is pre-stated in CSS, or it flashes.** The fitters run
+  after `document.fonts.ready`, so whatever [src/styles.css](src/styles.css)
+  declares is what the visitor sees first—on load, and again for the ~30ms after
+  a language switch replaces `#app`. When the two disagree the size snaps in
+  front of the reader, which is how the hero shipped at 88px and settled at 76
+  for months. So `.hero__name` carries the fit as a `clamp` and the three
+  overrunning languages carry `fitNavLinks`' own output, `column-gap` included
+  (bake the type without the gap and the row is still 40px off). Two rules hold
+  it together: the bounds are **px**, because `HERO_FIT`/`NAV_FIT` are px and
+  `rem` would drift from them under a changed root font size; and every number
+  that is not measured is asserted against its constant in
+  [src/styles.test.ts](src/styles.test.ts). Only the width of the rendered text
+  needs a browser—re-measure it when the name or the display font changes.
 - **Knuth–Plass.** [src/linebreak.ts](src/linebreak.ts) runs optimal (TeX-style)
   line breaking over pretext-measured boxes/glue, with `hyphen` supplying
   syllable break points, to justify the About paragraphs. Glue uses `shrink: 0`

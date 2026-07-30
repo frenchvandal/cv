@@ -302,6 +302,44 @@ a:hover {
   text-decoration: none;
 }
 
+/* Same contract as `.hero__name` further down, for `fitNavLinks`: what the bar
+   shows until the fitter runs. Only these three languages need it—English and
+   the three Chinese pages fit at the declared size, so the fitter leaves them
+   untouched (it sets no inline style at all there).
+
+   Both halves of the fit are baked, in the order the fitter spends them: the
+   gap first, down to NAV_FIT.minGapPx, because whitespace is the cheapest width
+   on the bar; then the type. Baking only the type leaves the row 40px wide of
+   its settled width—four gaps at 10px—and the last shortcut still clipped by
+   `.nav__links`'s `overflow` on first paint.
+
+   The bar has no responsive slack: it shares `--wrap`, so `.nav__links` gets
+   the same width at every viewport (see NAV_FIT). These are therefore constants
+   rather than curves, measured identical at 900, 1440 and 1728px. `auditNav`
+   (dev-only) prints them; re-run it after any nav label changes, and expect a
+   size between NAV_FIT.minPx and maxPx. The fitter still runs and still has the
+   last word—these values only decide what the first frame looks like.
+
+   `column-gap`, not `gap`: the fitter writes that longhand, and a shorthand
+   here would be overridden wholesale rather than in the one axis that moves. */
+:root[data-lang='fr'] .nav__links,
+:root[data-lang='pt'] .nav__links,
+:root[data-lang='es'] .nav__links {
+  column-gap: 10px;
+}
+
+:root[data-lang='fr'] .nav__link {
+  font-size: 12.64px;
+}
+
+:root[data-lang='pt'] .nav__link {
+  font-size: 12.94px;
+}
+
+:root[data-lang='es'] .nav__link {
+  font-size: 12.04px;
+}
+
 .nav__actions {
   display: flex;
   align-items: center;
@@ -426,29 +464,37 @@ a:hover {
 
 .hero__name {
   /* Sized by pretext (src/measure.ts) so the longest line fills the column in
-     every language. This clamp is what the page shows until that runs—on first
-     paint, and again for the ~30ms after a language switch replaces #app—so it
-     is not a rough guess but the same curve, solved in CSS: `fitHeroName`
-     computes `available * HERO_FIT.fill / widest`, where `available` is
-     `100vw` less `.wrap`'s 2.5rem of padding until `--wrap` caps it, and
-     `widest` is 7.477em for "Philippe Ribeiro" at this weight and tracking.
-     0.12305 is `fill / widest`; the bounds are HERO_FIT.minPx and maxPx.
-     Reproduces the fitter to 0.1px from 360px up, where it used to overshoot
-     by 12px at 1440 and undershoot by 13px at 700. Re-measure this coefficient
-     if the name or the display font changes; nothing else here depends on it. */
-  font-size: clamp(2.125rem, calc((100vw - 2.5rem) * 0.12305), 4.75rem);
+     every language. This clamp is what the page shows until that runs: on first
+     paint, and for the ~30ms after a language switch replaces #app. So it is
+     not a rough guess but the same curve solved in CSS. `fitHeroName` computes
+     `available * fill / widest` between HERO_FIT's two bounds, where `available`
+     is the element's own width (`100vw` less `.wrap`'s 2.5rem of padding) and
+     `fill` is `HERO_FIT.fill * MEASURE_SAFETY` = 0.92 * 0.98 = 0.9016. The
+     0.12305 here is that over `widest`, which measures 7.327em for "Philippe
+     Ribeiro" at this weight and tracking—the one number in this file that came
+     from a browser. Re-measure it if the name or the display font changes.
+
+     Two things deliberately absent. `--wrap` caps `available` at 46rem, but
+     maxPx binds first (at a 657px viewport, against 776px for the cap), so the
+     cap is unobservable and `min(…, 46rem)` would be dead arithmetic. And the
+     bounds are px, not rem, because HERO_FIT's are: in rem they would scale
+     with the root font size while the fitter did not, and the flash this rule
+     exists to remove would come back for anyone who changed that setting. */
+  font-size: clamp(34px, calc((100vw - 2.5rem) * 0.12305), 76px);
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.02em;
   width: 100%;
 }
 
-/* 李北洛 is three full-width glyphs, so the fit is at HERO_FIT.maxPx from 360px
-   up—the Latin curve above would start it 32px too small on a phone and 12px
-   too large on a desktop. Measured identical at 360, 500, 700, 900, 1100, 1440
-   and 1728px, which is why this is a constant and not a second clamp. */
+/* 李北洛 is three full-width glyphs, so the fit sits at HERO_FIT.maxPx from 360px
+   up—the Latin curve above would start it 32px too small on a phone. Measured
+   identical at 360, 500, 700, 900, 1100, 1440 and 1728px, which is why this is
+   a constant rather than a second clamp: the fitter only leaves the cap below a
+   ~263px viewport, narrower than any device. `data-lang` is on <html> and
+   `setLang` rewrites it, so this follows a reload-free language switch too. */
 :root[data-lang^='zh'] .hero__name {
-  font-size: 4.75rem;
+  font-size: 76px;
 }
 
 .hero__name-line {

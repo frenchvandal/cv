@@ -95,6 +95,7 @@ test.each([...LANGS])(
 function negotiationTarget(
   languages: readonly string[],
   saved: string | null,
+  from: { search?: string; hash?: string } = {},
 ): string | null {
   const source = languageNegotiationScript()
     .replace(/^<script>/, "")
@@ -103,7 +104,11 @@ function negotiationTarget(
   new Function("navigator", "localStorage", "location", source)(
     { languages, language: languages[0] ?? "" },
     { getItem: () => saved },
-    { replace: (url: string) => void (target = url) },
+    {
+      search: from.search ?? "",
+      hash: from.hash ?? "",
+      replace: (url: string) => void (target = url),
+    },
   );
   return target;
 }
@@ -157,6 +162,27 @@ test.each(
     expect(negotiationTarget(languages, saved)).toBe(expected);
   },
 );
+
+/*
+ * The redirect carries the rest of the URL. A root link is the one people
+ * share, and it is exactly the one that gets rewritten: without this, a French
+ * reader following `…/cv/#experience` landed at the top of `fr.html` with the
+ * section dropped, and any campaign parameter went with it.
+ */
+test.each(
+  [
+    [{ hash: "#experience" }, "fr.html#experience"],
+    [{ search: "?utm_source=linkedin" }, "fr.html?utm_source=linkedin"],
+    [
+      { search: "?a=1", hash: "#contact" },
+      "fr.html?a=1#contact",
+    ],
+    // Nothing to carry is still a bare path, not a stray "?" or "#".
+    [{}, "fr.html"],
+  ] as const,
+)("the redirect keeps %j", (from, expected) => {
+  expect(negotiationTarget(["fr-FR"], null, from)).toBe(expected);
+});
 
 test("pageTitle combines display name and hero title", () => {
   const t = translations.en;

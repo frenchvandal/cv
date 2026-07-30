@@ -14,6 +14,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Full history: build.test.ts dates the feeds and the sitemap from
+          # git, and in a shallow clone those assertions pass vacuously on
+          # zero entries—a broken lookup would stay invisible in this gate.
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

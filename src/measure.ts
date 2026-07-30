@@ -27,7 +27,7 @@ import { measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext";
 const REFERENCE_PX = 100;
 
 /** Fraction we shrink every fit by, as insurance against rounding—invisible, never overflows. */
-const MEASURE_SAFETY = 0.98;
+export const MEASURE_SAFETY = 0.98;
 
 /**
  * Fallback stack when the caller passes no `family`. Latin-only; CJK pages must

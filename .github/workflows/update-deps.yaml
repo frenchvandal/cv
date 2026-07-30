@@ -39,6 +39,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Full history: this job's `bun test` is the only gate between a
+          # dependency bump and main, and the feed/sitemap date assertions in
+          # build.test.ts pass vacuously in a shallow clone.
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
