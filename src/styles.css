@@ -33,10 +33,15 @@
   --fg-secondary: #4b4b50; /* 8.6:1 */
   --fg-tertiary: #6e6e73; /* 5.6:1 */
 
-  /* One accent, two roles: --accent fills controls, --link tints text (the
-     darker of the pair, so blue-on-white text clears 4.5:1). */
+  /* One accent, three roles, because two of them pull contrast in opposite
+     directions: --accent is the graphic (focus ring, state dots) and needs 3:1
+     against the page it sits on, --accent-fill is the background under
+     --accent-fg text and needs 4.5:1 against that text, --link tints text. The
+     fill and its hover sit at the darker end—white-on-blue is the binding
+     constraint, and it only gets harder as the blue brightens. */
   --accent: #0071e3;
-  --accent-hover: #0077ed;
+  --accent-fill: #0071e3; /* 4.7:1 under --accent-fg */
+  --accent-fill-hover: #005bb5; /* 6.6:1 under --accent-fg */
   --accent-fg: #ffffff;
   --link: #0066cc; /* 5.3:1 on --bg */
 
@@ -106,8 +111,12 @@
     --fg: #f5f5f7;
     --fg-secondary: #b0b0b6; /* 9.4:1 */
     --fg-tertiary: #86868b; /* 5.6:1 */
-    --accent: #0a84ff;
-    --accent-hover: #3b9dff;
+    --accent: #0a84ff; /* 5.8:1 on --bg, so the focus ring keeps its bite */
+    /* Deliberately not the brighter blue above: white on #0a84ff is 3.6:1, and
+       a filled button is text first. The light theme's fill still clears 4.5:1
+       against --bg here, so it reads as a control on black too. */
+    --accent-fill: #0071e3; /* 4.7:1 under --accent-fg, 4.47:1 on --bg */
+    --accent-fill-hover: #005bb5; /* 6.6:1 under --accent-fg, 3.2:1 on --bg */
     --accent-fg: #ffffff;
     --link: #2997ff; /* 6.6:1 on --bg */
     --separator: rgba(255, 255, 255, 0.16);
@@ -217,7 +226,7 @@ a:hover {
   z-index: 200;
   padding: var(--space-xs) var(--space-md);
   border-radius: var(--r-pill);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-fg);
 }
 
@@ -541,14 +550,14 @@ a:hover {
   padding: 0.75rem 1.375rem;
   border: none;
   border-radius: var(--r-pill);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-fg);
   cursor: pointer;
   transition: background 0.2s var(--ease);
 }
 
 .button:hover {
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
   color: var(--accent-fg);
   text-decoration: none;
 }
@@ -611,7 +620,10 @@ a:hover {
 
 .section__body--cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  /* The `min()` is what keeps the track from outgrowing its container: a bare
+     17rem doubles to 544px at 200% text zoom and pushes the page sideways on a
+     phone. Capped at 100%, the column just goes single-file instead. */
+  grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
   gap: var(--space-md);
 }
 
@@ -943,7 +955,8 @@ a:hover {
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  /* Capped like the card grid above, and for the same zoom reason. */
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
   gap: 1px; /* the gap IS the separator, painted by the container below */
   background: var(--separator);
   border-radius: var(--r-lg);
@@ -994,6 +1007,7 @@ a:hover {
   border-radius: var(--r-sm);
   background: var(--fill);
   color: var(--fg-secondary);
+  overflow-wrap: anywhere; /* same zoom reason as .contact__value */
 }
 
 /* ------------------------------------------------------------------ *
@@ -1208,7 +1222,7 @@ a:hover {
 .chat__row--me .msg {
   border-bottom-left-radius: 18px;
   border-bottom-right-radius: 5px;
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-fg);
 }
 
@@ -1325,6 +1339,10 @@ a:hover {
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--fg);
+  /* `anywhere` rather than `break-word`: only this one also shrinks the flex
+     item's min-content width, which is what stops "in/philipperibeiro"—one
+     unbreakable 18-character run at 36px—from pushing the page sideways. */
+  overflow-wrap: anywhere;
 }
 
 /* The copied state is a state change, not a shape change: the label swaps and

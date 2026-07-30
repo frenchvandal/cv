@@ -206,14 +206,22 @@ function nav(t: Translation, lang: Lang, theme: Theme): string {
   // is the one that represents the page a Hong Kong reader is on.
   const current = lang === "zh-hk" ? "zh-hant" : lang;
 
+  // The endonym is the accessible name, but it cannot ride on an aria-label:
+  // an attribute carries no language, so a French screen reader would read
+  // 简体中文 in its own voice. As real text in a .sr-only span it gets a lang of
+  // its own, which is what RGAA 8.7 asks for. The visible glyph is then
+  // aria-hidden so the name stays the endonym alone, not "简 简体中文".
   const languages = SWITCHER_LANGS.map(
     (code) => `
         <a href="${langUrl(code)}" hreflang="${
       HTML_LANG[code]
-    }" data-lang="${code}"${
-      current === code ? ' aria-current="page"' : ""
-    } aria-label="${escapeHtml(LANG_NAME[code])}">
-          <span lang="${HTML_LANG[code]}">${LANG_LABEL[code]}</span>
+    }" data-lang="${code}"${current === code ? ' aria-current="page"' : ""}>
+          <span lang="${HTML_LANG[code]}" aria-hidden="true">${
+      LANG_LABEL[code]
+    }</span>
+          <span class="sr-only" lang="${HTML_LANG[code]}">${
+      escapeHtml(LANG_NAME[code])
+    }</span>
         </a>`,
   ).join("");
 
@@ -608,6 +616,26 @@ function phoneChrome(t: Translation): { status: string; bar: string } {
   };
 }
 
+/** CJK ideographs and CJK punctuation—the runs that need a declared language. */
+const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
+
+/**
+ * RGAA 8.7: a run of Chinese inside a page written in another language has to
+ * say so, or a screen reader pronounces it with the page's voice. Only the
+ * dialogue needs this today (「微辣」in the English, French, Portuguese and
+ * Spanish threads); on the Chinese pages there is no change of language to mark.
+ *
+ * Safe on already-escaped text: the CJK ranges cannot overlap an HTML entity,
+ * so wrapping a run never lands inside one.
+ */
+function markChinese(escaped: string, lang: Lang): string {
+  if (lang.startsWith("zh")) return escaped;
+  return escaped.replace(
+    CJK_RUN,
+    (run) => `<span lang="zh-Hans">${run}</span>`,
+  );
+}
+
 /**
  * The faux visitor interview, presented as a message thread on a phone.
  *
@@ -627,7 +655,7 @@ function phoneChrome(t: Translation): { status: string; bar: string } {
  * guessing. It is `.js`-gated in CSS, since a range input that moves nothing
  * would be a lie without the script.
  */
-function dialogue(t: Translation): string {
+function dialogue(t: Translation, lang: Lang): string {
   const rows = t.dialogue.messages.map(
     (m) => `
               <div class="chat__row${m.me ? " chat__row--me" : ""}">
@@ -635,7 +663,7 @@ function dialogue(t: Translation): string {
       escapeHtml(m.text)
     }"><span class="sr-only">${
       escapeHtml(m.me ? t.dialogue.me : t.dialogue.visitor)
-    }: </span>${escapeHtml(m.text)}</div>
+    }: </span>${markChinese(escapeHtml(m.text), lang)}</div>
               </div>`,
   ).join("");
 
@@ -735,7 +763,7 @@ export function renderApp(lang: Lang, theme: Theme): string {
         ${certifications(t)}
         ${skills(t)}
         ${hobbies(t)}
-        ${dialogue(t)}
+        ${dialogue(t, lang)}
         ${contact(t)}
       </main>
       <footer class="footer">
