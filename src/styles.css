@@ -115,7 +115,7 @@
     /* Deliberately not the brighter blue above: white on #0a84ff is 3.6:1, and
        a filled button is text first. The light theme's fill still clears 4.5:1
        against --bg here, so it reads as a control on black too. */
-    --accent-fill: #0071e3; /* 4.7:1 under --accent-fg, 4.47:1 on --bg */
+    --accent-fill: #0071e3; /* 4.7:1 under --accent-fg, 4.5:1 on --bg */
     --accent-fill-hover: #005bb5; /* 6.6:1 under --accent-fg, 3.2:1 on --bg */
     --accent-fg: #ffffff;
     --link: #2997ff; /* 6.6:1 on --bg */
