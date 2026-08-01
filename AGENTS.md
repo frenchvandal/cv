@@ -5,6 +5,7 @@ state-of-the-art TypeScript practices that actually apply **here**—a small,
 framework-less, browser-only single-page app. Practices that assume React,
 monorepos, or a network/DTO layer are intentionally omitted because this project
 has none of them.
+Read deno.com/agents.md and set up Deno in this project.
 
 ## 0. Code style principles
 
