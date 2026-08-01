@@ -126,7 +126,7 @@ const en = {
   },
   meta: {
     description:
-      "Philippe Ribeiro — Product Owner and Business Analyst with 20 years in financial-services software: insurance core systems, bancassurance, public finance. Based in Chengdu, China, available immediately.",
+      "Philippe Ribeiro — Product Owner and Business Analyst with 20 years in financial-services software: insurance core systems, bancassurance, public finance. Based in Chengdu, China.",
   },
   nav: {
     about: "About",
@@ -135,14 +135,13 @@ const en = {
     certifications: "Certifications",
     skills: "Skills",
     hobbies: "Hobbies",
-    dialogue: "Dialogue",
+    dialogue: "Questions",
     contact: "Contact",
   },
   hero: {
     greeting: "Hello, I'm",
     title: "Product Owner · Business Analyst — 20 years in financial software",
-    location:
-      "Chengdu, China — mobile nationwide · French national · Available immediately",
+    location: "Chengdu, China · French national",
     ctaPrimary: "Get in Touch",
     ctaSecondary: "Learn More",
   },
@@ -152,7 +151,7 @@ const en = {
     p2:
       "At KAPIA-RGI I own K4U, a customer-facing insurance web portal serving multiple client companies, end to end: product vision, roadmap, and backlog, prioritized across competing stakeholder demands. I led the cross-company rollout of single sign-on (SAML/OIDC), drive decisions from user feedback and advanced SQL analysis, and ship only tested, compliant increments — ISTQB-certified tester, PSPO-trained.",
     p3:
-      "Living in Chengdu since 2025 after a year of full-time Mandarin study at Sichuan University — daily life runs in Mandarin (HSK 4, HSK 5 in preparation). Native French and Portuguese, fluent English, working Spanish. Available immediately, mobile across China.",
+      "Living in Chengdu since 2025 after a year of full-time Mandarin study at Sichuan University — daily life runs in Mandarin (HSK 4, HSK 5 in preparation). Native French and Portuguese, fluent English, working Spanish.",
     stats: {
       years: "Years in software",
       languages: "Languages",
@@ -320,16 +319,22 @@ const en = {
     },
   },
   dialogue: {
-    visitor: "Visitor",
+    visitor: "Reader",
     width: "Container width",
     me: "Philippe",
-    disclaimer: "A barely embellished transcript of a real conversation.",
+    disclaimer:
+      "The questions that actually come up, with the answers I actually give.",
     messages: [
-      { me: false, text: "Are you really available immediately?" },
+      { me: false, text: "What is K4U?" },
       {
         me: true,
         text:
-          "Yes. My personal backlog is empty — everything prioritized, tested, shipped.",
+          "KAPIA-RGI's policyholder web portal. Several insurers, one product.",
+      },
+      { me: false, text: "What does a product owner actually decide?" },
+      {
+        me: true,
+        text: "Three companies want the same sprint. One of them gets it.",
       },
       {
         me: false,
@@ -362,7 +367,7 @@ const en = {
   },
   contact: {
     intro:
-      "I'm looking for Product Owner, Business Analyst, or project-management roles — in China or in Europe-facing remote collaboration. Twenty years in regulated financial software, based in Chengdu, mobile nationwide, available immediately.",
+      "Twenty years in regulated financial software, now from Chengdu. Below: where to reach me, and where the rest of the work lives.",
     wechatLabel: "WeChat",
     githubLabel: "GitHub",
     linkedinLabel: "LinkedIn",
@@ -397,7 +402,7 @@ const fr: Translation = {
   },
   meta: {
     description:
-      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine, disponible immédiatement.",
+      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine.",
   },
   nav: {
     about: "À propos",
@@ -406,15 +411,14 @@ const fr: Translation = {
     certifications: "Certifications",
     skills: "Compétences",
     hobbies: "Loisirs",
-    dialogue: "Dialogue",
+    dialogue: "Questions",
     contact: "Contact",
   },
   hero: {
     greeting: "Bonjour, je suis",
     title:
       "Product Owner · Business Analyst — 20 ans dans le logiciel financier",
-    location:
-      "Chengdu, Chine — mobile dans toute la Chine · Nationalité française · Disponible immédiatement",
+    location: "Chengdu, Chine · Nationalité française",
     ctaPrimary: "Me contacter",
     ctaSecondary: "En savoir plus",
   },
@@ -424,7 +428,7 @@ const fr: Translation = {
     p2:
       "Chez KAPIA-RGI, je porte K4U, un portail web d'assurance destiné aux clients finaux de plusieurs compagnies, de bout en bout : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes. J'ai piloté le déploiement transverse de l'authentification unique (SAML/OIDC), je fonde les décisions sur les retours utilisateurs et l'analyse SQL avancée, et je ne livre que des incréments testés et conformes — testeur certifié ISTQB, formé PSPO.",
     p3:
-      "Installé à Chengdu depuis 2025 après une année de mandarin à temps plein à l'Université du Sichuan — le quotidien se vit en mandarin (HSK 4, HSK 5 en préparation). Français et portugais langues maternelles, anglais courant, espagnol professionnel. Disponible immédiatement, mobile dans toute la Chine.",
+      "Installé à Chengdu depuis 2025 après une année de mandarin à temps plein à l'Université du Sichuan — le quotidien se vit en mandarin (HSK 4, HSK 5 en préparation). Français et portugais langues maternelles, anglais courant, espagnol professionnel.",
     stats: {
       years: "Ans dans le logiciel",
       languages: "Langues",
@@ -592,17 +596,22 @@ const fr: Translation = {
     },
   },
   dialogue: {
-    visitor: "Visiteur",
+    visitor: "Lecteur",
     width: "Largeur du conteneur",
     me: "Philippe",
     disclaimer:
-      "Transcription à peine romancée d'une conversation authentique.",
+      "Les questions qui reviennent vraiment, avec les réponses que je donne vraiment.",
     messages: [
-      { me: false, text: "Vous êtes vraiment disponible immédiatement ?" },
+      { me: false, text: "K4U, c'est quoi ?" },
       {
         me: true,
         text:
-          "Oui. Mon backlog personnel est vide : tout est priorisé, testé, livré.",
+          "Le portail assuré de KAPIA-RGI. Plusieurs compagnies clientes, un seul produit.",
+      },
+      { me: false, text: "Un Product Owner, ça arbitre quoi au juste ?" },
+      {
+        me: true,
+        text: "Trois compagnies veulent le même sprint. Une seule l'aura.",
       },
       {
         me: false,
@@ -636,7 +645,7 @@ const fr: Translation = {
   },
   contact: {
     intro:
-      "Je recherche des postes de Product Owner, Business Analyst ou conduite de projet — en Chine ou en collaboration à distance avec l'Europe. Vingt ans dans le logiciel financier réglementé, basé à Chengdu, mobile dans toute la Chine, disponible immédiatement.",
+      "Vingt ans dans le logiciel financier réglementé, aujourd'hui depuis Chengdu. Ci-dessous : où me joindre, et où vit le reste du travail.",
     wechatLabel: "WeChat",
     githubLabel: "GitHub",
     linkedinLabel: "LinkedIn",
@@ -677,7 +686,7 @@ const pt: Translation = {
   },
   meta: {
     description:
-      "Philippe Ribeiro — Product Owner e Analista de Negócio, 20 anos em software para serviços financeiros: sistemas centrais de seguros de vida, bancassurance, finanças públicas. Radicado em Chengdu, China, disponível imediatamente.",
+      "Philippe Ribeiro — Product Owner e Analista de Negócio, 20 anos em software para serviços financeiros: sistemas centrais de seguros de vida, bancassurance, finanças públicas. Radicado em Chengdu, China.",
   },
   nav: {
     about: "Sobre",
@@ -686,15 +695,14 @@ const pt: Translation = {
     certifications: "Certificações",
     skills: "Competências",
     hobbies: "Interesses",
-    dialogue: "Diálogo",
+    dialogue: "Perguntas",
     contact: "Contacto",
   },
   hero: {
     greeting: "Olá, sou o",
     title:
       "Product Owner · Analista de Negócio — 20 anos em software financeiro",
-    location:
-      "Chengdu, China — mobilidade em todo o país · Nacionalidade francesa · Disponível imediatamente",
+    location: "Chengdu, China · Nacionalidade francesa",
     ctaPrimary: "Entrar em contacto",
     ctaSecondary: "Saber mais",
   },
@@ -704,7 +712,7 @@ const pt: Translation = {
     p2:
       "Na KAPIA-RGI sou responsável pelo K4U, um portal web de seguros destinado aos clientes finais de várias companhias, de ponta a ponta: visão de produto, roadmap e backlog, priorizados entre pedidos concorrentes. Conduzi a adopção transversal da autenticação única (SAML/OIDC), fundamento as decisões no feedback dos utilizadores e em análise SQL avançada, e só entrego incrementos testados e conformes — testador certificado ISTQB, com formação PSPO.",
     p3:
-      "Radicado em Chengdu desde 2025, após um ano de mandarim a tempo inteiro na Universidade de Sichuan — o quotidiano faz-se em mandarim (HSK 4, HSK 5 em preparação). Francês e português maternos, inglês fluente, espanhol profissional. Disponível imediatamente, com mobilidade em toda a China.",
+      "Radicado em Chengdu desde 2025, após um ano de mandarim a tempo inteiro na Universidade de Sichuan — o quotidiano faz-se em mandarim (HSK 4, HSK 5 em preparação). Francês e português maternos, inglês fluente, espanhol profissional.",
     stats: {
       years: "Anos em software",
       languages: "Idiomas",
@@ -873,17 +881,22 @@ const pt: Translation = {
     },
   },
   dialogue: {
-    visitor: "Visitante",
+    visitor: "Leitor",
     width: "Largura do contentor",
     me: "Philippe",
     disclaimer:
-      "Transcrição apenas ligeiramente romanceada de uma conversa verdadeira.",
+      "As perguntas que surgem sempre, com as respostas que dou sempre.",
     messages: [
-      { me: false, text: "Está mesmo disponível de imediato?" },
+      { me: false, text: "O que é o K4U?" },
       {
         me: true,
         text:
-          "Estou. O meu backlog pessoal está vazio: tudo priorizado, testado e entregue.",
+          "O portal do segurado da KAPIA-RGI. Várias companhias clientes, um só produto.",
+      },
+      { me: false, text: "Um Product Owner decide o quê, ao certo?" },
+      {
+        me: true,
+        text: "Três companhias querem o mesmo sprint. Só uma o terá.",
       },
       {
         me: false,
@@ -916,7 +929,7 @@ const pt: Translation = {
   },
   contact: {
     intro:
-      "Procuro funções de Product Owner, Analista de Negócio ou gestão de projectos — na China ou em colaboração remota com a Europa. Vinte anos em software financeiro regulado, radicado em Chengdu, com mobilidade em toda a China e disponibilidade imediata.",
+      "Vinte anos em software financeiro regulado, hoje a partir de Chengdu. Abaixo: onde me contactar e onde vive o resto do trabalho.",
     wechatLabel: "WeChat",
     githubLabel: "GitHub",
     linkedinLabel: "LinkedIn",
@@ -950,7 +963,7 @@ const es: Translation = {
   },
   meta: {
     description:
-      "Philippe Ribeiro — Product Owner y Analista de Negocio con 20 años en software para servicios financieros: sistemas centrales de seguros de vida, banca-seguros y finanzas públicas. Residente en Chengdú, China, disponible de forma inmediata.",
+      "Philippe Ribeiro — Product Owner y Analista de Negocio con 20 años en software para servicios financieros: sistemas centrales de seguros de vida, banca-seguros y finanzas públicas. Residente en Chengdú, China.",
   },
   nav: {
     about: "Sobre mí",
@@ -959,15 +972,14 @@ const es: Translation = {
     certifications: "Certificaciones",
     skills: "Competencias",
     hobbies: "Intereses",
-    dialogue: "Diálogo",
+    dialogue: "Preguntas",
     contact: "Contacto",
   },
   hero: {
     greeting: "Hola, soy",
     title:
       "Product Owner · Analista de Negocio — 20 años en software financiero",
-    location:
-      "Chengdú, China — movilidad por todo el país · Nacionalidad francesa · Disponible de forma inmediata",
+    location: "Chengdú, China · Nacionalidad francesa",
     ctaPrimary: "Contactar",
     ctaSecondary: "Saber más",
   },
@@ -977,7 +989,7 @@ const es: Translation = {
     p2:
       "En KAPIA-RGI soy responsable de K4U, un portal web de seguros dirigido a los clientes finales de varias compañías, de principio a fin: visión de producto, hoja de ruta y backlog, priorizados entre peticiones que compiten entre sí. Dirigí la adopción transversal del inicio de sesión único (SAML/OIDC), fundamento las decisiones en los comentarios de los usuarios y en análisis SQL avanzado, y solo entrego incrementos probados y conformes: tester certificado ISTQB y formado en PSPO.",
     p3:
-      "Residente en Chengdú desde 2025, tras un año de mandarín a tiempo completo en la Universidad de Sichuan: el día a día transcurre en mandarín (HSK 4, HSK 5 en preparación). Francés y portugués maternos, inglés fluido y español profesional. Disponible de forma inmediata, con movilidad por toda China.",
+      "Residente en Chengdú desde 2025, tras un año de mandarín a tiempo completo en la Universidad de Sichuan: el día a día transcurre en mandarín (HSK 4, HSK 5 en preparación). Francés y portugués maternos, inglés fluido y español profesional.",
     stats: {
       years: "Años en software",
       languages: "Idiomas",
@@ -1145,16 +1157,22 @@ const es: Translation = {
     },
   },
   dialogue: {
-    visitor: "Visitante",
+    visitor: "Lector",
     width: "Anchura del contenedor",
     me: "Philippe",
-    disclaimer: "Transcripción apenas adornada de una conversación real.",
+    disclaimer:
+      "Las preguntas que salen siempre, con las respuestas que doy siempre.",
     messages: [
-      { me: false, text: "¿De verdad está disponible de forma inmediata?" },
+      { me: false, text: "¿Qué es K4U?" },
       {
         me: true,
         text:
-          "Sí. Mi backlog personal está vacío: todo priorizado, probado y entregado.",
+          "El portal del asegurado de KAPIA-RGI. Varias compañías clientes, un solo producto.",
+      },
+      { me: false, text: "¿Qué decide exactamente un Product Owner?" },
+      {
+        me: true,
+        text: "Tres compañías quieren el mismo sprint. Solo una lo tendrá.",
       },
       {
         me: false,
@@ -1187,7 +1205,7 @@ const es: Translation = {
   },
   contact: {
     intro:
-      "Busco puestos de Product Owner, Analista de Negocio o gestión de proyectos, en China o en colaboración remota con Europa. Veinte años en software financiero regulado, residente en Chengdú, con movilidad por toda China y disponibilidad inmediata.",
+      "Veinte años en software financiero regulado, hoy desde Chengdú. Abajo: dónde localizarme y dónde vive el resto del trabajo.",
     wechatLabel: "WeChat",
     githubLabel: "GitHub",
     linkedinLabel: "LinkedIn",
@@ -1215,7 +1233,7 @@ const zh: Translation = {
   },
   meta: {
     description:
-      "李北洛（Philippe Ribeiro）— 产品负责人 / 业务分析师，二十年金融软件经验：人寿保险核心系统、银行保险、公共财政。现居中国成都，可随时到岗。",
+      "李北洛（Philippe Ribeiro）— 产品负责人 / 业务分析师，二十年金融软件经验：人寿保险核心系统、银行保险、公共财政。现居中国成都。",
   },
   nav: {
     about: "关于我",
@@ -1224,13 +1242,13 @@ const zh: Translation = {
     certifications: "认证",
     skills: "技能",
     hobbies: "爱好",
-    dialogue: "对话",
+    dialogue: "常见问题",
     contact: "联系",
   },
   hero: {
     greeting: "你好，我是",
     title: "产品负责人 · 业务分析师 — 二十年金融软件经验",
-    location: "中国成都 · 可在全国范围工作 · 法国籍 · 可随时到岗",
+    location: "中国成都 · 法国籍",
     ctaPrimary: "联系我",
     ctaSecondary: "了解更多",
   },
@@ -1240,7 +1258,7 @@ const zh: Translation = {
     p2:
       "在 KAPIA-RGI，我全面负责 K4U——一个服务多家保险公司终端客户的网页门户：产品愿景、路线图与待办列表，在相互竞争的需求之间做优先级取舍。我主导了单点登录（SAML/OIDC）的跨公司部署，依托用户反馈与高级 SQL 分析驱动决策，只交付经过测试、符合监管要求的增量——持有 ISTQB 测试认证，受过 PSPO 培训。",
     p3:
-      "2025 年起定居成都，在四川大学完成一年全日制中文学习——日常生活以中文进行（已通过 HSK 4，正备考 HSK 5）。法语、葡萄牙语为母语，英语流利，西班牙语可作工作语言。可随时到岗，可在全国范围内工作。",
+      "2025 年起定居成都，在四川大学完成一年全日制中文学习——日常生活以中文进行（已通过 HSK 4，正备考 HSK 5）。法语、葡萄牙语为母语，英语流利，西班牙语可作工作语言。",
     stats: {
       years: "年软件经验",
       languages: "门语言",
@@ -1404,15 +1422,20 @@ const zh: Translation = {
     },
   },
   dialogue: {
-    visitor: "访客",
+    visitor: "读者",
     width: "容器宽度",
     me: "李北洛",
-    disclaimer: "以下对话根据真实故事（几乎）改编。",
+    disclaimer: "常被问到的问题，以及我一贯的回答。",
     messages: [
-      { me: false, text: "你真的可以随时到岗？" },
+      { me: false, text: "K4U 是什么？" },
       {
         me: true,
-        text: "真的。我的个人待办列表是空的——全部已排序、已测试、已交付。",
+        text: "KAPIA-RGI 的保险网页门户。多家保险公司客户，同一套产品。",
+      },
+      { me: false, text: "产品负责人到底决定什么？" },
+      {
+        me: true,
+        text: "三家公司想要同一个迭代，只有一家能拿到。",
       },
       { me: false, text: "做了二十年寿险软件……不会很枯燥吗？" },
       {
@@ -1437,7 +1460,7 @@ const zh: Translation = {
   },
   contact: {
     intro:
-      "我正在寻找产品负责人、业务分析师或项目管理类职位——在中国工作或远程面向欧洲协作均可。二十年受监管金融软件经验，现居成都，可在全国范围工作，可随时到岗。",
+      "二十年受监管金融软件经验，如今落脚成都。以下是我的联系方式与公开主页。",
     wechatLabel: "微信",
     githubLabel: "GitHub",
     linkedinLabel: "领英",
@@ -1465,7 +1488,7 @@ const zhHant: Translation = {
   },
   meta: {
     description:
-      "李北洛（Philippe Ribeiro）— 產品負責人 / 商業分析師，二十年金融軟體經驗：壽險核心系統、銀行保險、公共財政。現居中國成都，可隨時到職。",
+      "李北洛（Philippe Ribeiro）— 產品負責人 / 商業分析師，二十年金融軟體經驗：壽險核心系統、銀行保險、公共財政。現居中國成都。",
   },
   nav: {
     about: "關於我",
@@ -1474,13 +1497,13 @@ const zhHant: Translation = {
     certifications: "認證",
     skills: "技能",
     hobbies: "興趣",
-    dialogue: "對話",
+    dialogue: "常見問題",
     contact: "聯絡",
   },
   hero: {
     greeting: "你好，我是",
     title: "產品負責人 · 商業分析師 — 二十年金融軟體經驗",
-    location: "中國成都 · 可於中國各地工作 · 法國籍 · 可隨時到職",
+    location: "中國成都 · 法國籍",
     ctaPrimary: "聯絡我",
     ctaSecondary: "瞭解更多",
   },
@@ -1490,7 +1513,7 @@ const zhHant: Translation = {
     p2:
       "在 KAPIA-RGI，我全權負責 K4U——一個服務多家保險公司終端客戶的網頁入口網站：產品願景、路線圖與待辦清單，在相互競爭的需求之間做優先順序取捨。我主導了單一登入（SAML/OIDC）的跨公司導入，依據使用者回饋與進階 SQL 分析驅動決策，只交付通過測試、符合法規的增量——持有 ISTQB 測試認證，受過 PSPO 培訓。",
     p3:
-      "2025 年起定居成都，在四川大學完成一年全日制中文課程——日常生活以中文進行（已通過 HSK 4，正準備 HSK 5）。法語、葡萄牙語為母語，英語流利，西班牙語可作工作語言。可隨時到職，可於中國各地工作。",
+      "2025 年起定居成都，在四川大學完成一年全日制中文課程——日常生活以中文進行（已通過 HSK 4，正準備 HSK 5）。法語、葡萄牙語為母語，英語流利，西班牙語可作工作語言。",
     stats: {
       years: "年軟體經驗",
       languages: "門語言",
@@ -1654,15 +1677,20 @@ const zhHant: Translation = {
     },
   },
   dialogue: {
-    visitor: "訪客",
+    visitor: "讀者",
     width: "容器寬度",
     me: "李北洛",
-    disclaimer: "以下對話（幾乎）改編自真實故事。",
+    disclaimer: "常被問到的問題，以及我一貫的回答。",
     messages: [
-      { me: false, text: "你真的可以隨時到職？" },
+      { me: false, text: "K4U 是什麼？" },
       {
         me: true,
-        text: "真的。我的個人待辦清單是空的——全部已排序、已測試、已交付。",
+        text: "KAPIA-RGI 的保險網頁入口網站。多家保險公司客戶，同一套產品。",
+      },
+      { me: false, text: "產品負責人到底決定什麼？" },
+      {
+        me: true,
+        text: "三家公司想要同一個迭代，只有一家拿得到。",
       },
       { me: false, text: "做了二十年壽險軟體……不會很枯燥嗎？" },
       {
@@ -1687,7 +1715,7 @@ const zhHant: Translation = {
   },
   contact: {
     intro:
-      "我正在尋找產品負責人、商業分析師或專案管理類職位——在中國工作或遠端面向歐洲協作皆可。二十年受監管金融軟體經驗，現居成都，可於中國各地工作，可隨時到職。",
+      "二十年受監管金融軟體經驗，如今落腳成都。以下是我的聯絡方式與公開主頁。",
     wechatLabel: "微信",
     githubLabel: "GitHub",
     linkedinLabel: "領英",

@@ -637,7 +637,9 @@ function markChinese(escaped: string, lang: Lang): string {
 }
 
 /**
- * The faux visitor interview, presented as a message thread on a phone.
+ * The questions a reader actually asks, presented as a message thread on a
+ * phone. Questions and answers, not a pitch: the section states facts about
+ * the work and the life around it, and stops there.
  *
  * The bubbles are the load-bearing part: they wrap at a plain CSS max-width
  * (fine without JS), and [src/chat.ts](src/chat.ts) then tightens each one to
