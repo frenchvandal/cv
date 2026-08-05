@@ -39,7 +39,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           # Exact version (not a range) so deploys are reproducible; bump deliberately.
-          bun-version: "1.3.14"
+          bun-version: latest
 
       - name: Cache bun dependencies
         uses: actions/cache@v6

@@ -23,8 +23,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          # Exact version (not a range) so CI runs are reproducible; bump deliberately.
-          bun-version: "1.3.14"
+          bun-version: latest
 
       - name: Cache bun dependencies
         uses: actions/cache@v6
@@ -52,10 +51,7 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
-          # Exact version, like Bun above: `deno fmt` output is version-
-          # dependent, so a floating range would turn CI red on a release day
-          # without a line of this repo having changed.
-          deno-version: "2.9.4"
+          deno-version: latest
 
       - name: Format and lint
         run: |
