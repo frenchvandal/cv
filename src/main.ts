@@ -24,11 +24,11 @@ import {
   langUrl,
   NAV_LINKS,
   pageLang,
-  pageTitle,
   renderApp,
   STORAGE_LANG_KEY,
   type Theme,
 } from "./render.ts";
+import { headMeta, pageMeta, pageUrl } from "./meta.ts";
 import { escapeHtml, reducedMotion } from "./dom.ts";
 import {
   auditNavLinks,
@@ -133,14 +133,25 @@ function applyTheme(next: Theme, persist: boolean): void {
   syncThemeToggle();
 }
 
-/** Tab title and meta description follow the current language (the SSG sets them per page). */
+/**
+ * The whole <head> follows the current language, not just the tab title: the
+ * switch moves the URL to the new page with `history.pushState`, so a canonical,
+ * `og:url` or JSON-LD still naming English would describe a page the address bar
+ * no longer points at. The SSG bakes these same values in per page
+ * ([scripts/build.ts](scripts/build.ts)); both read them from
+ * [src/meta.ts](src/meta.ts), so the two heads can't diverge.
+ *
+ * A selector that matches nothing is skipped: the image tags only exist in a
+ * SITE_URL build, and the dev shell has no canonical at all.
+ */
 function syncDocumentMeta(): void {
-  const t = translations[currentLang];
-  document.title = pageTitle(t);
-  document.querySelector('meta[name="description"]')?.setAttribute(
-    "content",
-    t.meta.description,
-  );
+  const meta = pageMeta(currentLang, pageUrl(currentLang, location.href));
+  for (const { selector, attr, value } of headMeta(meta)) {
+    const el = document.querySelector(selector);
+    if (!el) continue;
+    if (attr === "text") el.textContent = value;
+    else el.setAttribute(attr, value);
+  }
 }
 
 /* ------------------------------------------------------------------ *

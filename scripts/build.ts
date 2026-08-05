@@ -19,9 +19,11 @@ import { readdir, rm } from "node:fs/promises";
 import {
   languageNegotiationScript,
   langUrl,
-  pageTitle,
   renderApp,
 } from "../src/render.ts";
+// The per-language <head>, shared with the runtime so a reload-free language
+// switch rewrites exactly what this file bakes in.
+import { pageMeta } from "../src/meta.ts";
 // The same escaper the renderer uses—one implementation, so the two can't
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
@@ -46,7 +48,6 @@ import {
   type Lang,
   LANGS,
   PROFILE,
-  SAME_AS,
   translations,
 } from "../src/translations.ts";
 
@@ -73,17 +74,6 @@ function siteBase(): string {
 }
 
 const SITE = siteBase();
-
-/** Open Graph wants underscore locales, not BCP-47 tags. */
-const OG_LOCALE: Record<Lang, string> = {
-  en: "en_US",
-  fr: "fr_FR",
-  pt: "pt_PT",
-  es: "es_ES",
-  zh: "zh_CN",
-  "zh-hant": "zh_TW",
-  "zh-hk": "zh_HK",
-};
 
 /** Public URL of a language's page—relative by default, absolute when SITE_URL is set. */
 function href(lang: Lang): string {
@@ -198,8 +188,11 @@ const published = SITE
 
 for (const lang of LANGS) {
   const t = translations[lang];
-  const title = pageTitle(t);
-  const description = t.meta.description;
+  // Everything language-dependent in the <head>, from the module the runtime
+  // rewrites it with ([src/meta.ts](src/meta.ts)): a value defined here instead
+  // would be one a reload-free language switch silently leaves behind.
+  const meta = pageMeta(lang, href(lang));
+  const { title, description } = meta;
   // Light is the no-JS default (see src/styles.css); the inline <head> script
   // switches to dark before first paint when the visitor or the OS asks.
   const content = renderApp(lang, "light");
@@ -211,22 +204,6 @@ for (const lang of LANGS) {
       }" />`,
   ).join("\n    ");
 
-  const jsonLd = JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Person",
-    name: PROFILE.fullName,
-    alternateName: PROFILE.chineseName,
-    jobTitle: t.hero.title,
-    url: href(lang),
-    sameAs: SAME_AS,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: PROFILE.address.locality,
-      addressCountry: PROFILE.address.country,
-    },
-    knowsLanguage: PROFILE.knowsLanguage,
-  }).replace(/</g, "\\u003C");
-
   // The negotiation script goes first so a redirect is not preceded by a font
   // preload we are about to abandon. It is passed in per output file, not per
   // language: `en.html` is English too, but it must never redirect.
@@ -234,7 +211,7 @@ for (const lang of LANGS) {
     ${negotiation}
     ${fontPreload}
     ${fontsStyle}
-    <link rel="canonical" href="${escapeHtml(href(lang))}" />
+    <link rel="canonical" href="${escapeHtml(meta.url)}" />
     ${alternates}
     <link rel="alternate" hreflang="x-default" href="${
     escapeHtml(href("en"))
@@ -249,8 +226,8 @@ for (const lang of LANGS) {
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
-    <meta property="og:url" content="${escapeHtml(href(lang))}" />
-    <meta property="og:locale" content="${OG_LOCALE[lang]}" />${
+    <meta property="og:url" content="${escapeHtml(meta.url)}" />
+    <meta property="og:locale" content="${meta.ogLocale}" />${
     SITE
       ? `
     <meta property="og:image" content="${escapeHtml(`${SITE}/${OG_IMAGE}`)}" />
@@ -264,7 +241,7 @@ for (const lang of LANGS) {
       : `
     <meta name="twitter:card" content="summary" />`
   }
-    <script type="application/ld+json">${jsonLd}</script>`;
+    <script type="application/ld+json">${meta.jsonLd}</script>`;
 
   for (const { file, negotiates } of outFiles(lang)) {
     const head = headExtra(negotiates ? languageNegotiationScript() : "");

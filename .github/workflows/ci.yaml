@@ -41,3 +41,23 @@ jobs:
 
       - name: Build (includes type check)
         run: bun run build
+
+      # Deno is this repo's formatter and linter (there is no config file—both
+      # run on their defaults, from the root). Last on purpose: a stray blank
+      # line failing the job before `bun test` ran would hide a real regression
+      # behind the cheapest possible fix.
+      # `@v2` is a *branch* on this action, not a tag—denoland/setup-deno
+      # publishes no floating major tag, so don't "fix" this to a tag ref
+      # without checking that one exists.
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          # Exact version, like Bun above: `deno fmt` output is version-
+          # dependent, so a floating range would turn CI red on a release day
+          # without a line of this repo having changed.
+          deno-version: "2.9.4"
+
+      - name: Format and lint
+        run: |
+          deno fmt --check
+          deno lint

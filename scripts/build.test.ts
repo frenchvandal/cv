@@ -13,6 +13,7 @@ import { existsSync } from "node:fs";
 import { HTML_LANG, LANGS, translations } from "../src/translations.ts";
 import { escapeHtml } from "../src/dom.ts";
 import { pageTitle } from "../src/render.ts";
+import { headMeta, pageMeta } from "../src/meta.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
 import {
   contentLastmod,
@@ -40,6 +41,26 @@ const hasHistory = await $`git rev-parse --is-shallow-repository`
 
 /** The page a language is written to, and read back from, in dist/. */
 const outFile = (lang: string) => lang === "en" ? "index.html" : `${lang}.html`;
+
+/** How many elements a selector matches in a page—1 for every head tag here. */
+async function countMatches(html: string, selector: string): Promise<number> {
+  let n = 0;
+  await new HTMLRewriter()
+    .on(selector, { element: () => void n++ })
+    .transform(new Response(html))
+    .text();
+  return n;
+}
+
+/** An element's text content, appended chunk by chunk as lol-html streams it. */
+async function textOf(html: string, selector: string): Promise<string> {
+  let text = "";
+  await new HTMLRewriter()
+    .on(selector, { text: (chunk) => void (text += chunk.text) })
+    .transform(new Response(html))
+    .text();
+  return text;
+}
 
 test(
   "bun scripts/build.ts emits every language page complete and well-formed",
@@ -135,9 +156,8 @@ test(
 
     for (const lang of LANGS) {
       const file = outFile(lang);
-      const tags = await extractSocialTags(
-        await Bun.file(`${ROOT}/dist/${file}`).text(),
-      );
+      const html = await Bun.file(`${ROOT}/dist/${file}`).text();
+      const tags = await extractSocialTags(html);
       const card = previewCard(tags);
       const url = lang === "en" ? `${SITE}/` : `${SITE}/${file}`;
       const t = translations[lang];
@@ -160,6 +180,28 @@ test(
       expect(tags.og["image:alt"]).toBe(card.title);
       expect(card.card).toBe("summary_large_image");
       expect(tags.twitter.image).toBe(tags.og.image);
+
+      // The JSON-LD is the one head tag no scraper vocabulary covers, so
+      // `extractSocialTags` never looked at it and nothing has read it back:
+      // a Person that kept English's jobTitle on all seven pages would ship
+      // silently. Compared against the shared builder, which is also what the
+      // runtime writes on a language switch.
+      const meta = pageMeta(lang, url);
+      const ld = await textOf(html, 'script[type="application/ld+json"]');
+      expect(ld).toBe(meta.jsonLd);
+      const person = JSON.parse(ld);
+      expect(person.jobTitle).toBe(t.hero.title);
+      expect(person.url).toBe(url);
+
+      // Every element the runtime aims at on a reload-free switch
+      // ([src/main.ts](src/main.ts)) has to exist here, exactly once. A
+      // selector matching nothing fails silently—`querySelector` returns null,
+      // the update is skipped, and the switched page keeps the previous
+      // language's canonical, card or Person with no error anywhere.
+      for (const { selector } of headMeta(meta)) {
+        expect([selector, await countMatches(html, selector)])
+          .toEqual([selector, 1]);
+      }
 
       seen.title.add(card.title);
       seen.locale.add(card.locale ?? "");

@@ -52,6 +52,10 @@ rediscover.
   literals. Run it after changing copy in
   [src/translations.ts](src/translations.ts) or [src/render.ts](src/render.ts)—a
   glyph that no subset carries renders as tofu.
+- `bun run og:update` → `bun scripts/og-image.ts`, which re-renders
+  `public/og-image.png` (the 1200×630 link preview) from the English hero and
+  the light palette, using local Chrome. The build only copies the file, so run
+  this after changing the English hero and commit the PNG.
 
 ### Generated Files
 

@@ -134,9 +134,13 @@ export const STORAGE_LANG_KEY = "cv-lang";
  * plus the older region-only forms (`zh-CN`, `zh-TW`, `zh-HK`, `zh-MO`,
  * `zh-SG`), which many devices still send and which land the same way.
  *
- * `yue` (Cantonese) is deliberately NOT mapped: it falls through to English
- * like any other unsupported tag, and the reader picks a language from the
- * switcher.
+ * `yue` (Cantonese) is a language, not a script: nothing in the tag says
+ * whether its reader writes Traditional or Simplified, so only the region can
+ * decide. `yue-HK`/`yue-MO` are Hong Kong and Macau, which is exactly the page
+ * `zh-hk` was written for; `yue-CN` is a Guangdong reader, who writes
+ * Simplified, and bare `yue` names no region at all. Those two fall through to
+ * English like any other unsupported tag rather than guess a script, and the
+ * reader picks a language from the switcher.
  *
  * This is plain ES5 in a string because it must run before the bundle exists.
  * [src/render.test.ts](src/render.test.ts) executes this exact generated source
@@ -166,6 +170,8 @@ export function languageNegotiationScript(): string {
             : parts.indexOf("hant") > 0 || parts.indexOf("tw") > 0
             ? "zh-hant"
             : "zh";
+        } else if (primary === "yue") {
+          if (parts.indexOf("hk") > 0 || parts.indexOf("mo") > 0) pick = "zh-hk";
         } else if (urls[primary]) {
           pick = primary;
         }

@@ -141,9 +141,14 @@ test.each(
     [["zh-Hant-HK"], null, "zh-hk.html"],
     [["zh-Hant-MO"], null, "zh-hk.html"],
     [["zh-Hant-TW"], null, "zh-hant.html"],
-    // Cantonese is not mapped on purpose: it falls through like any other
-    // unsupported tag and the reader picks a language from the switcher.
-    [["yue-HK"], null, null],
+    // Cantonese carries no script of its own, so only the region decides:
+    // Hong Kong and Macau read the Traditional page written for them.
+    [["yue-HK"], null, "zh-hk.html"],
+    [["yue-MO"], null, "zh-hk.html"],
+    [["yue-Hant-HK"], null, "zh-hk.html"],
+    // A Cantonese speaker in Guangdong reads Simplified, and bare `yue` names
+    // no region at all: both fall through rather than guess a script.
+    [["yue-CN"], null, null],
     [["yue"], null, null],
     // Unsupported languages are skipped in order, not defaulted on sight.
     [["de", "fr"], null, "fr.html"],
