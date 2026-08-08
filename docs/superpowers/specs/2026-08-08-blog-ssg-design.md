@@ -467,8 +467,20 @@ place) :
 1. **SigV4 d'OSS sur un PUT présigné avec en-têtes non signés.** Cohérent par
    construction (fait nº 6), mais non vérifié sur le vrai bucket. Le plan
    d'implémentation **commence** par un aller-retour réel contre OSS. Si OSS
-   refuse, le repli documenté est `ali-oss` pour le seul upload ; le reste du
-   design ne bouge pas.
+   refuse, le repli est le SDK Aliyun pour le seul upload ; le reste du design
+   ne bouge pas.
+
+   **Arbitrage du propriétaire (2026-08-08), qui prime sur le zéro-dépendance du
+   §8 :** le SDK Aliyun officiel, dans sa version TypeScript la plus récente,
+   est autorisé dès lors qu'écrire la signature à la main s'avère trop coûteux.
+   Cela vise en premier la **purge CDN**, seul appel qui exige la signature RPC
+   propre à Aliyun (HMAC-SHA1, canonicalisation, clé suffixée d'un `&`) et non
+   SigV4 — le morceau le plus ingrat du chemin zéro-dépendance. Le plan C
+   présentera les deux options avec leur coût mesuré plutôt que d'en trancher
+   une d'avance ; la décision reste au propriétaire, paquet par paquet.
+
+   L'upload lui-même n'est pas concerné tant que le fait nº 6 tient : `Bun.s3`
+   plus un `fetch` présigné n'a besoin d'aucun SDK.
 2. **Les trois effets du découpage en lignes** (copie, recherche, CLS) sont
    tolérables sur trois paragraphes et exposés par un article entier. Ils se
    mesurent (§10) et ne seront pas traités comme acquis.
