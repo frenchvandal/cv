@@ -175,6 +175,100 @@ test("assertSafeHtml laisse passer du <script> déjà échappé en texte", () =>
   expect(() => assertSafeHtml(escaped, "x")).not.toThrow();
 });
 
+test.each([
+  ['<form action="javascript:alert(1)">'],
+  ['<button formaction="javascript:alert(1)">'],
+  ['<a href="&#106;avascript:alert(1)">e</a>'],
+  ['<a href="java\tscript:alert(1)">e</a>'],
+  ['<a href="java\nscript:alert(1)">e</a>'],
+  ['<svg><a xlink:href="javascript:alert(1)">e</a></svg>'],
+  ['<meta http-equiv="refresh" content="0;url=javascript:alert(1)">'],
+])(
+  "le garde-fou refuse les sept vecteurs de l'audit externe : %s",
+  (source) => {
+    // Chacun produit un noeud réel dans Bun.markdown.html() (measuré) et
+    // franchissait le garde-fou en liste noire du round précédent : aucun
+    // n'est <script>/<iframe>/<object>/<embed>, aucun n'a d'attribut on…=,
+    // et le schéma javascript: y est soit sur un attribut jamais examiné
+    // (action, formaction, xlink:href) soit déguisé (entité, tabulation,
+    // saut de ligne). La liste blanche d'éléments refuse form/button/svg/meta
+    // sans les avoir jamais nommés ; la normalisation d'URI démasque les
+    // trois déguisements sur <a href>.
+    expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+      .toThrow("content/posts/x/fr.md");
+  },
+);
+
+test("le garde-fou refuse un élément hors liste blanche", () => {
+  expect(() =>
+    assertSafeMarkdown("<marquee>x</marquee>", "content/posts/x/fr.md")
+  ).toThrow("content/posts/x/fr.md");
+});
+
+test.each([
+  ["[x](https://exemple.test)"],
+  ["[x](mailto:a@b.test)"],
+  ["[x](./cv.html)"],
+  ["[x](#ancre)"],
+])("le garde-fou laisse passer les schémas d'URI légitimes : %s", (source) => {
+  expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+    .not.toThrow();
+});
+
+test("le garde-fou laisse passer toute la syntaxe GFM que le dépôt exerce", async () => {
+  // La preuve que la liste blanche n'est pas trop étroite : un article qui
+  // utilise chaque construction GFM listée dans la revue (titres, listes,
+  // listes de tâches, tables avec alignement, code en ligne et en bloc,
+  // citations, liens dont un autolien, images, emphase, barré, règle
+  // horizontale, saut de ligne dur) ne doit jamais être refusé.
+  const source = [
+    "# Titre niveau 1",
+    "## Titre niveau 2",
+    "### Titre niveau 3",
+    "#### Titre niveau 4",
+    "##### Titre niveau 5",
+    "###### Titre niveau 6",
+    "",
+    'Un paragraphe avec *emphase*, **fort**, ~~barré~~, `code en ligne` et un [lien](https://exemple.test "titre").',
+    "",
+    '![alt d\'une image](a.png "titre image")',
+    "",
+    "- item de liste",
+    "- item avec **fort**",
+    "  - item niché",
+    "",
+    "1. premier",
+    "2. second",
+    "",
+    "- [ ] tâche non faite",
+    "- [x] tâche faite",
+    "",
+    "> une citation",
+    "> sur deux lignes",
+    "",
+    "---",
+    "",
+    "| a | b | c |",
+    "|:--|:-:|--:|",
+    "| 1 | 2 | 3 |",
+    "",
+    "```ts",
+    "const x = 1;",
+    "```",
+    "",
+    "Un saut de ligne dur  ",
+    "juste ici.",
+    "",
+    "Autolien : <https://exemple.test/auto>",
+    "",
+    "Texte avec un [lien interne](./cv.html) et une [ancre](#section) et un [mailto](mailto:a@b.test).",
+  ].join("\n");
+
+  expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+    .not.toThrow();
+  await expect(renderMarkdown(source, "fr")).resolves.toBeString();
+});
+
 test("le garde-fou laisse passer un exemple de code en span inline", () => {
   expect(() =>
     assertSafeMarkdown(
