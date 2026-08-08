@@ -85,46 +85,72 @@ const NAMED_ENTITIES = new Map<string, string>([
 ]);
 
 /**
- * Une référence de caractère (`&#106;`, `&#x6A;`) encode n'importe quel
- * caractère lettre par lettre — c'est le vecteur mesuré dans l'audit
- * (`&#106;avascript:`). Les cinq entités nommées XML couvrent le reste de ce
- * qui apparaît plausiblement dans une URL ; la table HTML5 complète
- * (~2000 entités) n'ajouterait rien ici, un attaquant qui sait écrire
- * `&colon;` sait tout aussi bien écrire `&#58;`.
+ * Une référence numérique (`&#106;`, `&#x6A;`) encode n'importe quel
+ * caractère lettre par lettre — le vecteur mesuré dans l'audit
+ * (`&#106;avascript:`). Le navigateur la décode aussi SANS point-virgule
+ * (`&#106avascript` → `javascript`, avec une simple erreur d'analyse) :
+ * chiffres gloutons, point-virgule optionnel, à l'identique.
  */
-function decodeEntityBody(body: string): string | null {
-  if (body.startsWith("#x") || body.startsWith("#X")) {
-    const code = Number.parseInt(body.slice(2), 16);
-    return Number.isNaN(code) ? null : String.fromCodePoint(code);
+function decodeNumericEntity(
+  value: string,
+  start: number,
+): { ch: string; end: number } | null {
+  let i = start + 2; // après "&#"
+  const hex = value.charAt(i) === "x" || value.charAt(i) === "X";
+  if (hex) i++;
+  let digits = "";
+  while (i < value.length) {
+    const ch = value.charAt(i);
+    const ok = (ch >= "0" && ch <= "9") ||
+      (hex && ((ch >= "a" && ch <= "f") || (ch >= "A" && ch <= "F")));
+    if (!ok) break;
+    digits += ch;
+    i++;
   }
-  if (body.startsWith("#")) {
-    const code = Number.parseInt(body.slice(1), 10);
-    return Number.isNaN(code) ? null : String.fromCodePoint(code);
-  }
-  return NAMED_ENTITIES.get(body) ?? null;
+  if (!digits) return null;
+  if (value.charAt(i) === ";") i++;
+  return {
+    ch: String.fromCodePoint(Number.parseInt(digits, hex ? 16 : 10)),
+    end: i,
+  };
 }
 
+/*
+ * Décodage à une passe, comme le navigateur. Les entités nommées se
+ * limitent aux cinq du XML — la table HTML5 complète (~2000 entrées) n'est
+ * pas reproduite : ce qu'on ne sait pas décoder (`&colon;`, `&Tab;`,
+ * `&NewLine;`…), le navigateur le décodera quand même, donc c'est refusé
+ * plus bas (`UNRESOLVED_ENTITY`) plutôt qu'approximé ici.
+ */
 function decodeEntities(value: string): string {
   let out = "";
   let i = 0;
   while (i < value.length) {
-    const ch = value.charAt(i);
-    if (ch !== "&") {
-      out += ch;
+    if (value.charAt(i) !== "&") {
+      out += value.charAt(i);
       i++;
       continue;
     }
-    const end = value.indexOf(";", i + 1);
-    const decoded = end === -1
-      ? null
-      : decodeEntityBody(value.slice(i + 1, end));
-    if (decoded === null) {
-      out += ch;
-      i++;
+    if (value.charAt(i + 1) === "#") {
+      const numeric = decodeNumericEntity(value, i);
+      if (numeric) {
+        out += numeric.ch;
+        i = numeric.end;
+        continue;
+      }
     } else {
-      out += decoded;
-      i = end + 1;
+      const end = value.indexOf(";", i + 1);
+      const named = end === -1
+        ? undefined
+        : NAMED_ENTITIES.get(value.slice(i + 1, end));
+      if (named !== undefined) {
+        out += named;
+        i = end + 1;
+        continue;
+      }
     }
+    out += value.charAt(i);
+    i++;
   }
   return out;
 }
@@ -166,10 +192,20 @@ function schemeOf(value: string): string | null {
   return candidate;
 }
 
+/*
+ * Ce qui survit au décodage sous la forme d'une référence de caractère —
+ * entité nommée inconnue ou numérique malformée — sera décodé par le
+ * navigateur, pas par nous : refus par défaut, comme les balises et les
+ * schémas. Un « & » seul (query string) ou suivi d'un nom sans
+ * point-virgule n'est pas une référence complète et passe.
+ */
+const UNRESOLVED_ENTITY = /&(?:#[xX0-9a-zA-Z]*;?|[a-zA-Z][a-zA-Z0-9]*;)/;
+
 function isAllowedUri(rawValue: string): boolean {
   const normalized = stripUrlControlChars(decodeEntities(rawValue))
     .trim()
     .toLowerCase();
+  if (UNRESOLVED_ENTITY.test(normalized)) return false;
   const scheme = schemeOf(normalized);
   return scheme === null || ALLOWED_URI_SCHEMES.has(scheme);
 }
@@ -184,7 +220,9 @@ function isAllowedUri(rawValue: string): boolean {
  * aucun attribut `on…` (gestionnaire d'événement, quelle que soit la
  * balise) ; tout `href`/`src` a un schéma http, https, mailto ou aucun
  * (relatif), après décodage des entités et retrait des caractères de
- * contrôle qui pourraient le déguiser.
+ * contrôle qui pourraient le déguiser — et une référence de caractère que
+ * ce décodage ne résout pas (entité nommée hors des cinq du XML, numérique
+ * malformée) est refusée, puisque le navigateur la décoderait, lui.
  *
  * Ce qu'il ne garantit PAS : les attributs qui ne sont ni `on…` ni
  * `href`/`src` passent sans examen (`align`, `class`, `title`, `alt`,

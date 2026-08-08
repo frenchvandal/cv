@@ -206,6 +206,34 @@ test("le garde-fou refuse un élément hors liste blanche", () => {
 });
 
 test.each([
+  ['<a href="javascript&colon;alert(1)">e</a>'],
+  ['<a href="&Tab;javascript:alert(1)">e</a>'],
+  ['<a href="java&NewLine;script:alert(1)">e</a>'],
+  ['<a href="&#106avascript:alert(1)">e</a>'],
+])(
+  "le garde-fou refuse les entités que le navigateur décode mais pas lui : %s",
+  (source) => {
+    // Le navigateur décode &colon;, &Tab;, &NewLine; (table HTML5 complète)
+    // et les références numériques sans point-virgule (&#106… → j). Le
+    // garde-fou ne reproduit pas la table : ce qu'il ne sait pas décoder
+    // est refusé, par défaut, comme tout le reste.
+    expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+      .toThrow("content/posts/x/fr.md");
+  },
+);
+
+test("le garde-fou laisse passer une query string avec un « & » ordinaire", () => {
+  // « & » sans référence complète n'est pas une entité : le refus par défaut
+  // ne doit pas casser les URL de query ordinaires.
+  expect(() =>
+    assertSafeMarkdown(
+      "[x](https://exemple.test/?a=1&b=2)",
+      "content/posts/x/fr.md",
+    )
+  ).not.toThrow();
+});
+
+test.each([
   ["[x](https://exemple.test)"],
   ["[x](mailto:a@b.test)"],
   ["[x](./cv.html)"],
