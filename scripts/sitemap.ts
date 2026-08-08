@@ -110,6 +110,23 @@ export async function contentLastmod(): Promise<string | undefined> {
 }
 
 /**
+ * When an article was last touched, from git, as `<lastmod>`—the article's
+ * own source file, so editing one post does not redate them all. Same rule as
+ * {@link contentLastmod}: a shallow clone cannot answer, so the field is
+ * omitted rather than guessed.
+ */
+export async function postLastmod(
+  sourcePath: string,
+): Promise<string | undefined> {
+  const git = await $`git log -1 --format=%cI -- ${sourcePath}`
+    .nothrow()
+    .quiet();
+  if (git.exitCode !== 0) return undefined;
+  const date = git.stdout.toString().trim();
+  return isW3CDatetime(date) ? date : undefined;
+}
+
+/**
  * `base` is the directory the sitemap is served from (no trailing slash). The
  * protocol scopes a sitemap to its own location—it "can include URLs starting
  * with http://example.com/catalog/ but not those in parent directories"—so a

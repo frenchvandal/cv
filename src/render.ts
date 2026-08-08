@@ -10,89 +10,52 @@
  * content column. Nothing here depends on JS—the scripts only reveal sections
  * on scroll and refine typography. Every section is reachable by a stable hash
  * (`#experience`, …) carried by its heading, so deep links work everywhere.
+ *
+ * This module is the facade: the language negotiation script and the page
+ * assembly (`renderApp`) live here; the chrome and the URL helpers are
+ * [src/render/shell.ts](src/render/shell.ts) and the chapters are
+ * [src/render/cv.ts](src/render/cv.ts). `langUrl`, `langFromPath`, `pageLang`,
+ * `NAV_LINKS` and `Theme` are re-exported so existing importers keep working
+ * unchanged.
  */
 
 import {
-  HTML_LANG,
-  isLang,
   type Lang,
-  LANG_LABEL,
-  LANG_NAME,
   LANGS,
-  PROFILE,
-  PROFILE_URLS,
-  SWITCHER_LANGS,
   type Translation,
   translations,
 } from "./translations.ts";
 import { escapeHtml } from "./dom.ts";
-import { LOGOS } from "./logos.ts";
+import { langUrl, nav, type Theme } from "./render/shell.ts";
 import {
-  ICON_BATTERY,
-  ICON_CHEVRON_LEFT,
-  ICON_CHEVRON_RIGHT,
-  ICON_MIC,
-  ICON_PLUS,
-  ICON_SIGNAL,
-  ICON_WIFI,
-} from "./icons.ts";
-import { CHAT_WIDTH } from "./config.ts";
+  about,
+  certifications,
+  contact,
+  dialogue,
+  education,
+  experience,
+  hero,
+  hobbies,
+  skills,
+} from "./render/cv.ts";
 
-export type Theme = "light" | "dark";
+import {
+  blogIndexBody,
+  homeBody,
+  langLinkFor,
+  type Page,
+  postBody,
+} from "./render/blog.ts";
 
-/**
- * Relative URL to a language's page. All six pages are siblings at the site
- * root (`index.html`, then `<lang>.html` for the rest), so the link is the
- * same from any page and works under any deploy path—no base tag, no absolute
- * origin.
- */
-export function langUrl(lang: Lang): string {
-  return lang === "en" ? "./" : `${lang}.html`;
-}
-
-/**
- * The language a URL path names, or null when it names none—the English root
- * (`/`, `/index.html`) and anything unrecognized. The exact inverse of
- * `langUrl`, kept beside it so the two can't drift apart, and pure so it is
- * testable without a document.
- *
- * Returning null rather than "en" is deliberate: "this path carries no language"
- * and "this path is English" are different facts, and only the caller knows
- * whether the default applies (on first load `<html data-lang>` answers first).
- */
-export function langFromPath(path: string): Lang | null {
-  // The last path segment, minus any trailing slash and .html—compared whole,
-  // so `zh-hant.html` cannot be claimed by the shorter `zh` and `/french.html`
-  // is not French. (This used to be a per-language regex ordered longest-slug-
-  // first; an exact segment match removes the ordering subtlety entirely.)
-  const segment = path.replace(/\/$/, "").split("/").pop() ?? "";
-  const slug = segment.endsWith(".html")
-    ? segment.slice(0, -".html".length)
-    : segment;
-  return isLang(slug) ? slug : null;
-}
-
-/**
- * The language a freshly loaded page is in, from the two facts the document
- * carries: the pre-rendered `<html data-lang>` and the URL. The attribute wins,
- * because it is what the markup on screen actually *is*; the URL only has to
- * answer for the dev shell, which is served at `/` with no `data-lang` of its
- * own. English is the fallback both miss.
- *
- * Startup only. `setLang` overwrites `data-lang` on every switch, so from the
- * first switch onward this would report the language already on screen—which
- * is exactly why back/forward reads `langFromPath` directly instead (see
- * `onPopState` in [src/main.ts](src/main.ts)). Split out of main.ts and taking
- * its two inputs as plain strings so the precedence is testable without a
- * document.
- */
-export function pageLang(
-  datasetLang: string | undefined,
-  path: string,
-): Lang {
-  if (isLang(datasetLang)) return datasetLang;
-  return langFromPath(path) ?? "en";
-}
+export {
+  langFromPath,
+  langUrl,
+  NAV_LINKS,
+  pageLang,
+  type Theme,
+} from "./render/shell.ts";
+export { pageRefOf } from "./render/blog.ts";
+export type { Page } from "./render/blog.ts";
 
 /** localStorage key holding a language the visitor picked by hand. */
 export const STORAGE_LANG_KEY = "cv-lang";
@@ -188,582 +151,13 @@ export function pageTitle(t: Translation): string {
   return `${t.name.display} — ${t.hero.title}`;
 }
 
-/**
- * Section shortcuts in the nav bar—a useful subset, not every heading.
- * Exported for the dev-only nav audit in [src/main.ts](src/main.ts), which has
- * to measure the same five labels the bar renders.
+/*
+ * The CV chapters, in document order. Kept as one interpolated chunk so
+ * renderApp's output stays byte-identical to what it was before the split:
+ * first paint must match the pre-rendered markup exactly (hydration).
  */
-export const NAV_LINKS: readonly (keyof Translation["nav"])[] = [
-  "about",
-  "experience",
-  "education",
-  "skills",
-  "contact",
-];
-
-function nav(t: Translation, lang: Lang, theme: Theme): string {
-  const isLight = theme === "light";
-
-  const links = NAV_LINKS.map(
-    (id) => `<a class="nav__link" href="#${id}">${escapeHtml(t.nav[id])}</a>`,
-  ).join("");
-
-  // zh-hk has no button of its own—it is Traditional Chinese, so the 繁 entry
-  // is the one that represents the page a Hong Kong reader is on.
-  const current = lang === "zh-hk" ? "zh-hant" : lang;
-
-  // The endonym is the accessible name, but it cannot ride on an aria-label:
-  // an attribute carries no language, so a French screen reader would read
-  // 简体中文 in its own voice. As real text in a .sr-only span it gets a lang of
-  // its own, which is what RGAA 8.7 asks for. The visible glyph is then
-  // aria-hidden so the name stays the endonym alone, not "简 简体中文".
-  const languages = SWITCHER_LANGS.map(
-    (code) => `
-        <a href="${langUrl(code)}" hreflang="${
-      HTML_LANG[code]
-    }" data-lang="${code}"${current === code ? ' aria-current="page"' : ""}>
-          <span lang="${HTML_LANG[code]}" aria-hidden="true">${
-      LANG_LABEL[code]
-    }</span>
-          <span class="sr-only" lang="${HTML_LANG[code]}">${
-      escapeHtml(LANG_NAME[code])
-    }</span>
-        </a>`,
-  ).join("");
-
+function cvBody(t: Translation, lang: Lang): string {
   return `
-    <header class="nav">
-      <div class="wrap nav__inner">
-        <a class="nav__brand" href="#top">${escapeHtml(t.name.display)}</a>
-        <nav class="nav__links" aria-label="${
-    escapeHtml(t.ui.sectionsNav)
-  }">${links}</nav>
-        <div class="nav__actions">
-          <nav class="nav__langs" aria-label="${
-    escapeHtml(t.ui.languageNav)
-  }">${languages}
-          </nav>
-          <button type="button" class="nav__theme" data-theme-toggle aria-label="${
-    escapeHtml(isLight ? t.ui.theme.dark : t.ui.theme.light)
-  }">${isLight ? "☾" : "☀"}</button>
-        </div>
-      </div>
-    </header>
-  `;
-}
-
-function hero(t: Translation): string {
-  return `
-    <section class="hero wrap" id="top" aria-label="${escapeHtml(t.ui.intro)}">
-      <p class="hero__eyebrow animate">${escapeHtml(t.hero.greeting)}</p>
-      <h1 class="hero__name">
-        ${
-    t.name.lines
-      .map(
-        (line, i) =>
-          `<span class="hero__name-line animate animate--delayed-${i + 1}">${
-            escapeHtml(line)
-          }</span>`,
-      )
-      .join("\n        ")
-  }
-      </h1>
-      <p class="hero__title animate animate--delayed-3">${
-    escapeHtml(t.hero.title)
-  }</p>
-      <p class="hero__location animate animate--delayed-4">${
-    escapeHtml(t.hero.location)
-  }</p>
-      <div class="hero__actions animate animate--delayed-5">
-        <a class="button" href="#contact">${escapeHtml(t.hero.ctaPrimary)}</a>
-        <a class="button button--plain" href="#about">${
-    escapeHtml(t.hero.ctaSecondary)
-  }</a>
-      </div>
-    </section>
-  `;
-}
-
-/**
- * A chapter of the document. The heading carries the hash id and labels the
- * section; `body` is already-escaped markup for the content column.
- */
-function section(
-  t: Translation,
-  id: keyof Translation["nav"],
-  body: string,
-  bodyClass = "section__body",
-): string {
-  return `
-    <section class="section" aria-labelledby="${id}">
-      <div class="wrap">
-        <h2 class="section__title animate" id="${id}">${
-    escapeHtml(t.nav[id])
-  }</h2>
-        <div class="${bodyClass} animate animate--delayed-1">${body}</div>
-      </div>
-    </section>
-  `;
-}
-
-/** Stat values are language-invariant; labels come from the translation. */
-const STATS: readonly { value: string; label: (t: Translation) => string }[] = [
-  { value: "20", label: (t) => t.about.stats.years },
-  { value: "5", label: (t) => t.about.stats.languages },
-  { value: "75", label: (t) => t.about.stats.defects },
-  { value: "3", label: (t) => t.about.stats.clients },
-];
-
-/**
- * About, closed by the numbers as a hairline-divided spec strip. The figures
- * support the prose, so they share its section instead of interrupting the
- * document with a heading of their own.
- */
-function about(t: Translation): string {
-  const stats = STATS.map(
-    (stat) => `
-          <div class="stat" data-count="${escapeHtml(stat.value)}">
-            <div class="stat__label">${escapeHtml(stat.label(t))}</div>
-            <div class="stat__value">${escapeHtml(stat.value)}</div>
-          </div>`,
-  ).join("");
-
-  return section(
-    t,
-    "about",
-    `
-        <p class="kp">${escapeHtml(t.about.p1)}</p>
-        <p class="kp">${escapeHtml(t.about.p2)}</p>
-        <p class="kp">${escapeHtml(t.about.p3)}</p>
-        <div class="stats" style="margin-top: var(--space-xl)">${stats}
-        </div>`,
-  );
-}
-
-/**
- * One event on a timeline: when it happened, where, in what role, and what came
- * of it. Careers and studies are both sequences, so they share the shape.
- */
-type TimelineEntry = {
-  /** Free text, not a machine date—the ranges read "2011 – 2014 · 2019 – Present". */
-  date: string;
-  /** The employer or the institution—the event's heading. */
-  org: string;
-  /** The role held, or the diploma earned. */
-  role: string;
-  /** An aside neither the heading nor the role should carry. */
-  note?: string;
-  /** Trusted inline SVG from [src/logos.ts](src/logos.ts); see `timelineItem`. */
-  logo?: string;
-  /** Experience only: "City, Country" and the employer's sector, in that order. */
-  location?: string;
-  sector?: string;
-  items?: readonly string[];
-  desc?: string;
-  /** The one event still running—the only node drawn in the accent. */
-  current?: boolean;
-};
-
-/**
- * An event, rendered as Ant Design's Timeline item read through the HIG.
- *
- * Ant's structure survives—a rail, one node per event, the content beside it,
- * dates in their own column (Ant's `label` mode, on wide viewports only). Its
- * decoration does not: the node is a hairline ring in the neutral ramp, the
- * filled accent node is spent on the single fact it can carry (which role is
- * still running), and the content sits on the page instead of in a card, so
- * the rail is the only structure the reader has to parse.
- *
- * `logo` is trusted static markup and is inlined unescaped; it is decorative,
- * since the heading right under it already names the school, so the wrapper
- * hides it from assistive tech rather than letting the SVG's own label announce
- * the name a second time.
- *
- * `index` only staggers the reveal, reusing the shared `animate--delayed-*`
- * steps—the events fade in top to bottom, the way the rail is read.
- */
-function timelineItem(entry: TimelineEntry, index: number): string {
-  const detail = entry.items
-    ? `<ul class="timeline__list">${
-      entry.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
-    }</ul>`
-    : entry.desc
-    ? `<p class="timeline__text">${escapeHtml(entry.desc)}</p>`
-    : "";
-
-  return `
-          <li class="timeline__item${
-    entry.current ? " timeline__item--current" : ""
-  } animate animate--delayed-${index + 1}">
-            <span class="timeline__date">${escapeHtml(entry.date)}</span>
-            <div class="timeline__rail" aria-hidden="true"><span class="timeline__node"></span></div>
-            <div class="timeline__body">
-              ${
-    entry.logo
-      ? `<div class="timeline__logo" aria-hidden="true">${entry.logo}</div>`
-      : ""
-  }
-              <h3 class="timeline__org">${escapeHtml(entry.org)}</h3>
-              ${
-    entry.location
-      ? `<p class="timeline__meta">${escapeHtml(entry.location)}</p>`
-      : ""
-  }
-              ${
-    entry.sector
-      ? `<p class="timeline__meta">${escapeHtml(entry.sector)}</p>`
-      : ""
-  }
-              <p class="timeline__role">${escapeHtml(entry.role)}</p>
-              ${
-    entry.note ? `<p class="timeline__note">${escapeHtml(entry.note)}</p>` : ""
-  }
-              ${detail}
-            </div>
-          </li>`;
-}
-
-/**
- * The rail itself. `role="list"` restores the semantics that `list-style: none`
- * strips in Safari/VoiceOver, and the ordering is meaningful—an `<ol>`.
- */
-function timeline(entries: readonly TimelineEntry[], modifier = ""): string {
-  return `
-        <ol class="timeline${modifier}" role="list">${
-    entries.map(timelineItem).join("")
-  }
-        </ol>`;
-}
-
-/** Reverse-chronological; the first entry is the role still running. */
-const EXPERIENCE: readonly (keyof Translation["experience"])[] = [
-  "kapiaRgi",
-  "open",
-  "kapiaSolutions",
-  "adneom",
-  "insurance",
-];
-
-/**
- * Every employer is described by the same four levels—company (carrying its
- * current name in parentheses when it has been renamed), city, sector, role—
- * so the entries are a projection rather than five hand-written literals.
- */
-function experience(t: Translation): string {
-  return section(
-    t,
-    "experience",
-    timeline(EXPERIENCE.map((key, index) => {
-      const entry = t.experience[key];
-      return {
-        date: entry.date,
-        org: entry.company,
-        location: entry.location,
-        sector: entry.sector,
-        role: entry.title,
-        current: index === 0,
-      };
-    })),
-    "section__body",
-  );
-}
-
-/**
- * The same rail, opened by each institution's mark instead of its name. The
- * marks are taller than a line of text, so `timeline--marks` re-centres the
- * node and the date on them (see src/styles.css).
- */
-function education(t: Translation): string {
-  const { sichuan, master, edc } = t.education;
-  return section(
-    t,
-    "education",
-    timeline([
-      {
-        date: sichuan.date,
-        org: sichuan.school,
-        role: sichuan.title,
-        note: sichuan.subtitle,
-        logo: LOGOS.sichuan,
-        items: sichuan.items,
-      },
-      {
-        date: master.date,
-        org: master.school,
-        role: master.title,
-        note: master.subtitle,
-        logo: LOGOS.master,
-        desc: master.desc,
-      },
-      {
-        date: edc.date,
-        org: edc.school,
-        role: edc.title,
-        logo: LOGOS.edc,
-        desc: edc.desc,
-      },
-    ], " timeline--marks"),
-    "section__body",
-  );
-}
-
-function certifications(t: Translation): string {
-  return section(
-    t,
-    "certifications",
-    `
-        <article class="card">
-          <div class="card__header">
-            <span class="card__meta">${escapeHtml(t.certifications.date)}</span>
-          </div>
-          <ul class="card__list">${
-      t.certifications.items.map((c) => `<li>${escapeHtml(c)}</li>`).join("")
-    }</ul>
-        </article>`,
-  );
-}
-
-function skills(t: Translation): string {
-  const groups = [
-    t.skills.product,
-    t.skills.data,
-    t.skills.interfaces,
-    t.skills.domains,
-    t.skills.soft,
-  ];
-  const languages = [
-    t.skills.languages.french,
-    t.skills.languages.portuguese,
-    t.skills.languages.english,
-    t.skills.languages.spanish,
-    t.skills.languages.mandarin,
-  ];
-
-  const cards = groups.map(
-    (group) => `
-        <div class="card">
-          <h3 class="card__title">${escapeHtml(group.title)}</h3>
-          <div class="tags">${
-      group.tags.map((item) => `<span class="tag">${escapeHtml(item)}</span>`)
-        .join("")
-    }</div>
-        </div>`,
-  ).join("");
-
-  return section(
-    t,
-    "skills",
-    `${cards}
-        <div class="card">
-          <h3 class="card__title">${escapeHtml(t.skills.languages.title)}</h3>
-          <div class="tags">${
-      languages.map((l) =>
-        `<span class="tag">${escapeHtml(l.name)} · ${
-          escapeHtml(l.level)
-        }</span>`
-      ).join("")
-    }</div>
-        </div>`,
-    "section__body section__body--cards",
-  );
-}
-
-function hobbies(t: Translation): string {
-  const items = [
-    t.hobbies.running,
-    t.hobbies.cycling,
-    t.hobbies.literature,
-    t.hobbies.cinema,
-    t.hobbies.language,
-  ];
-  return section(
-    t,
-    "hobbies",
-    items.map(
-      (item) => `
-        <article class="card">
-          <h3 class="card__title">${escapeHtml(item.title)}</h3>
-          <p class="card__text">${escapeHtml(item.desc)}</p>
-        </article>`,
-    ).join(""),
-    "section__body section__body--cards",
-  );
-}
-
-/**
- * The device the thread is drawn inside: status bar, conversation bar, and the
- * composer under it. Pure decoration—every part of it is `aria-hidden`, so a
- * screen reader hears the thread and nothing about the phone around it. `9:41`
- * is Apple's own canonical time and is language-invariant, as are the glyphs;
- * the only translated string is the contact name, which is the visitor, since
- * the screen we are looking over is Philippe's.
- */
-function phoneChrome(t: Translation): { status: string; bar: string } {
-  const visitor = escapeHtml(t.dialogue.visitor);
-  // The avatar monogram is the first *grapheme*, not the first UTF-16 unit, so
-  // it stays whole for 訪客 as well as for Visitor.
-  const monogram = escapeHtml([...t.dialogue.visitor][0] ?? "");
-
-  return {
-    status: `
-            <div class="phone__status" aria-hidden="true">
-              <span class="phone__time">9:41</span>
-              <span class="phone__island"></span>
-              <span class="phone__signals">${ICON_SIGNAL}${ICON_WIFI}${ICON_BATTERY}</span>
-            </div>`,
-    bar: `
-            <div class="phone__bar" aria-hidden="true">
-              <span class="phone__back">${ICON_CHEVRON_LEFT}</span>
-              <span class="phone__who">
-                <span class="phone__avatar">${monogram}</span>
-                <span class="phone__name">${visitor}${ICON_CHEVRON_RIGHT}</span>
-              </span>
-            </div>`,
-  };
-}
-
-/** CJK ideographs and CJK punctuation—the runs that need a declared language. */
-const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
-
-/**
- * RGAA 8.7: a run of Chinese inside a page written in another language has to
- * say so, or a screen reader pronounces it with the page's voice. Only the
- * dialogue needs this today (「微辣」in the English, French, Portuguese and
- * Spanish threads); on the Chinese pages there is no change of language to mark.
- *
- * Safe on already-escaped text: the CJK ranges cannot overlap an HTML entity,
- * so wrapping a run never lands inside one.
- */
-function markChinese(escaped: string, lang: Lang): string {
-  if (lang.startsWith("zh")) return escaped;
-  return escaped.replace(
-    CJK_RUN,
-    (run) => `<span lang="zh-Hans">${run}</span>`,
-  );
-}
-
-/**
- * The questions a reader actually asks, presented as a message thread on a
- * phone. Questions and answers, not a pitch: the section states facts about
- * the work and the life around it, and stops there.
- *
- * The bubbles are the load-bearing part: they wrap at a plain CSS max-width
- * (fine without JS), and [src/chat.ts](src/chat.ts) then tightens each one to
- * its optimal wrap width with pretext. The bubble text is duplicated into
- * data-text so the enhancement measures exactly the visible text (the .sr-only
- * sender prefix is for screen readers only).
- *
- * The phone around them is what makes the thread read as a thread rather than
- * as two columns of coloured boxes. Its screen is a fixed 19.5:9, so the thread
- * scrolls inside it as it would on the device—which is why `.chat` carries
- * `tabindex="0"`: a scrollable region has to be reachable by keyboard, and the
- * `role="group"` it already had does not make it focusable. The width control is the
- * pretext demo's own (chenglou.me/pretext/bubbles): dragging it re-tightens
- * every bubble live, which is the whole point of measuring instead of
- * guessing. It is `.js`-gated in CSS, since a range input that moves nothing
- * would be a lie without the script.
- */
-function dialogue(t: Translation, lang: Lang): string {
-  const rows = t.dialogue.messages.map(
-    (m) => `
-              <div class="chat__row${m.me ? " chat__row--me" : ""}">
-                <div class="msg" data-text="${
-      escapeHtml(m.text)
-    }"><span class="sr-only">${
-      escapeHtml(m.me ? t.dialogue.me : t.dialogue.visitor)
-    }: </span>${markChinese(escapeHtml(m.text), lang)}</div>
-              </div>`,
-  ).join("");
-
-  const { status, bar } = phoneChrome(t);
-
-  return section(
-    t,
-    "dialogue",
-    `
-        <p class="chat__disclaimer">${escapeHtml(t.dialogue.disclaimer)}</p>
-        <div class="phone">
-          <div class="phone__body">
-            <div class="phone__screen">${status}${bar}
-              <div
-                class="chat"
-                role="group"
-                aria-label="${escapeHtml(t.nav.dialogue)}"
-                tabindex="0"
-              >${rows}
-              </div>
-              <div class="phone__composer" aria-hidden="true">
-                <span class="phone__plus">${ICON_PLUS}</span>
-                <span class="phone__field">${ICON_MIC}</span>
-              </div>
-              <span class="phone__home" aria-hidden="true"></span>
-            </div>
-          </div>
-          <label class="chat__width">
-            <span class="chat__width-name">${
-      escapeHtml(t.dialogue.width)
-    }</span>
-            <input
-              class="chat__width-range"
-              type="range"
-              min="${CHAT_WIDTH.min}"
-              max="${CHAT_WIDTH.max}"
-              value="${CHAT_WIDTH.initial}"
-              step="1"
-              data-chat-width
-            />
-            <output class="chat__width-value" data-chat-width-value>${CHAT_WIDTH.initial} px</output>
-          </label>
-        </div>`,
-  );
-}
-
-function contact(t: Translation): string {
-  return section(
-    t,
-    "contact",
-    `
-        <p class="contact__intro">${escapeHtml(t.contact.intro)}</p>
-        <div class="contact__grid">
-          <div>
-            <p class="contact__label">${escapeHtml(t.contact.wechatLabel)}</p>
-            <p class="contact__value">${escapeHtml(PROFILE.wechat)}</p>
-          </div>
-          <div>
-            <p class="contact__label">${escapeHtml(t.contact.githubLabel)}</p>
-            <p class="contact__value"><a href="${
-      escapeHtml(PROFILE_URLS.github)
-    }" rel="me">${escapeHtml(`@${PROFILE.github}`)}</a></p>
-          </div>
-          <div>
-            <p class="contact__label">${escapeHtml(t.contact.linkedinLabel)}</p>
-            <p class="contact__value"><a href="${
-      escapeHtml(PROFILE_URLS.linkedin)
-    }" rel="me">${escapeHtml(`in/${PROFILE.linkedin}`)}</a></p>
-          </div>
-          <div>
-            <p class="contact__label">${escapeHtml(t.contact.locationLabel)}</p>
-            <p class="contact__value">${escapeHtml(t.hero.location)}</p>
-          </div>
-        </div>
-        <button
-          class="button button--copy"
-          type="button"
-          data-copy-wechat
-          data-copied-label="${escapeHtml(t.ui.copied)}"
-          aria-live="polite"
-        >${escapeHtml(t.ui.copyWechat)}</button>`,
-  );
-}
-
-/** The full page markup for one language and theme. */
-export function renderApp(lang: Lang, theme: Theme): string {
-  const t = translations[lang];
-  return `
-    <div class="page" data-lang="${lang}">
-      <a class="skip-link" href="#main">${escapeHtml(t.ui.skipLink)}</a>
-      ${nav(t, lang, theme)}
-      <main id="main">
         ${hero(t)}
         ${about(t)}
         ${experience(t)}
@@ -773,10 +167,39 @@ export function renderApp(lang: Lang, theme: Theme): string {
         ${hobbies(t)}
         ${dialogue(t, lang)}
         ${contact(t)}
-      </main>
+      `;
+}
+
+/** The full page markup for one page kind, one language and one theme. */
+export function renderPage(page: Page, lang: Lang, theme: Theme): string {
+  const t = translations[lang];
+  const body = page.kind === "home"
+    ? homeBody(t, lang, page.posts)
+    : page.kind === "blogIndex"
+    ? blogIndexBody(t, lang, page.posts)
+    : page.kind === "post"
+    ? postBody(t, lang, page.post, page.html)
+    : cvBody(t, lang);
+  return `
+    <div class="page" data-lang="${lang}" data-kind="${page.kind}">
+      <a class="skip-link" href="#main">${escapeHtml(t.ui.skipLink)}</a>
+      ${
+    nav(
+      t,
+      lang,
+      theme,
+      page.kind === "cv" ? undefined : langLinkFor(page, lang),
+    )
+  }
+      <main id="main">${body}</main>
       <footer class="footer">
         <div class="wrap">${escapeHtml(t.contact.footer)}</div>
       </footer>
     </div>
   `;
+}
+
+/** The CV page—what this site rendered before the blog existed. */
+export function renderApp(lang: Lang, theme: Theme): string {
+  return renderPage({ kind: "cv" }, lang, theme);
 }

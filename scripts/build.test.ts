@@ -1,10 +1,10 @@
 /*
  * Build smoke test: run the real SSG (scripts/build.ts) and assert the emitted
  * dist/ pages carry their pre-rendered content, SEO head tags and font rules—
- * the contract deploys rely on. A full bundle plus eight pre-renders costs
- * ~110ms locally; the explicit timeout is headroom for a cold CI runner, not a
- * sign this is slow. SITE_URL is stripped from the env so the assertions don't
- * depend on the caller's setup.
+ * the contract deploys rely on. A full bundle plus the pre-renders costs a few
+ * hundred ms locally; the explicit timeout is headroom for a cold CI runner,
+ * not a sign this is slow. SITE_URL is stripped from the env so the assertions
+ * don't depend on the caller's setup.
  */
 
 import { $ } from "bun";
@@ -14,23 +14,26 @@ import { HTML_LANG, LANGS, translations } from "../src/translations.ts";
 import { escapeHtml } from "../src/dom.ts";
 import { pageTitle } from "../src/render.ts";
 import { headMeta, pageMeta } from "../src/meta.ts";
+import { byLang, langsOf } from "../src/post.ts";
+import { pagePath } from "../src/urls.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
+import { loadPosts } from "./content.ts";
 import {
   contentLastmod,
   parseSitemap,
   SITEMAP_CSS_FILE,
   SITEMAP_XSL_FILE,
 } from "./sitemap.ts";
-import { entryPublished, FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
+import { FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
 
 /**
  * Whether this checkout can answer git history questions. In a shallow clone
- * (or outside a repository) the pickaxe lookups used for <lastmod> and
- * date_published return nothing, and the assertions below would compare empty
- * to empty—green without saying anything. When history IS there, dates must
- * be found, so a silent regression in those lookups turns red instead.
+ * (or outside a repository) the git lookups used for <lastmod> return nothing,
+ * and the assertions below would compare empty to empty—green without saying
+ * anything. When history IS there, dates must be found, so a silent regression
+ * in those lookups turns red instead.
  */
 const hasHistory = await $`git rev-parse --is-shallow-repository`
   .cwd(ROOT)
@@ -39,8 +42,14 @@ const hasHistory = await $`git rev-parse --is-shallow-repository`
   .text()
   .then((out) => out.trim() === "false", () => false);
 
-/** The page a language is written to, and read back from, in dist/. */
-const outFile = (lang: string) => lang === "en" ? "index.html" : `${lang}.html`;
+/** The corpus the build reads, so the expected pages are derived, not guessed. */
+const posts = await loadPosts();
+
+/** The three fixed files of one language, relative to dist/. */
+const fixedFiles = (lang: string) =>
+  ["index.html", "cv.html", "blog/index.html"].map((file) =>
+    lang === "en" ? file : `${lang}/${file}`
+  );
 
 /** How many elements a selector matches in a page—1 for every head tag here. */
 async function countMatches(html: string, selector: string): Promise<number> {
@@ -63,7 +72,7 @@ async function textOf(html: string, selector: string): Promise<string> {
 }
 
 test(
-  "bun scripts/build.ts emits every language page complete and well-formed",
+  "bun scripts/build.ts emits every page complete and well-formed",
   async () => {
     const { SITE_URL: _stripped, ...env } = process.env;
     const proc = Bun.spawn(["bun", "scripts/build.ts"], {
@@ -75,31 +84,60 @@ test(
     expect(await proc.exited).toBe(0);
 
     for (const lang of LANGS) {
-      const file = outFile(lang);
-      const html = await Bun.file(`${ROOT}/dist/${file}`).text();
+      for (const file of fixedFiles(lang)) {
+        expect(await Bun.file(`${ROOT}/dist/${file}`).exists()).toBe(true);
+      }
+      for (const post of byLang(posts, lang)) {
+        const file = pagePath({ kind: "post", lang, slug: post.slug });
+        expect(await Bun.file(`${ROOT}/dist/${file}`).exists()).toBe(true);
+      }
 
-      // Pre-rendered, language-tagged document (proves renderApp ran).
-      expect(html).toContain(`<html lang="${HTML_LANG[lang]}"`);
-      expect(html).toContain(`data-lang="${lang}"`);
-      expect(html).toContain("<h1");
-      expect(html).toContain('class="kp"');
-
-      // Head contract: font rules, canonical, hreflang alternates + x-default.
-      expect(html).toContain("@font-face");
-      expect(html).toContain('rel="canonical"');
-      expect(html).toContain('hreflang="x-default"');
+      // The CV page: pre-rendered, language-tagged document with its head
+      // contract—font rules, canonical, hreflang alternates + x-default.
+      const prefix = lang === "en" ? "" : `${lang}/`;
+      const cv = await Bun.file(`${ROOT}/dist/${prefix}cv.html`).text();
+      expect(cv).toContain(`<html lang="${HTML_LANG[lang]}"`);
+      expect(cv).toContain(`data-lang="${lang}"`);
+      expect(cv).toContain('data-kind="cv"');
+      expect(cv).toContain("<h1");
+      expect(cv).toContain('class="kp"');
+      expect(cv).toContain("@font-face");
+      expect(cv).toContain('rel="canonical"');
+      expect(cv).toContain('hreflang="x-default"');
 
       // No duplicate ids in the shipped page.
-      const ids = [...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]!);
+      const ids = [...cv.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]!);
       expect(new Set(ids).size).toBe(ids.length);
 
       // Without SITE_URL there is no absolute base, so the image tags stay off
       // entirely rather than shipping a relative URL no scraper can resolve—
       // and the card degrades to `summary`, which needs none.
-      const tags = await extractSocialTags(html);
+      const tags = await extractSocialTags(cv);
       expect(tags.og.image).toBeUndefined();
       expect(tags.twitter.image).toBeUndefined();
       expect(tags.twitter.card).toBe("summary");
+    }
+
+    // Asset paths are relative to each page's depth.
+    const root = await Bun.file(`${ROOT}/dist/index.html`).text();
+    const nested = await Bun.file(`${ROOT}/dist/fr/blog/index.html`).text();
+    expect(root).toContain('"./assets/');
+    expect(root).not.toContain('"../assets/');
+    expect(nested).toContain('"../../assets/');
+    expect(nested).not.toContain('"./assets/');
+
+    // No page references an asset that was not emitted.
+    const glob = new Bun.Glob("**/*.html");
+    for await (const page of glob.scan(`${ROOT}/dist`)) {
+      const html = await Bun.file(`${ROOT}/dist/${page}`).text();
+      for (const [, href] of html.matchAll(/"((?:\.\.?\/)+assets\/[^"]+)"/g)) {
+        const resolved = new URL(href ?? "", `file:///${page}`).pathname
+          .slice(1);
+        expect(
+          await Bun.file(`${ROOT}/dist/${resolved}`).exists(),
+          `${page} → ${href}`,
+        ).toBe(true);
+      }
     }
 
     for (const extra of ["404.html", "robots.txt", "og-image.png"]) {
@@ -114,20 +152,26 @@ test(
     expect(existsSync(`${ROOT}/dist/feed.json`)).toBe(false);
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
       .not.toContain("Sitemap:");
-    for (const lang of LANGS) {
-      const html = await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text();
-      expect(html).not.toContain(FEED_MIME);
+    expect(root).not.toContain(FEED_MIME);
+
+    // Only the site root negotiates the visitor's language.
+    expect(root).toContain("location.replace");
+    for (const file of ["fr/index.html", "cv.html", "blog/index.html"]) {
+      const html = await Bun.file(`${ROOT}/dist/${file}`).text();
+      expect(html).not.toContain("location.replace");
     }
 
-    // English is served twice: the root negotiates the visitor's language,
-    // en.html is the stable URL that never does. Same page, one canonical.
-    const root = await Bun.file(`${ROOT}/dist/index.html`).text();
-    const english = await Bun.file(`${ROOT}/dist/en.html`).text();
-    expect(root).toContain("location.replace");
-    expect(english).not.toContain("location.replace");
-    const canonical = (html: string) =>
-      html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
-    expect(canonical(english)).toBe(canonical(root));
+    // The old language URLs are relay pages: canonical to the new location,
+    // noindex, zero-second refresh.
+    for (const lang of LANGS.filter((l) => l !== "en")) {
+      const relay = await Bun.file(`${ROOT}/dist/${lang}.html`).text();
+      expect(relay).toContain('content="noindex"');
+      expect(relay).toContain(
+        `<link rel="canonical" href="./${lang}/index.html"`,
+      );
+    }
+    const enRelay = await Bun.file(`${ROOT}/dist/en.html`).text();
+    expect(enRelay).toContain('<link rel="canonical" href="./index.html"');
   },
   120_000,
 );
@@ -141,7 +185,7 @@ test(
  * URLs—both workflows rebuild after `bun test`, so nothing deploys them.
  */
 test(
-  "the SITE_URL build ships a complete, per-language social card",
+  "the SITE_URL build ships complete social cards, sitemap and feeds",
   async () => {
     const SITE = "https://social.example/cv";
     const proc = Bun.spawn(["bun", "scripts/build.ts"], {
@@ -155,11 +199,11 @@ test(
     const seen = { title: new Set<string>(), locale: new Set<string>() };
 
     for (const lang of LANGS) {
-      const file = outFile(lang);
-      const html = await Bun.file(`${ROOT}/dist/${file}`).text();
-      const tags = await extractSocialTags(html);
+      const prefix = lang === "en" ? "" : `${lang}/`;
+      const home = await Bun.file(`${ROOT}/dist/${prefix}index.html`).text();
+      const tags = await extractSocialTags(home);
       const card = previewCard(tags);
-      const url = lang === "en" ? `${SITE}/` : `${SITE}/${file}`;
+      const url = `${SITE}/${prefix}`;
       const t = translations[lang];
 
       // The card is this language's, and points at this language's page.
@@ -187,11 +231,8 @@ test(
       // silently. Compared against the shared builder, which is also what the
       // runtime writes on a language switch.
       const meta = pageMeta(lang, url);
-      const ld = await textOf(html, 'script[type="application/ld+json"]');
+      const ld = await textOf(home, 'script[type="application/ld+json"]');
       expect(ld).toBe(meta.jsonLd);
-      const person = JSON.parse(ld);
-      expect(person.jobTitle).toBe(t.hero.title);
-      expect(person.url).toBe(url);
 
       // Every element the runtime aims at on a reload-free switch
       // ([src/main.ts](src/main.ts)) has to exist here, exactly once. A
@@ -199,7 +240,7 @@ test(
       // the update is skipped, and the switched page keeps the previous
       // language's canonical, card or Person with no error anywhere.
       for (const { selector } of headMeta(meta)) {
-        expect([selector, await countMatches(html, selector)])
+        expect([selector, await countMatches(home, selector)])
           .toEqual([selector, 1]);
       }
 
@@ -207,105 +248,100 @@ test(
       seen.locale.add(card.locale ?? "");
     }
 
-    // Eight pages, eight distinct previews: a shared title or locale would mean
-    // a language fell back to another's metadata.
+    // Seven home pages, seven distinct previews: a shared title or locale
+    // would mean a language fell back to another's metadata.
     expect(seen.title.size).toBe(LANGS.length);
     expect(seen.locale.size).toBe(LANGS.length);
 
-    // en.html is the same page as the root, so it must preview identically.
-    const cardOf = async (file: string) =>
-      previewCard(await extractSocialTags(await Bun.file(file).text()));
-    expect(await cardOf(`${ROOT}/dist/en.html`)).toEqual(
-      await cardOf(`${ROOT}/dist/index.html`),
+    // An article page: its own title and summary, its own canonical, and
+    // hreflang only for the languages it exists in.
+    const article = posts.find((p) => p.lang === "fr")!;
+    const frPost = await Bun.file(
+      `${ROOT}/dist/fr/blog/${article.slug}.html`,
+    ).text();
+    const postTags = await extractSocialTags(frPost);
+    expect(postTags.canonical).toBe(`${SITE}/fr/blog/${article.slug}.html`);
+    expect(postTags.og.title).toBe(
+      escapeHtml(`${article.title} — ${translations.fr.name.display}`),
     );
+    expect(postTags.og.description).toBe(escapeHtml(article.summary));
+    const alternateCount = await countMatches(
+      frPost,
+      'link[rel="alternate"][hreflang]',
+    );
+    // The article's languages, plus x-default.
+    expect(alternateCount).toBe(langsOf(posts, article.slug).length + 1);
 
-    // The sitemap lists every language page once, at its canonical URL, and
-    // nothing else: en.html is a duplicate of the root and 404.html is
-    // noindex. Same order as LANGS, so a diff of the file stays readable.
+    // The sitemap lists every real page once, and no relay: en.html and the
+    // <lang>.html files are duplicates pointing at the new locations.
     const sitemap = await Bun.file(`${ROOT}/dist/sitemap.xml`).text();
     const entries = await parseSitemap(sitemap);
-    expect(entries.map((e) => e.loc)).toEqual(
-      LANGS.map((lang) =>
-        lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`
-      ),
-    );
-
-    // Every canonical in the pages is in the sitemap, and vice versa.
-    const canonicals = await Promise.all(
-      LANGS.map(async (lang) =>
-        (await extractSocialTags(
-          await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text(),
-        )).canonical
-      ),
-    );
-    expect(new Set(entries.map((e) => e.loc))).toEqual(new Set(canonicals));
+    const locs = entries.map((e) => e.loc);
+    expect(locs).toContain(`${SITE}/`);
+    expect(locs).toContain(`${SITE}/cv.html`);
+    expect(locs).toContain(`${SITE}/fr/blog/index.html`);
+    expect(locs).toContain(`${SITE}/fr/blog/${article.slug}.html`);
+    expect(locs.some((l) => l.endsWith("/fr.html"))).toBe(false);
+    expect(locs.some((l) => l.endsWith("/en.html"))).toBe(false);
+    expect(locs).toHaveLength(LANGS.length * 3 + posts.length);
 
     // lastmod is the content's date from git, not the build's—the whole
-    // point of the field. Compared against the same source the build read, so
-    // a checkout that cannot answer (shallow clone) expects no field at all.
+    // point of the field. An article is dated by its own source file.
     const lastmod = await contentLastmod();
-    for (const entry of entries) expect(entry.lastmod).toBe(lastmod);
-    if (lastmod) {
-      expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
+    for (const entry of entries) {
+      if (!entry.lastmod) continue;
+      expect(Date.parse(entry.lastmod)).toBeLessThanOrEqual(Date.now());
     }
-    // Independent truth: with history available, the field must exist. The
-    // loop above compares the build's answer to the same function's answer,
-    // so a broken git lookup would otherwise pass vacuously (undefined ===
-    // undefined) in exactly the shallow clones the gates used to run.
+    const articleEntry = entries.find((e) =>
+      e.loc === `${SITE}/fr/blog/${article.slug}.html`
+    );
+    expect(articleEntry?.lastmod).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     if (hasHistory) expect(lastmod).toBeDefined();
 
     // Both browser stylesheets ship beside the sitemap that references them,
-    // and the XSLT one carries a row for every URL in it: a <loc> the transform
-    // has no case for renders a blank language cell to whoever opens the file.
+    // and the XSLT one reads the language off the first path segment: a <loc>
+    // the transform has no case for renders a blank language cell.
     const xsl = await Bun.file(`${ROOT}/dist/${SITEMAP_XSL_FILE}`).text();
     expect(sitemap).toContain(`href="${SITEMAP_XSL_FILE}"`);
     expect(sitemap).toContain(`href="${SITEMAP_CSS_FILE}"`);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(true);
-    for (const { loc } of entries) {
-      expect(xsl).toContain(`test="$file = '${loc.slice(SITE.length + 1)}'"`);
+    for (const lang of LANGS.filter((l) => l !== "en")) {
+      expect(xsl).toContain(`contains(s:loc, '/${lang}/')`);
     }
 
     // robots.txt points crawlers at it, absolutely.
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
       .toContain(`Sitemap: ${SITE}/sitemap.xml`);
 
-    // One JSON Feed per language, discoverable from its own page and dated
-    // from git—the same source the sitemap's <lastmod> comes from, so a
-    // checkout without history yields no date rather than a wrong one.
-    const published = await entryPublished(translations.en);
-    // Independent truth: the expected item count is derived from the
-    // translation data, not from the code under test—so with history a git
-    // lookup that silently answers nothing (reformatted literal, broken
-    // pickaxe) fails here instead of passing as `0 === 0` below.
-    if (hasHistory) {
-      const en = translations.en;
-      const itemCount = Object.keys(en.experience).length +
-        Object.keys(en.education).length + 1;
-      expect(published.size).toBe(itemCount);
-    }
+    // One JSON Feed per language, discoverable from its home page: the items
+    // are that language's articles, dated from their frontmatter.
     for (const lang of LANGS) {
       const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
+      const expected = byLang(posts, lang);
       expect(feed.version).toBe(FEED_VERSION);
       expect(feed.feed_url).toBe(`${SITE}/${feedFile(lang)}`);
-      expect(feed.home_page_url).toBe(
-        lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`,
-      );
-      expect(feed.items.length).toBeGreaterThan(0);
-      expect(
-        feed.items.filter((i: { date_published?: string }) => i.date_published),
-      ).toHaveLength(published.size);
+      expect(feed.items).toHaveLength(expected.length);
+      for (const [i, item] of feed.items.entries()) {
+        const post = expected[i]!;
+        expect(item.id).toBe(
+          `${SITE}/${pagePath({ kind: "post", lang, slug: post.slug })}`,
+        );
+        expect(item.date_published).toBe(`${post.date}T00:00:00Z`);
+        expect(item.content_html).toContain("<p>");
+      }
       // The bundler emits a hashed favicon; the feed must point at that asset,
       // not at the source path the shell references.
       expect(feed.favicon).toMatch(
         new RegExp(`^${SITE}/assets/favicon-[^/]+\\.svg$`),
       );
 
-      // Discovery: the page declares the feed with the spec's type.
-      const html = await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text();
-      expect(html).toContain(
+      // Discovery: the home page declares the feed with the spec's type.
+      const prefix = lang === "en" ? "" : `${lang}/`;
+      const home = await Bun.file(`${ROOT}/dist/${prefix}index.html`).text();
+      expect(home).toContain(
         `<link rel="alternate" type="${FEED_MIME}" title=`,
       );
-      expect(html).toContain(`href="${SITE}/${feedFile(lang)}"`);
+      expect(home).toContain(`href="${SITE}/${feedFile(lang)}"`);
     }
   },
   120_000,

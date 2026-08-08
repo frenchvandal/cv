@@ -7,11 +7,14 @@
  */
 
 import {
+  type Lang,
   LANG_LABEL,
   LANG_NAME,
+  LANGS,
   SWITCHER_LANGS,
   translations,
 } from "../src/translations.ts";
+import { loadPosts } from "./content.ts";
 
 /** Files whose string literals can reach the page in the Latin-script languages. */
 const LATIN_SOURCES = ["src/translations.ts", "src/render.ts"];
@@ -58,6 +61,14 @@ const switcher = SWITCHER_LANGS.map((lang) =>
  * the raw file): Simplified and Traditional pages each ship only their own
  * script.
  *
+ * Post titles and rendered text join the same sets, routed by the face each
+ * page's font stack actually names for them (see --font in src/styles.css):
+ * every stack opens with Noto Sans, so Latin runs in ANY language's posts
+ * feed `latin`; CJK runs feed the one CJK family their page carries—SC for
+ * zh AND for the Latin-script pages, whose base stack falls back to SC for a
+ * 简体 aside, TC for zh-hant, HK for zh-hk. The Markdown source is never
+ * scanned: its `#`/`*` syntax is not drawn, only the rendered text is.
+ *
  * The theme-toggle glyphs ☾ ☀ (U+263E, U+2600) are the one deliberate
  * exclusion, and `isLatin` stopping at U+024F is what enforces it: Noto Sans
  * does not carry them. Measured against the Google Fonts API on 2026-07-26—
@@ -77,13 +88,35 @@ export async function glyphSets(): Promise<
       LATIN_SOURCES.map((path) => Bun.file(`${root}/${path}`).text()),
     )
   ).join("");
+  const posts = await loadPosts(`${root}/content`);
+  const textOf = (langs: readonly Lang[]) =>
+    posts
+      .filter((post) => langs.includes(post.lang))
+      .map((post) => post.title + post.text)
+      .join("");
+  const latinPosts = textOf(["en", "fr", "pt", "es"]);
+  const zhPosts = textOf(["zh"]);
   return {
-    latin: unique(sources, (cp) => isLatin(cp)),
-    sc: unique(JSON.stringify(translations.zh) + switcher, isCjk),
-    tc: unique(JSON.stringify(translations["zh-hant"]) + switcher, isCjk),
+    // Every stack opens with Noto Sans, so a Latin run (an é, a « quote) in a
+    // post of ANY language is drawn from this subset.
+    latin: unique(sources + textOf(LANGS), (cp) => isLatin(cp)),
+    // The Latin-script pages' stack names Noto Sans SC as its CJK fallback, so
+    // a CJK run in an en/fr/pt/es post is drawn from the SC subset, not from a
+    // system font—its characters must be requested here too.
+    sc: unique(
+      JSON.stringify(translations.zh) + switcher + zhPosts + latinPosts,
+      isCjk,
+    ),
+    tc: unique(
+      JSON.stringify(translations["zh-hant"]) + switcher + textOf(["zh-hant"]),
+      isCjk,
+    ),
     // Hong Kong shares Taiwan's script but not all its glyph FORMS (骨, 過, 溫
     // are drawn to a different standard), so it gets its own subset rather than
     // reusing the TC one—and its own vocabulary means its own character set.
-    hk: unique(JSON.stringify(translations["zh-hk"]) + switcher, isCjk),
+    hk: unique(
+      JSON.stringify(translations["zh-hk"]) + switcher + textOf(["zh-hk"]),
+      isCjk,
+    ),
   };
 }

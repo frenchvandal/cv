@@ -50,13 +50,18 @@ export interface PageMeta {
 /**
  * `url` is the page's public URL—absolute when the build runs with SITE_URL,
  * and resolved against `location` at runtime. It is passed in rather than
- * derived because only the caller knows the deployed base.
+ * derived because only the caller knows the deployed base. `override` lets an
+ * article page carry its own title and summary instead of the CV's.
  */
-export function pageMeta(lang: Lang, url: string): PageMeta {
+export function pageMeta(
+  lang: Lang,
+  url: string,
+  override?: { title: string; description: string },
+): PageMeta {
   const t = translations[lang];
   return {
-    title: pageTitle(t),
-    description: t.meta.description,
+    title: override?.title ?? pageTitle(t),
+    description: override?.description ?? t.meta.description,
     url,
     ogLocale: OG_LOCALE[lang],
     jsonLd: JSON.stringify({

@@ -516,12 +516,18 @@ function observeSections(): void {
 function bindEvents(): void {
   // Language links: real <a> (work without JS) intercepted for an instant,
   // reload-free switch that keeps the URL shareable via history.pushState.
+  // Only the CV page switches in place: the client holds no post data, so on
+  // home, index and article pages the switcher is plain navigation (spec §6.2).
+  // The dev shell carries no data-kind and always re-renders the CV anyway.
+  const kind = app?.querySelector(".page")?.getAttribute("data-kind");
+  const switchInPlace = kind === "cv" || kind === null || kind === undefined;
   app?.querySelectorAll<HTMLAnchorElement>("a[data-lang]").forEach((link) => {
     link.addEventListener("click", (event) => {
       const next = link.dataset.lang;
       // Let the browser handle every modified click itself—new tab/window
       // (meta/ctrl/shift) and download (alt) all mean "not an in-page switch".
       if (
+        !switchInPlace ||
         !isLang(next) ||
         event.metaKey || event.ctrlKey || event.shiftKey || event.altKey
       ) {

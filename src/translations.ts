@@ -13,7 +13,7 @@
  *     商業分析師, 待办列表/待辦清單…). Both use Philippe's Chinese name, 李北洛.
  *     `zh-hant` follows Taiwan usage (軟體, 專案), matching the Noto Sans TC
  *     glyph forms that page ships; Hong Kong and Macau get `zh-hk`, which is a
- *     five-term projection of it (see HK_LEXICON at the bottom of this file)
+ *     lexical projection of it (see HK_LEXICON at the bottom of this file)
  *     rendered in Noto Sans HK. `zh-hk` is built and indexed but deliberately
  *     absent from the switcher—see SWITCHER_LANGS.
  *   - `pt` is European Portuguese in the PRE-1990 orthography (see its own
@@ -137,6 +137,22 @@ const en = {
     hobbies: "Hobbies",
     dialogue: "Questions",
     contact: "Contact",
+    cv: "CV",
+    writing: "Writing",
+  },
+  blog: {
+    indexTitle: "Writing",
+    indexIntro: "Notes on measurement, interfaces and the languages I work in.",
+    latest: "Latest writing",
+    all: "All writing",
+    readMore: "Read",
+    published: "Published",
+    updated: "Updated",
+    backToIndex: "Back to all writing",
+    empty: "Nothing published in this language yet.",
+    // Lu par un lecteur d'écran sur les langues où l'article n'existe pas.
+    notInLanguage: "This article is not available in this language",
+    tags: "Tags",
   },
   hero: {
     greeting: "Hello, I'm",
@@ -413,6 +429,22 @@ const fr: Translation = {
     hobbies: "Loisirs",
     dialogue: "Questions",
     contact: "Contact",
+    cv: "CV",
+    writing: "Écrits",
+  },
+  blog: {
+    indexTitle: "Écrits",
+    indexIntro:
+      "Notes sur la mesure, les interfaces et les langues que je pratique.",
+    latest: "Derniers écrits",
+    all: "Tous les écrits",
+    readMore: "Lire",
+    published: "Publié le",
+    updated: "Mis à jour le",
+    backToIndex: "Retour aux écrits",
+    empty: "Rien de publié dans cette langue pour l'instant.",
+    notInLanguage: "Cet article n'est pas disponible dans cette langue",
+    tags: "Mots-clés",
   },
   hero: {
     greeting: "Bonjour, je suis",
@@ -697,6 +729,21 @@ const pt: Translation = {
     hobbies: "Interesses",
     dialogue: "Perguntas",
     contact: "Contacto",
+    cv: "CV",
+    writing: "Escritos",
+  },
+  blog: {
+    indexTitle: "Escritos",
+    indexIntro: "Notas sobre medição, interfaces e as línguas em que trabalho.",
+    latest: "Últimos escritos",
+    all: "Todos os escritos",
+    readMore: "Ler",
+    published: "Publicado a",
+    updated: "Actualizado a",
+    backToIndex: "Voltar aos escritos",
+    empty: "Ainda nada publicado nesta língua.",
+    notInLanguage: "Este artigo não está disponível nesta língua",
+    tags: "Palavras-chave",
   },
   hero: {
     greeting: "Olá, sou o",
@@ -974,6 +1021,22 @@ const es: Translation = {
     hobbies: "Intereses",
     dialogue: "Preguntas",
     contact: "Contacto",
+    cv: "CV",
+    writing: "Escritos",
+  },
+  blog: {
+    indexTitle: "Escritos",
+    indexIntro:
+      "Notas sobre medición, interfaces y los idiomas en los que trabajo.",
+    latest: "Últimos escritos",
+    all: "Todos los escritos",
+    readMore: "Leer",
+    published: "Publicado el",
+    updated: "Actualizado el",
+    backToIndex: "Volver a los escritos",
+    empty: "Todavía no hay nada publicado en este idioma.",
+    notInLanguage: "Este artículo no está disponible en este idioma",
+    tags: "Etiquetas",
   },
   hero: {
     greeting: "Hola, soy",
@@ -1244,6 +1307,21 @@ const zh: Translation = {
     hobbies: "爱好",
     dialogue: "常见问题",
     contact: "联系",
+    cv: "简历",
+    writing: "文章",
+  },
+  blog: {
+    indexTitle: "文章",
+    indexIntro: "关于测量、界面，以及我使用的几种语言的笔记。",
+    latest: "最新文章",
+    all: "全部文章",
+    readMore: "阅读",
+    published: "发布于",
+    updated: "更新于",
+    backToIndex: "返回文章列表",
+    empty: "这个语言暂时还没有文章。",
+    notInLanguage: "本文暂无此语言版本",
+    tags: "标签",
   },
   hero: {
     greeting: "你好，我是",
@@ -1499,6 +1577,21 @@ const zhHant: Translation = {
     hobbies: "興趣",
     dialogue: "常見問題",
     contact: "聯絡",
+    cv: "履歷",
+    writing: "文章",
+  },
+  blog: {
+    indexTitle: "文章",
+    indexIntro: "關於測量、介面，以及我使用的幾種語言的筆記。",
+    latest: "最新文章",
+    all: "全部文章",
+    readMore: "閱讀",
+    published: "發佈於",
+    updated: "更新於",
+    backToIndex: "返回文章列表",
+    empty: "這個語言目前還沒有文章。",
+    notInLanguage: "本文暫無此語言版本",
+    tags: "標籤",
   },
   hero: {
     greeting: "你好，我是",
@@ -1738,23 +1831,70 @@ const zhHant: Translation = {
 
 /*
  * Hong Kong and Macau read the same Traditional script as Taiwan but not the
- * same technical vocabulary. These five terms are the whole difference across
- * this CV—measured, not guessed—so the HK page is a projection of the
- * Taiwan one rather than a seventh hand-written translation: a copy would mean
- * making every future edit twice, for five words.
+ * same technical vocabulary, so the HK page is a projection of the Taiwan one
+ * rather than a seventh hand-written translation: a copy would mean making
+ * every future edit twice. The lexicon holds the common, unambiguous
+ * Taiwan→Hong Kong pairs—not just the ones the CV happens to use, because the
+ * blog's articles are projected through the same function, and a lexicon that
+ * only knew the CV would project Taiwan vocabulary onto HK articles without
+ * anything failing.
  *
- * Deliberately NOT included: 品質 → 質素. 質素 is the distinctly Hong Kong word
- * for quality, but in the one place the CV uses it—品質意識, "quality
- * mindset"—品質 is idiomatic in Hong Kong too, and a CV is the wrong place
- * for a substitution that is merely defensible.
+ * Two pairs nest, and insertion order is the disambiguation: 網際網路 must be
+ * projected before 網路, or the longer term would be half-rewritten into
+ * 網際網絡. The test file pins that ordering.
+ *
+ * Deliberately NOT included:
+ * - 品質 → 質素. 質素 is the distinctly Hong Kong word for quality, but 品質
+ *   is idiomatic in Hong Kong too—the substitution is merely defensible.
+ * - 程式 → 程序. Correct in itself, but 方程式 (equation) contains 程式, and
+ *   a blind replaceAll would rewrite it to 方程程序. The compounds below
+ *   (應用程式, 程式碼) carry the safe cases.
+ * - 智慧 → 智能. Hong Kong writes 人工智能 but also 智慧城市—only the fixed
+ *   compound is listed.
+ * - Glyph variants (線/綫, 帳/賬): both forms circulate in Hong Kong print,
+ *   and a lexical projection is the wrong tool for a style choice.
  */
 const HK_LEXICON: Record<string, string> = {
+  // Software and technical vocabulary — the most attested pairs.
   軟體: "軟件",
-  專案: "項目",
+  硬體: "硬件",
+  網際網路: "互聯網", // before 網路, see the header
   網路: "網絡",
   入口網站: "門戶網站",
+  資料庫: "數據庫",
+  印表機: "打印機",
+  螢幕: "屏幕",
+  部落格: "網誌",
+  介面: "界面",
+  使用者: "用戶",
+  函式: "函數",
+  應用程式: "應用程序",
+  程式碼: "代碼",
+  人工智慧: "人工智能",
+  雷射: "激光",
+  // General vocabulary.
+  專案: "項目",
+  計畫: "計劃",
   契約: "合約",
+  隱私: "私隱",
+  水準: "水平",
+  管道: "渠道",
+  外包: "外判",
+  裡: "裏",
 };
+
+/**
+ * The Hong Kong lexicon applied to plain text. Exported because the blog's
+ * articles depend on it too: a projection living in two places would drift,
+ * and the HK page would show Taiwan vocabulary without anything failing.
+ */
+export function toHongKongText(text: string): string {
+  let out = text;
+  for (const [taiwan, hongKong] of Object.entries(HK_LEXICON)) {
+    out = out.replaceAll(taiwan, hongKong);
+  }
+  return out;
+}
 
 /**
  * The Hong Kong / Macau reading of the Traditional page. The round trip goes
@@ -1765,11 +1905,7 @@ const HK_LEXICON: Record<string, string> = {
  * by asserting the result still matches the Taiwan page structurally.
  */
 function toHongKong(t: Translation): Translation {
-  let json = JSON.stringify(t);
-  for (const [taiwan, hongKong] of Object.entries(HK_LEXICON)) {
-    json = json.replaceAll(taiwan, hongKong);
-  }
-  return JSON.parse(json) as Translation;
+  return JSON.parse(toHongKongText(JSON.stringify(t))) as Translation;
 }
 
 /** The Taiwan→Hong Kong terms, exposed so the tests can hold the pair to it. */

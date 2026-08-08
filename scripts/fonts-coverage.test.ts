@@ -11,7 +11,8 @@
 import { expect, test } from "bun:test";
 import { FONT_FACES } from "../src/fonts.ts";
 import { renderApp } from "../src/render.ts";
-import { LANGS } from "../src/translations.ts";
+import { type Lang, LANGS } from "../src/translations.ts";
+import { loadPosts } from "./content.ts";
 import { glyphSets } from "./glyphs.ts";
 
 /** Parse a CSS unicode-range value into a membership test. */
@@ -35,6 +36,7 @@ function uncovered(text: string, range: string): string[] {
 
 const RANGE = new Map(FONT_FACES.map((face) => [face.family, face.range]));
 const sets = await glyphSets();
+const posts = await loadPosts();
 
 test.each(
   [
@@ -131,3 +133,28 @@ test.each([...LANGS])(
     expect(unaccounted).toEqual([]);
   },
 );
+
+/*
+ * The posts' counterpart to the blind-spot guard above, one level earlier:
+ * `glyphSets` decides which characters `bun run fonts:update` will request,
+ * so this asserts no post character falls between the isLatin/isCjk
+ * predicates. Every non-space character of a post must land in the Latin
+ * subset or in the one CJK face its page's font stack names—SC for the
+ * Latin-script and zh pages (their --font stack falls back to SC), TC for
+ * zh-hant, HK for zh-hk. Checking the sets rather than the committed ranges
+ * keeps this independent of when the subsets were last regenerated; the first
+ * test owns the ranges.
+ */
+const cjkSetOf = (lang: Lang): "sc" | "tc" | "hk" =>
+  lang === "zh-hant" ? "tc" : lang === "zh-hk" ? "hk" : "sc";
+
+test("every character of every post lands in a subset its page names", () => {
+  for (const post of posts) {
+    const pool = sets.latin + sets[cjkSetOf(post.lang)];
+    for (const ch of new Set(post.text)) {
+      if (/\s/.test(ch)) continue;
+      expect(pool.includes(ch), `${post.sourcePath} : « ${ch} » non couvert`)
+        .toBe(true);
+    }
+  }
+});
