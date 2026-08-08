@@ -18,47 +18,68 @@ import type { Lang } from "../src/translations.ts";
 /** CJK idéographique et ponctuation CJK — les runs qui doivent déclarer leur langue. */
 const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
 
-/*
- * Un span `…` ou un bloc ``` /~~~ clôturé est un exemple à citer, pas une
- * charge active : Bun.markdown.html() l'échappe de toute façon en <code>. Un
- * article qui documente une faille XSS doit pouvoir écrire <script> — on
- * neutralise donc tout ce qui est déjà entre backticks avant de chercher du
- * HTML dangereux, sous peine de refuser sa propre documentation.
- */
-const FENCED_CODE =
-  /^ {0,3}(`{3,}|~{3,})[^\n]*\n[\s\S]*?^ {0,3}\1[`~]*[ \t]*$/gm;
-const INLINE_CODE = /(`+)[^`\n]*?\1/g;
+/** Balises dont la seule fonction est d'exécuter ou d'embarquer du contenu. */
+const DANGEROUS_TAGS = new Set(["script", "iframe", "object", "embed"]);
 
-function stripCode(source: string): string {
-  return source.replace(FENCED_CODE, " ").replace(INLINE_CODE, " ");
+/** Attributs de navigation/chargement — les seuls où une URI javascript: s'exécute. */
+const URI_ATTRIBUTES = new Set(["href", "src"]);
+
+/** HTMLRewriter normalise déjà les noms d'attribut en minuscules : un préfixe suffit. */
+function isEventAttribute(name: string): boolean {
+  return name.startsWith("on");
 }
 
-/** Balise dont la seule fonction est d'exécuter ou d'embarquer du contenu. */
-const DANGEROUS_TAG = /<\s*(script|iframe|object|embed)\b/i;
+/** Tolérant à la casse et aux espaces d'encadrement, comme le serait un navigateur. */
+function isJavascriptUri(value: string): boolean {
+  return value.trim().toLowerCase().startsWith("javascript:");
+}
 
 /*
- * Un gestionnaire d'événement, mais seulement DANS une balise : « oneshot=1 »
- * en pleine phrase est un mot ordinaire, pas une attaque. Le `/` compte comme
- * séparateur au même titre que l'espace — <img/onerror=…> est du HTML valide,
- * la barre oblique n'y délimite rien pour un navigateur.
+ * Analyse le HTML déjà RENDU, jamais la source Markdown. Une regex sur la
+ * source doit réimplémenter la grammaire CommonMark pour savoir si un
+ * backtick est échappé, si une fence est indentée sous une citation, etc. —
+ * une course perdue d'avance contre un vrai parseur. Bun.markdown.html() a
+ * déjà tranché : il échappe tout ce qui est du code (span ou bloc) en texte
+ * littéral, donc un <script>, un attribut on…= ou une URI javascript: qui
+ * survit ici comme un vrai nœud est exactement, et uniquement, ce qui est
+ * dangereux.
  */
-const EVENT_ATTR = /<[a-z][a-z0-9-]*\b[^>]*[\s/]on[a-z]+\s*=/i;
+export function assertSafeHtml(html: string, path: string): void {
+  let violation: string | undefined;
 
-/** Un lien ou une image dont la cible s'exécute au clic plutôt que de naviguer. */
-const JS_URI = /\]\(\s*javascript:|(?:href|src)\s*=\s*["']?\s*javascript:/i;
+  // Les handlers HTMLRewriter de Bun s'exécutent de façon synchrone pour une
+  // entrée string (vérifié empiriquement) : pas de flux à consommer, donc
+  // `assertSafeHtml` reste une fonction synchrone comme son appelante.
+  new HTMLRewriter().on("*", {
+    element(el) {
+      if (violation) return;
+      if (DANGEROUS_TAGS.has(el.tagName)) {
+        violation = `<${el.tagName}>`;
+        return;
+      }
+      for (const [name, value] of el.attributes) {
+        if (isEventAttribute(name)) {
+          violation = name;
+          return;
+        }
+        if (URI_ATTRIBUTES.has(name) && isJavascriptUri(value)) {
+          violation = `${name}="${value}"`;
+          return;
+        }
+      }
+    },
+  }).transform(html);
 
-export function assertSafeMarkdown(source: string, path: string): void {
-  const scanned = stripCode(source);
-  const match = DANGEROUS_TAG.exec(scanned) ?? EVENT_ATTR.exec(scanned) ??
-    JS_URI.exec(scanned);
-  if (match) {
+  if (violation) {
     throw new Error(
-      `${path}: HTML interdit dans une source d'article (${
-        match[0].trim()
-      }). ` +
+      `${path}: HTML interdit dans une source d'article (${violation}). ` +
         "Les articles sont du Markdown ; le HTML exécutable n'y a pas sa place.",
     );
   }
+}
+
+export function assertSafeMarkdown(source: string, path: string): void {
+  assertSafeHtml(Bun.markdown.html(source), path);
 }
 
 export function slugifyHeading(text: string): string {
@@ -92,8 +113,17 @@ function uniqueId(base: string, used: Set<string>): string {
 export async function renderMarkdown(
   body: string,
   lang: Lang,
+  // Optionnel et par défaut générique : la signature d'origine (body, lang)
+  // reste valable pour les appelants qui n'ont pas de chemin d'article (les
+  // tests). Un vrai appelant du pipeline de contenu peut fournir le chemin
+  // réel pour un message d'erreur exploitable.
+  path = "<markdown>",
 ): Promise<string> {
   const rendered = Bun.markdown.html(body);
+  // Vérifie le HTML qu'on vient de produire, pas la source : assertSafeHtml
+  // n'a pas besoin de re-rendre (contrairement à assertSafeMarkdown, qui elle
+  // part de la source et n'a que ça).
+  assertSafeHtml(rendered, path);
 
   // Le HTMLRewriter de Bun expose bien `el.onEndTag()`, mais contrairement à
   // l'API Cloudflare dont le brief s'inspirait, l'appeler ne permet pas de

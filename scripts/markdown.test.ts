@@ -6,6 +6,7 @@
 
 import { expect, test } from "bun:test";
 import {
+  assertSafeHtml,
   assertSafeMarkdown,
   renderMarkdown,
   slugifyHeading,
@@ -101,8 +102,6 @@ test("le garde-fou laisse passer du Markdown ordinaire", () => {
 });
 
 test.each([
-  ["<img/onerror=alert(1)>"],
-  ["<svg/onload=alert(1)>"],
   ["[x](javascript:alert(1))"],
   ['<a href="javascript:alert(1)">'],
 ])("le garde-fou refuse aussi %s", (source) => {
@@ -117,6 +116,63 @@ test.each([
 ])("le garde-fou n'est pas dupe d'un « on…= » hors balise : %s", (source) => {
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
     .not.toThrow();
+});
+
+test.each([
+  ["<img/onerror=alert(1)>"],
+  ["<svg/onload=alert(1)>"],
+])(
+  "le garde-fou laisse passer %s : la barre oblique collée au nom de balise n'ouvre pas de balise en CommonMark",
+  (source) => {
+    // Mesuré : Bun.markdown.html() exige un espace avant un attribut (grammaire
+    // CommonMark des balises en ligne). Sans cet espace, "<img/onerror=…>" n'est
+    // reconnu comme balise par aucun parseur CommonMark ; il ressort en texte
+    // échappé — &lt;img/onerror=alert(1)&gt; — donc jamais comme noeud <img> réel.
+    // assertSafeHtml n'a rien à refuser : il n'y a rien à exécuter dans la page.
+    const html = Bun.markdown.html(source);
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain("<svg");
+    expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+      .not.toThrow();
+  },
+);
+
+test("le garde-fou refuse un <script> qu'un backtick échappé laisse passer (régression)", () => {
+  // `\`` est un backtick échappé : CommonMark n'ouvre donc aucun span de code,
+  // et Bun.markdown.html() laisse ressortir le <script> qui suit tel quel,
+  // exécutable. Une regex sur la source qui apparie ce backtick échappé avec
+  // le backtick réel plus loin le manquerait ; l'analyse porte sur le HTML
+  // rendu, où ce <script> est un noeud bien réel.
+  const source = "before \\` <script>alert(1)</script>` after";
+  expect(Bun.markdown.html(source)).toContain("<script>");
+  expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+    .toThrow("content/posts/x/fr.md");
+});
+
+test("le garde-fou laisse passer une fence à l'intérieur d'un blockquote", () => {
+  // FENCED_CODE exigeait la fence en début de ligne ; une fence indentée sous
+  // un ">" de citation la ratait — faux positif que l'analyse du HTML rendu
+  // corrige gratuitement, puisque Bun.markdown.html() sait déjà que c'est du
+  // <pre><code> à l'intérieur d'un <blockquote>, peu importe l'indentation
+  // source.
+  const source = [
+    "> Voici un exemple :",
+    "> ```",
+    "> <script>alert(1)</script>",
+    "> ```",
+  ].join("\n");
+  expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+    .not.toThrow();
+});
+
+test("assertSafeHtml refuse un <script> qui apparaît tel quel dans du HTML déjà rendu", () => {
+  expect(() => assertSafeHtml("<script>alert(1)</script>", "x"))
+    .toThrow("x");
+});
+
+test("assertSafeHtml laisse passer du <script> déjà échappé en texte", () => {
+  const escaped = Bun.markdown.html("`<script>alert(1)</script>`");
+  expect(() => assertSafeHtml(escaped, "x")).not.toThrow();
 });
 
 test("le garde-fou laisse passer un exemple de code en span inline", () => {
