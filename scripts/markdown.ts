@@ -85,17 +85,17 @@ const NAMED_ENTITIES = new Map<string, string>([
 ]);
 
 /**
- * Une référence numérique (`&#106;`, `&#x6A;`) encode n'importe quel
- * caractère lettre par lettre — le vecteur mesuré dans l'audit
- * (`&#106;avascript:`). Le navigateur la décode aussi SANS point-virgule
- * (`&#106avascript` → `javascript`, avec une simple erreur d'analyse) :
- * chiffres gloutons, point-virgule optionnel, à l'identique.
+ * A numeric reference (`&#106;`, `&#x6A;`) encodes any character letter by
+ * letter — the vector measured in the audit (`&#106;avascript:`). The
+ * browser also decodes it WITHOUT the semicolon (`&#106avascript` →
+ * `javascript`, with a mere parse error): greedy digits, optional
+ * semicolon, exactly the same.
  */
 function decodeNumericEntity(
   value: string,
   start: number,
 ): { ch: string; end: number } | null {
-  let i = start + 2; // après "&#"
+  let i = start + 2; // after "&#"
   const hex = value.charAt(i) === "x" || value.charAt(i) === "X";
   if (hex) i++;
   let digits = "";
@@ -116,11 +116,11 @@ function decodeNumericEntity(
 }
 
 /*
- * Décodage à une passe, comme le navigateur. Les entités nommées se
- * limitent aux cinq du XML — la table HTML5 complète (~2000 entrées) n'est
- * pas reproduite : ce qu'on ne sait pas décoder (`&colon;`, `&Tab;`,
- * `&NewLine;`…), le navigateur le décodera quand même, donc c'est refusé
- * plus bas (`UNRESOLVED_ENTITY`) plutôt qu'approximé ici.
+ * One-pass decoding, like the browser. Named entities are limited to the
+ * five of XML — the full HTML5 table (~2000 entries) is not reproduced:
+ * what we cannot decode (`&colon;`, `&Tab;`, `&NewLine;`…), the browser
+ * will decode anyway, so it is rejected below (`UNRESOLVED_ENTITY`) rather
+ * than approximated here.
  */
 function decodeEntities(value: string): string {
   let out = "";
@@ -193,11 +193,11 @@ function schemeOf(value: string): string | null {
 }
 
 /*
- * Ce qui survit au décodage sous la forme d'une référence de caractère —
- * entité nommée inconnue ou numérique malformée — sera décodé par le
- * navigateur, pas par nous : refus par défaut, comme les balises et les
- * schémas. Un « & » seul (query string) ou suivi d'un nom sans
- * point-virgule n'est pas une référence complète et passe.
+ * Whatever survives decoding still shaped like a character reference — an
+ * unknown named entity or a malformed numeric one — will be decoded by the
+ * browser, not by us: reject by default, as with tags and schemes. A lone
+ * "&" (query string) or one followed by a name without a semicolon is not
+ * a complete reference and passes.
  */
 const UNRESOLVED_ENTITY = /&(?:#[xX0-9a-zA-Z]*;?|[a-zA-Z][a-zA-Z0-9]*;)/;
 
