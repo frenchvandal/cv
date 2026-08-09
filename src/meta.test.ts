@@ -29,7 +29,7 @@ test("pageMeta carries this language's title, description and page URL", () => {
 
   expect(meta.title).toBe(pageTitle(t));
   expect(meta.description).toBe(t.meta.description);
-  expect(meta.url).toBe("https://social.example/cv/fr.html");
+  expect(meta.url).toBe("https://social.example/cv/fr/");
   // Values are unescaped—the SSG escapes them into the template, the runtime
   // hands them to setAttribute, which escapes nothing.
   expect(meta.title).not.toContain("&amp;");
@@ -74,26 +74,30 @@ test("the JSON-LD carries no raw `<`, which would close its own script tag", () 
   expect(JSON.parse(`"\\u003C"`)).toBe("<");
 });
 
-test("pageUrl absolutizes a sibling page against the document it switches from", () => {
+test("pageUrl absolutizes the CV page it switches to, from the one it is on", () => {
   // The runtime has no SITE_URL: the canonical it writes has to be resolved
   // from wherever the page is actually served.
-  expect(pageUrl("fr", "https://social.example/cv/")).toBe(
-    "https://social.example/cv/fr.html",
+  expect(pageUrl("en", "fr", "https://social.example/cv/cv.html")).toBe(
+    "https://social.example/cv/fr/cv.html",
   );
-  // Switching away from a language page, not from the root—`langUrl` is
-  // relative, so the sibling must replace the current file, not append to it.
-  expect(pageUrl("zh-hk", "https://social.example/cv/fr.html")).toBe(
-    "https://social.example/cv/zh-hk.html",
+  /*
+   * The one this had to be rewritten for. Languages are folders now, so the
+   * link between two CV pages is depth-dependent: from `fr/cv.html` the Hong
+   * Kong page is `../zh-hk/cv.html`. Resolving a root-relative `zh-hk/`
+   * against the French page would have produced `/cv/fr/zh-hk/` — a 404 the
+   * flat layout could not produce.
+   */
+  expect(pageUrl("fr", "zh-hk", "https://social.example/cv/fr/cv.html")).toBe(
+    "https://social.example/cv/zh-hk/cv.html",
   );
-  // English is the directory root, and `en.html` must resolve to it too, so
-  // the two English URLs keep consolidating onto one canonical.
-  expect(pageUrl("en", "https://social.example/cv/en.html")).toBe(
-    "https://social.example/cv/",
+  // Back to English, which is the only language with no folder of its own.
+  expect(pageUrl("fr", "en", "https://social.example/cv/fr/cv.html")).toBe(
+    "https://social.example/cv/cv.html",
   );
   // Query and hash belong to the visit, not to the page's identity.
-  expect(pageUrl("pt", "https://social.example/cv/?utm=x#experience")).toBe(
-    "https://social.example/cv/pt.html",
-  );
+  expect(
+    pageUrl("en", "pt", "https://social.example/cv/cv.html?utm=x#experience"),
+  ).toBe("https://social.example/cv/pt/cv.html");
 });
 
 test("headMeta names one head element per value, and nothing twice", () => {
@@ -135,7 +139,7 @@ test("headMeta values are the page's, not the previous language's", () => {
     pageTitle(translations.fr),
   );
   expect(french.get('link[rel="canonical"]')).toBe(
-    "https://social.example/cv/fr.html",
+    "https://social.example/cv/fr/",
   );
   expect(french.get('meta[property="og:url"]')).toBe(
     french.get('link[rel="canonical"]'),

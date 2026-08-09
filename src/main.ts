@@ -145,7 +145,10 @@ function applyTheme(next: Theme, persist: boolean): void {
  * SITE_URL build, and the dev shell has no canonical at all.
  */
 function syncDocumentMeta(): void {
-  const meta = pageMeta(currentLang, pageUrl(currentLang, location.href));
+  const meta = pageMeta(
+    currentLang,
+    pageUrl(currentLang, currentLang, location.href),
+  );
   for (const { selector, attr, value } of headMeta(meta)) {
     const el = document.querySelector(selector);
     if (!el) continue;

@@ -17,7 +17,8 @@
  * could still produce.
  */
 
-import { langUrl, pageTitle } from "./render.ts";
+import { pageTitle } from "./render.ts";
+import { hrefTo } from "./urls.ts";
 import { type Lang, PROFILE, SAME_AS, translations } from "./translations.ts";
 
 /** Open Graph wants underscore locales, not BCP-47 tags. */
@@ -151,12 +152,21 @@ export function headMeta(meta: PageMeta): HeadMeta[] {
 }
 
 /**
- * The public URL of a language's page, resolved against the document switching
- * to it. The runtime has no SITE_URL to read, and `langUrl` is relative, so the
- * page it is switching *from* is the only base available—which is also the
- * right one: it carries whatever host and base path the site was deployed at.
- * Query and hash are dropped; they belong to the visit, not to the page.
+ * The public URL of a language's CV page, resolved against the document
+ * switching to it. The runtime has no SITE_URL to read, so the page it is
+ * switching *from* is the only base available—which is also the right one: it
+ * carries whatever host and base path the site was deployed at. Query and hash
+ * are dropped; they belong to the visit, not to the page.
+ *
+ * Both languages are needed because the link between them is depth-dependent
+ * now: `fr/cv.html` reaches `pt/cv.html` as `../pt/cv.html`, and resolving a
+ * root-relative `pt/` against the French page would land on `fr/pt/`. Only the
+ * CV is asked for, because the reload-free switch is the CV's alone.
  */
-export function pageUrl(lang: Lang, base: string): string {
-  return new URL(langUrl(lang), base).href;
+export function pageUrl(from: Lang, to: Lang, base: string): string {
+  return new URL(
+    hrefTo({ kind: "cv", lang: from }, { kind: "cv", lang: to }),
+    base,
+  )
+    .href;
 }

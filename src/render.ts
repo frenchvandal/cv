@@ -50,13 +50,20 @@ export { NAV_LINKS, type Theme } from "./render/shell.ts";
 export type { Page } from "./render/blog.ts";
 
 /**
- * Relative URL to a language's page. All six pages are siblings at the site
- * root (`index.html`, then `<lang>.html` for the rest), so the link is the
- * same from any page and works under any deploy path—no base tag, no absolute
- * origin.
+ * A language's home, as a URL relative to the SITE ROOT.
+ *
+ * English is the root itself; every other language is a folder. Published as a
+ * directory URL (`fr/`, not `fr/index.html`) so it matches the canonical the
+ * page itself declares.
+ *
+ * Root-relative is the whole contract, and the reason this has exactly one
+ * caller left: the language-negotiation script, which only ever runs on the
+ * root. From anywhere else, `fr/` would resolve against the current folder —
+ * `fr/blog/fr/` from an article — so every other link between pages goes
+ * through `hrefTo` in [src/urls.ts](src/urls.ts), which knows the page's depth.
  */
 export function langUrl(lang: Lang): string {
-  return lang === "en" ? "./" : `${lang}.html`;
+  return lang === "en" ? "./" : `${lang}/`;
 }
 
 /**
@@ -70,15 +77,21 @@ export function langUrl(lang: Lang): string {
  * whether the default applies (on first load `<html data-lang>` answers first).
  */
 export function langFromPath(path: string): Lang | null {
-  // The last path segment, minus any trailing slash and .html—compared whole,
-  // so `zh-hant.html` cannot be claimed by the shorter `zh` and `/french.html`
-  // is not French. (This used to be a per-language regex ordered longest-slug-
-  // first; an exact segment match removes the ordering subtlety entirely.)
-  const segment = path.replace(/\/$/, "").split("/").pop() ?? "";
-  const slug = segment.endsWith(".html")
-    ? segment.slice(0, -".html".length)
-    : segment;
-  return isLang(slug) ? slug : null;
+  /*
+   * The language is a folder now, so it is a whole path segment — and not
+   * necessarily the last one: `/fr/blog/mesurer.html` ends in the slug. Every
+   * segment is checked instead, which is safe by construction because
+   * `assertSlug` in [src/urls.ts](src/urls.ts) reserves all seven language
+   * codes: no article, and no page, can ever be named `fr`.
+   *
+   * Scanning also frees this from knowing the deploy base — the site can live
+   * under any prefix, and the language folder is found wherever it sits.
+   * Segments are compared whole, so `zh-hant` cannot be claimed by `zh`.
+   */
+  for (const segment of path.split("/")) {
+    if (isLang(segment)) return segment;
+  }
+  return null;
 }
 
 /**
