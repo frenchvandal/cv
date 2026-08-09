@@ -8,6 +8,16 @@
  *   - box/glue widths measured with pretext (accurate, no DOM reflow), and
  *   - optional break points inside words from Liang hyphenation patterns (`hyphen`).
  *
+ * The paragraph arrives as styled RUNS, not one string: every box is measured
+ * in the font of the run it came from, because a bold or monospace span is
+ * wider than the prose around it (measured in Chrome: +1.5% for bold, +8.1%
+ * for monospace—an overflowing line the browser would re-wrap, destroying the
+ * justification just computed), and its markup comes back out through the
+ * returned fragments. A run may carry `extraWidth`—the horizontal padding and
+ * borders text measurement ignores, as inline <code> has; such a run is kept
+ * atomic (never split, never hyphenated), charged its full extra width, so the
+ * padding a browser draws at its edges can never overflow the computed line.
+ *
  * The result is rendered justified, one <span> per line, with a real hyphen where
  * a word was split. Runs on the client only (pretext needs a canvas) as an
  * enhancement over the plain, pre-rendered paragraph. The hyphenation patterns
@@ -26,8 +36,22 @@ const INF = 10000;
 /** Width of `text` in px when rendered with the CSS `font` shorthand. */
 export type MeasureFn = (text: string, font: string) => number;
 
+/**
+ * One styled span of the paragraph. `font` is the CSS shorthand the run is
+ * measured in; `extraWidth` is the horizontal space text measurement misses
+ * (padding, borders—inline code), and makes the run atomic.
+ */
+export interface Run {
+  text: string;
+  font: string;
+  extraWidth?: number;
+}
+
+/** A laid-out line, as the styled pieces it is made of. `run` indexes the runs. */
+export type RichLine = { fragments: { text: string; run: number }[] };
+
 type BreakItem =
-  | { type: "box"; width: number; text: string }
+  | { type: "box"; width: number; text: string; run: number }
   | { type: "glue"; width: number; stretch: number; shrink: number }
   | { type: "penalty"; width: number; penalty: number; flagged: boolean };
 
@@ -70,10 +94,6 @@ type Hyphenate = (text: string) => string;
 const hyphenators = new Map<Lang, Promise<Hyphenate | null>>();
 
 /**
- * Lazily load the hyphenation patterns for `lang`; resolves to null where
- * hyphenation doesn't apply (Chinese wraps per character). Cached per language.
- */
-/**
  * The pattern module for a language, or null where hyphenation doesn't apply.
  * Every specifier is a literal so the bundler can see them and split each
  * language's patterns into its own chunk—build them from a variable and
@@ -100,6 +120,10 @@ function importPatterns(
   }
 }
 
+/**
+ * Lazily load the hyphenation patterns for `lang`; resolves to null where
+ * hyphenation doesn't apply (Chinese wraps per character). Cached per language.
+ */
 function loadHyphenator(lang: Lang): Promise<Hyphenate | null> {
   let loading = hyphenators.get(lang);
   if (!loading) {
@@ -149,46 +173,140 @@ function splitOnHardBreaks(word: string): string[] {
   return parts;
 }
 
-/** Build the Knuth–Plass box/glue/penalty stream for one paragraph. */
+/**
+ * One word of the paragraph, as the styled pieces it spans. A word is usually
+ * one piece; it is several only when markup opens or closes mid-word
+ * (`wo<strong>rd</strong>`).
+ */
+type Word = { pieces: { text: string; run: number }[] };
+
+/*
+ * Breakable whitespace: NBSP (U+00A0) and NNBSP (U+202F) stay inside their word,
+ * so French typographic spaces never become break points. `WS_SPLIT` keeps the
+ * separators (capturing group) so the tokenizer sees where each word ends;
+ * `WS_ONLY` is the anchored form used to recognise them—hoisted rather than
+ * rebuilt per chunk, since this runs per paragraph per resize.
+ */
+const WS_SPLIT = /([^\S\u00A0\u202F]+)/u;
+const WS_ONLY = /^[^\S\u00A0\u202F]+$/u;
+
+/**
+ * Tokenize the runs into words. Whitespace in any run separates words, and the
+ * scan runs across run boundaries rather than per run—otherwise the space in
+ * `<em>the</em> end` would be lost along with the boundary it marks. A run
+ * carrying `extraWidth` (inline code) is never split: its padding is drawn at
+ * its edges, so letting it wrap would draw unmeasured width on both lines.
+ */
+function splitRunsIntoWords(runs: readonly Run[]): Word[] {
+  const words: Word[] = [];
+  let current: Word = { pieces: [] };
+
+  const flush = () => {
+    if (current.pieces.length > 0) words.push(current);
+    current = { pieces: [] };
+  };
+
+  runs.forEach((run, runIndex) => {
+    if (run.extraWidth) {
+      if (run.text.trim()) {
+        current.pieces.push({ text: run.text.trim(), run: runIndex });
+      }
+      return;
+    }
+    for (const chunk of run.text.split(WS_SPLIT)) {
+      if (chunk === "") continue;
+      if (WS_ONLY.test(chunk)) flush();
+      else current.pieces.push({ text: chunk, run: runIndex });
+    }
+  });
+  flush();
+  return words;
+}
+
+/**
+ * Build the Knuth–Plass box/glue/penalty stream for a paragraph of styled runs.
+ * Every box is measured in the font of the run it came from—that is the whole
+ * point: a bold or monospace span is wider than the prose around it, and
+ * measuring it flat makes the optimiser pick breakpoints for a line that does
+ * not exist.
+ *
+ * Hyphenation applies to single-piece words only. A word straddling a run
+ * boundary becomes consecutive boxes with no break between them: splitting it
+ * would put the hyphen inside markup, and the case is rare enough that the lost
+ * break opportunity costs nothing measurable.
+ */
 function buildItems(
-  text: string,
-  font: string,
+  runs: readonly Run[],
   hyphenate: Hyphenate,
   measure: MeasureFn,
 ): BreakItem[] {
-  const spaceWidth = Math.max(1, measure("x x", font) - measure("xx", font));
-  const hyphenWidth = measure("-", font);
-  // Split on breakable whitespace only: NBSP (U+00A0) and NNBSP (U+202F) stay
-  // inside their word, so French typographic spaces never become break points.
-  const words = text.trim().split(/[^\S\u00A0\u202F]+/u).filter(Boolean);
+  const baseFont = runs[0]?.font ?? "";
+  const spaceWidth = Math.max(
+    1,
+    measure("x x", baseFont) - measure("xx", baseFont),
+  );
+  const words = splitRunsIntoWords(runs);
   const items: BreakItem[] = [];
 
   words.forEach((word, wordIndex) => {
-    splitOnHardBreaks(word).forEach((segment, segmentIndex) => {
-      if (segmentIndex > 0) {
-        // Free break, and unflagged: the hyphen is already on the line above,
-        // so this costs no extra glyph and two in a row are not the "two
-        // hyphenated lines in succession" that TeX penalises.
-        items.push({ type: "penalty", width: 0, penalty: 25, flagged: false });
-      }
-      hyphenate(segment).split(SOFT_HYPHEN).forEach(
-        (fragment, fragmentIndex) => {
-          if (fragmentIndex > 0) {
+    if (word.pieces.length === 1) {
+      const { text, run } = word.pieces[0]!;
+      const { font, extraWidth = 0 } = runs[run]!;
+      const hyphenWidth = measure("-", font);
+
+      if (extraWidth > 0) {
+        // Atomic run (inline code): one box, no hyphenation, padding charged.
+        items.push({
+          type: "box",
+          width: measure(text, font) + extraWidth,
+          text,
+          run,
+        });
+      } else {
+        splitOnHardBreaks(text).forEach((segment, segmentIndex) => {
+          if (segmentIndex > 0) {
+            // Free break, and unflagged: the hyphen is already on the line above,
+            // so this costs no extra glyph and two in a row are not the "two
+            // hyphenated lines in succession" that TeX penalises.
             items.push({
               type: "penalty",
-              width: hyphenWidth,
-              penalty: 50,
-              flagged: true,
+              width: 0,
+              penalty: 25,
+              flagged: false,
             });
           }
-          items.push({
-            type: "box",
-            width: measure(fragment, font),
-            text: fragment,
-          });
-        },
-      );
-    });
+          hyphenate(segment).split(SOFT_HYPHEN).forEach(
+            (fragment, fragmentIndex) => {
+              if (fragmentIndex > 0) {
+                items.push({
+                  type: "penalty",
+                  width: hyphenWidth,
+                  penalty: 50,
+                  flagged: true,
+                });
+              }
+              items.push({
+                type: "box",
+                width: measure(fragment, font),
+                text: fragment,
+                run,
+              });
+            },
+          );
+        });
+      }
+    } else {
+      for (const piece of word.pieces) {
+        const { font, extraWidth = 0 } = runs[piece.run]!;
+        items.push({
+          type: "box",
+          width: measure(piece.text, font) + extraWidth,
+          text: piece.text,
+          run: piece.run,
+        });
+      }
+    }
+
     if (wordIndex < words.length - 1) {
       // shrink: 0—CSS `text-align: justify` can only stretch spaces, never
       // shrink them, so we forbid shrinking here too. Every chosen line is then
@@ -367,22 +485,49 @@ function optimalBreaks(
   return breaks;
 }
 
-/** Turn chosen breakpoints back into line strings, adding a hyphen where a word was split. */
-function toLines(items: BreakItem[], breaks: number[]): string[] {
-  const lines: string[] = [];
+/**
+ * Turn chosen breakpoints back into lines, adding a hyphen where a word was
+ * split. Consecutive boxes from the same run coalesce into one fragment, so a
+ * line crossing no style boundary still renders as a single text node—the
+ * renderer only emits an element where the style actually changes.
+ */
+function toLines(items: BreakItem[], breaks: number[]): RichLine[] {
+  const lines: RichLine[] = [];
   let start = 0;
 
   for (const breakIndex of breaks) {
-    let text = "";
+    const fragments: { text: string; run: number }[] = [];
+
+    const push = (text: string, run: number) => {
+      const last = fragments[fragments.length - 1];
+      if (last && last.run === run) last.text += text;
+      else fragments.push({ text, run });
+    };
+
     for (let i = start; i < breakIndex; i++) {
       const item = items[i]!;
-      if (item.type === "box") text += item.text;
-      else if (item.type === "glue") text += " ";
+      if (item.type === "box") push(item.text, item.run);
+      else if (item.type === "glue" && fragments.length > 0) {
+        // The space belongs to the run on its left, which is what decides the
+        // style the stretched space is painted in.
+        push(" ", fragments[fragments.length - 1]!.run);
+      }
     }
-    text = text.trim();
+
+    // Trim the line's outer whitespace without losing fragment boundaries.
+    if (fragments.length > 0) {
+      fragments[0]!.text = fragments[0]!.text.replace(/^\s+/u, "");
+      const last = fragments[fragments.length - 1]!;
+      last.text = last.text.replace(/\s+$/u, "");
+    }
+
     const breakItem = items[breakIndex]!;
-    if (breakItem.type === "penalty" && breakItem.flagged) text += "-";
-    lines.push(text);
+    if (breakItem.type === "penalty" && breakItem.flagged) {
+      const last = fragments[fragments.length - 1];
+      if (last) last.text += "-";
+    }
+
+    lines.push({ fragments: fragments.filter((f) => f.text !== "") });
 
     start = breakIndex + 1;
     while (start < items.length && items[start]!.type === "glue") start++;
@@ -392,24 +537,23 @@ function toLines(items: BreakItem[], breaks: number[]): string[] {
 }
 
 /**
- * Break `text` into optimal justified lines for the given font and column width.
- * Resolves to null when the language isn't hyphenated here (e.g., Chinese) or no
- * feasible layout is found—the caller then keeps the plain paragraph.
- * `measure` defaults to pretext (canvas) with no tracking; a caller whose
- * paragraph carries `letter-spacing` passes `pretextMeasure(px)` instead, and
- * tests inject a synthetic one.
+ * Break a paragraph of styled runs into optimal justified lines for its column
+ * width. Resolves to null when the language isn't hyphenated here (e.g.,
+ * Chinese) or no feasible layout is found—the caller then keeps the plain
+ * paragraph. `measure` defaults to pretext (canvas) with no tracking; a caller
+ * whose paragraph carries `letter-spacing` passes `pretextMeasure(px)` instead,
+ * and tests inject a synthetic one.
  */
 export async function breakIntoLines(
-  text: string,
-  font: string,
+  runs: readonly Run[],
   lineWidth: number,
   lang: Lang,
   measure: MeasureFn = pretextMeasure(),
-): Promise<string[] | null> {
-  if (lineWidth <= 0) return null;
+): Promise<RichLine[] | null> {
+  if (lineWidth <= 0 || runs.length === 0) return null;
   const hyphenate = await loadHyphenator(lang);
   if (!hyphenate) return null;
-  const items = buildItems(text, font, hyphenate, measure);
+  const items = buildItems(runs, hyphenate, measure);
   // Prefer tight lines; loosen tolerance only if no feasible layout is found.
   // (Raising the ceiling never *buys* looseness: badness goes as ratio³, so the
   // optimiser still picks the tight layout whenever one exists.)
@@ -417,4 +561,26 @@ export async function breakIntoLines(
     optimalBreaks(items, lineWidth, 12);
   if (!breaks || breaks.length === 0) return null;
   return toLines(items, breaks);
+}
+
+/**
+ * The flat-text contract: one run, no markup—the degenerate case of the rich
+ * path. Kept as a shim so a caller with a plain string (and the test suite)
+ * never has to care about fragments.
+ */
+export async function breakIntoLinesFlat(
+  text: string,
+  font: string,
+  lineWidth: number,
+  lang: Lang,
+  measure: MeasureFn = pretextMeasure(),
+): Promise<string[] | null> {
+  const lines = await breakIntoLines(
+    [{ text, font }],
+    lineWidth,
+    lang,
+    measure,
+  );
+  return lines?.map((line) => line.fragments.map((f) => f.text).join("")) ??
+    null;
 }
