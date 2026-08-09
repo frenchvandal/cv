@@ -108,11 +108,16 @@ function decodeNumericEntity(
     i++;
   }
   if (!digits) return null;
+  const code = Number.parseInt(digits, hex ? 16 : 10);
+  // Past the last Unicode plane String.fromCodePoint throws a RangeError,
+  // which would cross the whole guard and kill the build on a generic V8
+  // message naming no file — one typo in an article is enough. A browser
+  // does not read the announced character there either: it substitutes
+  // U+FFFD. So it is not a reference; leave it as literal text and let
+  // UNRESOLVED_ENTITY reject it below, with the path of the offending file.
+  if (code > 0x10ffff) return null;
   if (value.charAt(i) === ";") i++;
-  return {
-    ch: String.fromCodePoint(Number.parseInt(digits, hex ? 16 : 10)),
-    end: i,
-  };
+  return { ch: String.fromCodePoint(code), end: i };
 }
 
 /*
@@ -194,12 +199,17 @@ function schemeOf(value: string): string | null {
 
 /*
  * Whatever survives decoding still shaped like a character reference — an
- * unknown named entity or a malformed numeric one — will be decoded by the
- * browser, not by us: reject by default, as with tags and schemes. A lone
- * "&" (query string) or one followed by a name without a semicolon is not
- * a complete reference and passes.
+ * unknown named entity, or a numeric one out of the Unicode range — will be
+ * decoded by the browser, not by us: reject by default, as with tags and
+ * schemes. The numeric branch matches exactly what decodeNumericEntity can
+ * consume, digits or hex digits after x: "&#" followed by anything else is
+ * no reference for the browser either, so "?ref=twitter&#comment-42" is an
+ * ordinary comment anchor and must pass. A lone "&" (query string) or one
+ * followed by a name without a semicolon is not a complete reference and
+ * passes too.
  */
-const UNRESOLVED_ENTITY = /&(?:#[xX0-9a-zA-Z]*;?|[a-zA-Z][a-zA-Z0-9]*;)/;
+const UNRESOLVED_ENTITY =
+  /&(?:#(?:[xX][0-9a-fA-F]+|[0-9]+);?|[a-zA-Z][a-zA-Z0-9]*;)/;
 
 function isAllowedUri(rawValue: string): boolean {
   const normalized = stripUrlControlChars(decodeEntities(rawValue))
@@ -211,26 +221,31 @@ function isAllowedUri(rawValue: string): boolean {
 }
 
 /*
- * Analyse le HTML déjà RENDU, jamais la source Markdown : Bun.markdown.html()
- * a déjà tranché ce qui est du code (span ou bloc, échappé en texte) et ce
- * qui est un noeud réel.
+ * Analyses the RENDERED HTML, never the Markdown source: Bun.markdown.html()
+ * has already settled what is code (span or block, escaped into text) and
+ * what is a real node.
  *
- * Ce que ce garde-fou garantit : toute balise du HTML produit appartient à
- * l'ensemble mesuré de ce que du Markdown/GFM légitime peut produire ;
- * aucun attribut `on…` (gestionnaire d'événement, quelle que soit la
- * balise) ; tout `href`/`src` a un schéma http, https, mailto ou aucun
- * (relatif), après décodage des entités et retrait des caractères de
- * contrôle qui pourraient le déguiser — et une référence de caractère que
- * ce décodage ne résout pas (entité nommée hors des cinq du XML, numérique
- * malformée) est refusée, puisque le navigateur la décoderait, lui.
+ * What this guard guarantees: every tag of the produced HTML belongs to the
+ * measured set of what legitimate Markdown/GFM can produce; no `on…`
+ * attribute (event handler, on any tag); every `href`/`src` carries an http,
+ * https or mailto scheme, or none at all (relative), once entities are
+ * decoded and the control characters that could disguise one are removed —
+ * and a character reference this decoding does not resolve (named entity
+ * outside the five of XML, numeric one out of the Unicode range) is refused,
+ * because the browser would resolve it.
  *
- * Ce qu'il ne garantit PAS : les attributs qui ne sont ni `on…` ni
- * `href`/`src` passent sans examen (`align`, `class`, `title`, `alt`,
- * `type`, `checked`…) — aucun n'ouvre, dans les balises autorisées, de
- * chemin d'exécution ou de navigation. Ce n'est pas un sanitizer HTML
- * général : c'est une clôture sur ce qu'un article Markdown peut
- * légitimement produire, qui refuse tout le reste par défaut plutôt que
- * d'énumérer ce qu'il faut refuser.
+ * What it does NOT guarantee: `URI_ATTRIBUTES` holds `href` and `src`, and
+ * nothing else is examined as a URL carrier. The other attributes that also
+ * carry one go through unexamined — measured: `srcset` on `img`, `cite` on
+ * `blockquote`/`del`, `ping` on `a`, `background` on `td`, `formaction` on
+ * the `input` a GFM task list renders. A review ran them through a real
+ * Chrome: none executes. So it is a known and accepted blind spot rather
+ * than a hole — but a blind spot it is, and this comment does not pretend
+ * otherwise. Presentational attributes (`align`, `class`, `title`, `alt`,
+ * `type`, `checked`…) open no execution or navigation path at all. This is
+ * not a general HTML sanitizer: it is a fence around what a legitimate
+ * Markdown article can produce, refusing everything else by default instead
+ * of enumerating what to refuse.
  */
 export function assertSafeHtml(html: string, path: string): void {
   let violation: string | undefined;

@@ -233,6 +233,70 @@ test("le garde-fou laisse passer une query string avec un « & » ordinaire", ()
   ).not.toThrow();
 });
 
+test("le garde-fou laisse passer une ancre de commentaire derrière une query string", () => {
+  // "&#comment-42" is not a character reference: the browser only decodes
+  // "&#" when digits follow (or x plus hex digits), which is exactly what
+  // decodeNumericEntity consumes. UNRESOLVED_ENTITY used to accept letters
+  // there as well and rejected this link to a comment — an ordinary URL.
+  expect(() =>
+    assertSafeMarkdown(
+      "[voir](https://exemple.test/article?ref=twitter&#comment-42)",
+      "content/posts/x/fr.md",
+    )
+  ).not.toThrow();
+  // Same URL written as raw HTML: the Markdown path escapes the "&" into
+  // "&amp;" first, this one hands the guard the "&#" verbatim.
+  expect(() =>
+    assertSafeHtml(
+      '<a href="https://exemple.test/article?ref=twitter&#comment-42">e</a>',
+      "content/posts/x/fr.md",
+    )
+  ).not.toThrow();
+});
+
+test.each([
+  ['<a href="&#xFFFFFFFF;">e</a>'],
+  ['<a href="&#4294967295;">e</a>'],
+])(
+  "une référence numérique hors plage est refusée par le garde-fou, pas par une RangeError : %s",
+  async (source) => {
+    // String.fromCodePoint throws above U+10FFFF and nothing caught it: the
+    // RangeError crossed the whole guard and killed the build on a generic
+    // V8 message naming no file. Out of range is not a valid reference (a
+    // browser substitutes U+FFFD for it), so it stays literal text and gets
+    // rejected by the ordinary unresolved-entity path, with the article path.
+    expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+      .toThrow("content/posts/x/fr.md");
+    expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+      .not.toThrow(RangeError);
+    // The build reaches the guard through renderMarkdown, which is where the
+    // uncaught exception surfaced.
+    await expect(renderMarkdown(source, "fr", "content/posts/x/fr.md"))
+      .rejects.toThrow("content/posts/x/fr.md");
+  },
+);
+
+test("resserrer la classe numérique ne rouvre pas &#106avascript: (non-régression)", () => {
+  // UNRESOLVED_ENTITY never caught this vector: decodeNumericEntity consumes
+  // "&#106" (the browser decodes it without the trailing semicolon too), so
+  // nothing entity-shaped is left when the regex runs — the scheme check is
+  // what rejects the decoded "javascript:". Proof that the decoding still
+  // happens: the same semicolon-less reference in front of a harmless path
+  // decodes to "john" and passes.
+  expect(() =>
+    assertSafeHtml(
+      '<a href="&#106avascript:alert(1)">e</a>',
+      "content/posts/x/fr.md",
+    )
+  ).toThrow("content/posts/x/fr.md");
+  expect(() =>
+    assertSafeHtml(
+      '<a href="https://exemple.test/&#106ohn">e</a>',
+      "content/posts/x/fr.md",
+    )
+  ).not.toThrow();
+});
+
 test.each([
   ["[x](https://exemple.test)"],
   ["[x](mailto:a@b.test)"],
