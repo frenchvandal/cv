@@ -88,15 +88,20 @@ test("the stylesheet names every language the site publishes", () => {
   expect(xsl).toContain(`xmlns:s="${SITEMAP_NS}"`);
 
   for (const lang of LANGS) {
-    // The file names spelled out, not derived from `langUrl` a second time—
-    // this is the assertion that a language page renamed on one side and not
-    // the other has to fail against.
-    const file = lang === "en" ? "" : `${lang}.html`;
-    expect(xsl).toContain(`test="$file = '${file}'"`);
+    // Every language is named, English included—it is the fallback branch
+    // rather than a test of its own, since it is the only one with no folder.
     expect(xsl).toContain(
       `<span lang="${HTML_LANG[lang]}">${LANG_NAME[lang]}</span>`,
     );
+    // The folder spelled out, not derived from a URL helper a second time:
+    // this is the assertion a layout change on one side and not the other has
+    // to fail against. The trailing slash is what stops `/zh/` from also
+    // matching `/zh-hant/`.
+    if (lang !== "en") {
+      expect(xsl).toContain(`test="contains(s:loc, '/${lang}/')"`);
+    }
   }
+  expect(xsl).not.toContain("/en/");
 });
 
 test("rejects anything the protocol would make a crawler discard", () => {

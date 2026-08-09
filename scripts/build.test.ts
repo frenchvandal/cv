@@ -39,8 +39,17 @@ const hasHistory = await $`git rev-parse --is-shallow-repository`
   .text()
   .then((out) => out.trim() === "false", () => false);
 
-/** The page a language is written to, and read back from, in dist/. */
-const outFile = (lang: string) => lang === "en" ? "index.html" : `${lang}.html`;
+/*
+ * Where a language's pages live in dist/. English sits at the site root and
+ * every other language in its own folder, so these are not siblings and the
+ * depth differs — which is exactly what the asset-path assertions below check.
+ */
+const homeFile = (lang: string) =>
+  lang === "en" ? "index.html" : `${lang}/index.html`;
+/** The CV page, which is what carries the pre-rendered chapters. */
+const outFile = (lang: string) => lang === "en" ? "cv.html" : `${lang}/cv.html`;
+const blogIndexFile = (lang: string) =>
+  lang === "en" ? "blog/index.html" : `${lang}/blog/index.html`;
 
 /** How many elements a selector matches in a page—1 for every head tag here. */
 async function countMatches(html: string, selector: string): Promise<number> {
@@ -119,15 +128,42 @@ test(
       expect(html).not.toContain(FEED_MIME);
     }
 
-    // English is served twice: the root negotiates the visitor's language,
-    // en.html is the stable URL that never does. Same page, one canonical.
+    // Every language also gets a home and a blog index.
+    for (const lang of LANGS) {
+      expect(existsSync(`${ROOT}/dist/${homeFile(lang)}`)).toBe(true);
+      expect(existsSync(`${ROOT}/dist/${blogIndexFile(lang)}`)).toBe(true);
+    }
+
+    // Only the site root negotiates the visitor's language: a URL that names a
+    // language must always be honoured, or a shared link would change language
+    // on the recipient.
     const root = await Bun.file(`${ROOT}/dist/index.html`).text();
-    const english = await Bun.file(`${ROOT}/dist/en.html`).text();
     expect(root).toContain("location.replace");
-    expect(english).not.toContain("location.replace");
-    const canonical = (html: string) =>
-      html.match(/<link rel="canonical" href="([^"]*)"/)?.[1];
-    expect(canonical(english)).toBe(canonical(root));
+    for (const file of ["cv.html", "fr/index.html", "fr/blog/index.html"]) {
+      expect(await Bun.file(`${ROOT}/dist/${file}`).text())
+        .not.toContain("location.replace");
+    }
+
+    /*
+     * Asset URLs are relative and therefore depth-dependent — one "../" too
+     * many produces a page that reads fine and 404s in the browser, which no
+     * string comparison catches. Every reference is resolved against its own
+     * page and checked to exist.
+     */
+    const pages = new Bun.Glob("**/*.html");
+    let references = 0;
+    for await (const page of pages.scan(`${ROOT}/dist`)) {
+      const html = await Bun.file(`${ROOT}/dist/${page}`).text();
+      for (const [, href] of html.matchAll(/"((?:\.\.?\/)+assets\/[^"]+)"/g)) {
+        const resolved = new URL(href!, `file:///${page}`).pathname.slice(1);
+        references++;
+        expect(
+          existsSync(`${ROOT}/dist/${resolved}`),
+          `${page} → ${href}`,
+        ).toBe(true);
+      }
+    }
+    expect(references).toBeGreaterThan(0);
   },
   120_000,
 );
@@ -159,7 +195,9 @@ test(
       const html = await Bun.file(`${ROOT}/dist/${file}`).text();
       const tags = await extractSocialTags(html);
       const card = previewCard(tags);
-      const url = lang === "en" ? `${SITE}/` : `${SITE}/${file}`;
+      // The CV page keeps its file name in the URL; only indexes are published
+      // as directory URLs.
+      const url = `${SITE}/${file}`;
       const t = translations[lang];
 
       // The card is this language's, and points at this language's page.
@@ -212,33 +250,39 @@ test(
     expect(seen.title.size).toBe(LANGS.length);
     expect(seen.locale.size).toBe(LANGS.length);
 
-    // en.html is the same page as the root, so it must preview identically.
-    const cardOf = async (file: string) =>
-      previewCard(await extractSocialTags(await Bun.file(file).text()));
-    expect(await cardOf(`${ROOT}/dist/en.html`)).toEqual(
-      await cardOf(`${ROOT}/dist/index.html`),
-    );
-
-    // The sitemap lists every language page once, at its canonical URL, and
-    // nothing else: en.html is a duplicate of the root and 404.html is
-    // noindex. Same order as LANGS, so a diff of the file stays readable.
+    /*
+     * The sitemap lists every page that was written, once, at its canonical
+     * URL — home, CV and blog index for each language, plus one entry per
+     * article. 404.html is noindex and stays out. Indexes are published as
+     * directory URLs, so the English home is the bare base.
+     */
     const sitemap = await Bun.file(`${ROOT}/dist/sitemap.xml`).text();
     const entries = await parseSitemap(sitemap);
-    expect(entries.map((e) => e.loc)).toEqual(
-      LANGS.map((lang) =>
-        lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`
-      ),
+    const expected = LANGS.flatMap((lang) =>
+      lang === "en" ? [`${SITE}/`, `${SITE}/cv.html`, `${SITE}/blog/`] : [
+        `${SITE}/${lang}/`,
+        `${SITE}/${lang}/cv.html`,
+        `${SITE}/${lang}/blog/`,
+      ]
     );
+    expect(entries.map((e) => e.loc)).toEqual(expected);
 
-    // Every canonical in the pages is in the sitemap, and vice versa.
-    const canonicals = await Promise.all(
-      LANGS.map(async (lang) =>
-        (await extractSocialTags(
-          await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text(),
-        )).canonical
-      ),
-    );
-    expect(new Set(entries.map((e) => e.loc))).toEqual(new Set(canonicals));
+    /*
+     * Every canonical the pages declare is in the sitemap, and nothing in the
+     * sitemap is missing from the pages. Read off dist/ rather than rebuilt
+     * from LANGS, so a page emitted without a canonical fails here instead of
+     * quietly disagreeing with the file that advertises it.
+     */
+    const pages = new Bun.Glob("**/*.html");
+    const canonicals = new Set<string>();
+    for await (const page of pages.scan(`${ROOT}/dist`)) {
+      if (page === "404.html") continue;
+      const tags = await extractSocialTags(
+        await Bun.file(`${ROOT}/dist/${page}`).text(),
+      );
+      if (tags.canonical) canonicals.add(tags.canonical);
+    }
+    expect(new Set(entries.map((e) => e.loc))).toEqual(canonicals);
 
     // lastmod is the content's date from git, not the build's—the whole
     // point of the field. Compared against the same source the build read, so
@@ -254,15 +298,21 @@ test(
     // undefined) in exactly the shallow clones the gates used to run.
     if (hasHistory) expect(lastmod).toBeDefined();
 
-    // Both browser stylesheets ship beside the sitemap that references them,
-    // and the XSLT one carries a row for every URL in it: a <loc> the transform
-    // has no case for renders a blank language cell to whoever opens the file.
+    /*
+     * Both browser stylesheets ship beside the sitemap that references them,
+     * and the XSLT one can name the language of every URL in it — a <loc> the
+     * transform has no case for renders a blank cell to whoever opens the file.
+     * The language is now a folder, so a URL either carries one of the six
+     * non-English folders or is English by falling through.
+     */
     const xsl = await Bun.file(`${ROOT}/dist/${SITEMAP_XSL_FILE}`).text();
     expect(sitemap).toContain(`href="${SITEMAP_XSL_FILE}"`);
     expect(sitemap).toContain(`href="${SITEMAP_CSS_FILE}"`);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(true);
     for (const { loc } of entries) {
-      expect(xsl).toContain(`test="$file = '${loc.slice(SITE.length + 1)}'"`);
+      const folder = LANGS.filter((l) => l !== "en")
+        .find((l) => loc.includes(`/${l}/`));
+      if (folder) expect(xsl).toContain(`contains(s:loc, '/${folder}/')`);
     }
 
     // robots.txt points crawlers at it, absolutely.
@@ -287,8 +337,10 @@ test(
       const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
       expect(feed.version).toBe(FEED_VERSION);
       expect(feed.feed_url).toBe(`${SITE}/${feedFile(lang)}`);
+      // The feed's home is the language's home page, published as a directory
+      // URL like every other index.
       expect(feed.home_page_url).toBe(
-        lang === "en" ? `${SITE}/` : `${SITE}/${outFile(lang)}`,
+        lang === "en" ? `${SITE}/` : `${SITE}/${lang}/`,
       );
       expect(feed.items.length).toBeGreaterThan(0);
       expect(

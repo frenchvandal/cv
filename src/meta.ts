@@ -48,15 +48,32 @@ export interface PageMeta {
 }
 
 /**
+ * What a page announces about itself when it is not the CV. An article has its
+ * own title and summary, and without them every blog page would present the
+ * CV's—wrong in the tab, wrong in a search result, wrong in a link preview.
+ */
+export interface MetaOverride {
+  title: string;
+  description: string;
+}
+
+/**
  * `url` is the page's public URL—absolute when the build runs with SITE_URL,
  * and resolved against `location` at runtime. It is passed in rather than
  * derived because only the caller knows the deployed base.
+ *
+ * The `Person` JSON-LD is deliberately kept on every page: it describes the
+ * site's author, who is the same whichever page is being read.
  */
-export function pageMeta(lang: Lang, url: string): PageMeta {
+export function pageMeta(
+  lang: Lang,
+  url: string,
+  override?: MetaOverride,
+): PageMeta {
   const t = translations[lang];
   return {
-    title: pageTitle(t),
-    description: t.meta.description,
+    title: override?.title ?? pageTitle(t),
+    description: override?.description ?? t.meta.description,
     url,
     ogLocale: OG_LOCALE[lang],
     jsonLd: JSON.stringify({

@@ -47,6 +47,7 @@ import {
 } from "./render/cv.ts";
 
 export { NAV_LINKS, type Theme } from "./render/shell.ts";
+export type { Page } from "./render/blog.ts";
 
 /**
  * Relative URL to a language's page. All six pages are siblings at the site

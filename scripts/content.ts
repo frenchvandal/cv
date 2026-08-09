@@ -11,6 +11,7 @@
  * precedence over the projection.
  */
 
+import { stat } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import {
   isLang,
@@ -134,7 +135,29 @@ function comparePosts(a: Post, b: Post): number {
   return LANGS.indexOf(a.lang) - LANGS.indexOf(b.lang);
 }
 
+/**
+ * Whether the corpus directory exists at all.
+ *
+ * `Bun.Glob().scan()` throws ENOENT on a missing directory rather than
+ * yielding nothing, and that error names no source file — it would break the
+ * "every failure names its file" rule the rest of this pipeline keeps. A site
+ * with no articles yet is a legitimate state, not a build failure, so the
+ * absence is answered with an empty corpus instead.
+ *
+ * `Bun.file(dir).exists()` is not the check to use: it answers false for a
+ * directory that is right there, so it would report every corpus as missing.
+ */
+async function corpusExists(root: string): Promise<boolean> {
+  try {
+    return (await stat(join(root, "posts"))).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
 export async function loadPosts(root = DEFAULT_ROOT): Promise<Post[]> {
+  if (!(await corpusExists(root))) return [];
+
   const glob = new Bun.Glob("*/*.md");
   const drafts = process.env.DRAFTS === "1";
 

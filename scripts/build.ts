@@ -2,31 +2,36 @@
  * Static site generator (run by Bun: `bun scripts/build.ts`).
  *
  * 1. Bun.build bundles the HTML entry → JS/CSS/font assets with hashed names.
- * 2. For each of the seven languages we take the built shell, inject the
- *    pre-rendered markup (the same pure `renderApp` the client uses) plus
- *    per-language <head> meta and the @font-face rules (so fonts load before
- *    any JS, and no-JS visitors get them too), and write sibling pages at the
- *    site root: index.html (English) and <lang>.html for every other language.
+ * 2. Articles are read off the disk ([scripts/content.ts](scripts/content.ts)).
+ * 3. For each language we take the built shell and write one file per page —
+ *    home, CV, blog index, and one per article that language has — injecting
+ *    the pre-rendered markup (the same pure `renderPage` the client uses) plus
+ *    the page's own <head> meta and the @font-face rules, so fonts load before
+ *    any JS and no-JS visitors get them too.
  *
- * The pages are siblings (same depth) so every asset path stays relative
- * (`./assets/…`) and the whole `dist/` uploads to any host/bucket path
+ * English sits at the site root and every other language in its own folder, so
+ * page depth is no longer uniform: every asset URL is prefixed with `rel(depth)`
+ * ([src/urls.ts](src/urls.ts)) rather than a bare `./`. The paths stay relative,
+ * which is what lets the whole `dist/` upload to any host or bucket prefix
  * unchanged. Set SITE_URL=https://example.com to emit absolute canonical /
- * hreflang URLs and a sitemap—search engines require absolute URLs there,
- * so the GitHub Actions workflow sets it from the Pages base URL.
+ * hreflang URLs and a sitemap — search engines require absolute URLs there.
  */
 
 import { readdir, rm } from "node:fs/promises";
 import {
   languageNegotiationScript,
-  langUrl,
-  renderApp,
+  type Page,
+  renderPage,
 } from "../src/render.ts";
-// The per-language <head>, shared with the runtime so a reload-free language
+// The per-page <head>, shared with the runtime so a reload-free language
 // switch rewrites exactly what this file bakes in.
 import { pageMeta } from "../src/meta.ts";
 // The same escaper the renderer uses—one implementation, so the two can't
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
+import { byLang, langsOf } from "../src/post.ts";
+import { pageDepth, pagePath, type PageRef, rel } from "../src/urls.ts";
+import { loadPosts } from "./content.ts";
 import {
   contentLastmod,
   SITEMAP_CSS_FILE,
@@ -74,29 +79,21 @@ function siteBase(): string {
 }
 
 const SITE = siteBase();
-
-/** Public URL of a language's page—relative by default, absolute when SITE_URL is set. */
-function href(lang: Lang): string {
-  if (!SITE) return langUrl(lang);
-  return lang === "en" ? `${SITE}/` : `${SITE}/${lang}.html`;
-}
+const posts = await loadPosts();
 
 /**
- * The file(s) a language is written to. English gets two: the site root, which
- * is the negotiated entry point, and an explicit `en.html` for anyone who wants
- * a stable English URL that no browser setting can redirect. Same content, and
- * both carry `href("en")` as their canonical—the root—so search engines
- * consolidate them instead of reading a duplicate. Only the root negotiates: a
- * URL naming a language must always be honoured.
+ * A page's public URL. Indexes are published as directory URLs (`fr/` is the
+ * French home) so the canonical never carries a file name a reader would have
+ * to type; articles keep theirs.
  */
-function outFiles(lang: Lang): { file: string; negotiates: boolean }[] {
-  if (lang !== "en") {
-    return [{ file: `${OUT}/${lang}.html`, negotiates: false }];
-  }
-  return [
-    { file: `${OUT}/index.html`, negotiates: true },
-    { file: `${OUT}/en.html`, negotiates: false },
-  ];
+function pageUrl(ref: PageRef): string {
+  const path = pagePath(ref).replace(/(^|\/)index\.html$/, "$1");
+  return SITE ? `${SITE}/${path}` : `./${path}`;
+}
+
+/** The same page in another language, for the alternates and x-default. */
+function refIn(ref: PageRef, lang: Lang): PageRef {
+  return ref.kind === "post" ? { ...ref, lang } : { kind: ref.kind, lang };
 }
 
 // The typecheck gates the build but shares no data with it, so it runs
@@ -136,33 +133,39 @@ await Bun.build({
 
 /*
  * @font-face for the pre-rendered pages. FONT_FACES from src/fonts.ts carries
- * the families and unicode ranges; the URLs there are runtime file paths, so we
- * remap each source basename to its emitted hashed asset in dist/assets.
+ * the families and unicode ranges; the URLs there are runtime file paths, so
+ * each source basename is remapped to its emitted hashed asset — and then
+ * prefixed for the depth of the page being written, since every URL here stays
+ * relative.
  */
 const assets = await readdir(`${OUT}/assets`);
 const fontAssets = assets.filter((name) => name.endsWith(".woff2"));
 
-function distFontUrl(sourceUrl: string): string {
+function fontAssetName(sourceUrl: string): string {
   const base = sourceUrl.split("/").pop()!.replace(/\.woff2$/, "");
   const match = fontAssets.find((name) => name.startsWith(`${base}-`));
   if (!match) throw new Error(`No emitted asset found for font "${base}"`);
-  return `./assets/${match}`;
+  return match;
 }
 
-const distFontFaces = FONT_FACES.map((face) => ({
-  ...face,
-  url: distFontUrl(face.url),
-}));
-const fontsStyle = `<style data-fonts="ssg">${
-  fontFaceCss(distFontFaces)
-}</style>`;
-// Only the Latin subset is preloaded: every page needs it, while the CJK
-// subsets stay lazy behind their unicode-range.
-const latinFace = distFontFaces.find((face) => face.family === "Noto Sans");
-if (!latinFace) throw new Error('No emitted asset for the "Noto Sans" face');
-const fontPreload = `<link rel="preload" href="${
-  escapeHtml(latinFace.url)
-}" as="font" type="font/woff2" crossorigin />`;
+/*
+ * Only the Latin subset is preloaded: every page needs it, while the CJK
+ * subsets stay lazy behind their unicode-range.
+ */
+function fontHead(prefix: string): { preload: string; style: string } {
+  const faces = FONT_FACES.map((face) => ({
+    ...face,
+    url: `${prefix}assets/${fontAssetName(face.url)}`,
+  }));
+  const latin = faces.find((face) => face.family === "Noto Sans");
+  if (!latin) throw new Error('No emitted asset for the "Noto Sans" face');
+  return {
+    preload: `<link rel="preload" href="${
+      escapeHtml(latin.url)
+    }" as="font" type="font/woff2" crossorigin />`,
+    style: `<style data-fonts="ssg">${fontFaceCss(faces)}</style>`,
+  };
+}
 
 /*
  * Social preview image. Not referenced by the bundle (it only appears in meta
@@ -174,77 +177,114 @@ const OG_IMAGE = "og-image.png";
 await Bun.write(`${OUT}/${OG_IMAGE}`, Bun.file(`public/${OG_IMAGE}`));
 
 const shell = await Bun.file(`${OUT}/index.html`).text();
-
-/*
- * JSON Feed. Gated on SITE_URL like the sitemap—`feed_url` is the feed's own
- * identifier, and item ids are built from the page URL, so neither means
- * anything relative. The per-entry publication dates are one git lookup per
- * entry, not per language: the keys they search for are the same in all seven.
- */
 const faviconAsset = assets.find((name) => name.startsWith("favicon-"));
 const published = SITE
   ? await entryPublished(translations.en)
   : new Map<string, string>();
 
+/** Home, CV and blog index for one language, then one page per article it has. */
+function pagesFor(lang: Lang): { ref: PageRef; page: Page }[] {
+  return [
+    { ref: { kind: "home", lang }, page: { kind: "home", posts } },
+    { ref: { kind: "cv", lang }, page: { kind: "cv" } },
+    { ref: { kind: "blogIndex", lang }, page: { kind: "blogIndex", posts } },
+    ...byLang(posts, lang).map((post) => ({
+      ref: { kind: "post" as const, lang, slug: post.slug },
+      page: {
+        kind: "post" as const,
+        post,
+        html: post.html,
+        posts,
+      },
+    })),
+  ];
+}
+
+const written: PageRef[] = [];
+
 for (const lang of LANGS) {
   const t = translations[lang];
-  // Everything language-dependent in the <head>, from the module the runtime
-  // rewrites it with ([src/meta.ts](src/meta.ts)): a value defined here instead
-  // would be one a reload-free language switch silently leaves behind.
-  const meta = pageMeta(lang, href(lang));
-  const { title, description } = meta;
-  // Light is the no-JS default (see src/styles.css); the inline <head> script
-  // switches to dark before first paint when the visitor or the OS asks.
-  const content = renderApp(lang, "light");
 
-  const alternates = LANGS.map(
-    (l) =>
+  for (const { ref, page } of pagesFor(lang)) {
+    const prefix = rel(pageDepth(ref));
+    // An article announces itself, not the CV: its own title and summary, or
+    // the tab, the search result and the link preview would all read as the
+    // homepage.
+    const meta = pageMeta(
+      lang,
+      pageUrl(ref),
+      page.kind === "post"
+        ? {
+          title: `${page.post.title} — ${t.name.display}`,
+          description: page.post.summary,
+        }
+        : undefined,
+    );
+    const { title, description } = meta;
+    // Light is the no-JS default (see src/styles.css); the inline <head> script
+    // switches to dark before first paint when the visitor or the OS asks.
+    const content = renderPage(page, lang, "light");
+
+    // hreflang covers the languages the page actually exists in: all seven for
+    // home, CV and index; only the written ones for an article (its zh-hk
+    // projection included—loadPosts already derived it).
+    const alternateLangs = page.kind === "post"
+      ? langsOf(posts, page.post.slug)
+      : [...LANGS];
+    const alternates = alternateLangs.map((l) =>
       `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${
-        escapeHtml(href(l))
-      }" />`,
-  ).join("\n    ");
+        escapeHtml(pageUrl(refIn(ref, l)))
+      }" />`
+    ).join("\n    ");
+    // x-default is the English page of the same kind, or the English index
+    // when the article was never written in English.
+    const xDefault = page.kind === "post" && !alternateLangs.includes("en")
+      ? pageUrl({ kind: "blogIndex", lang: "en" })
+      : pageUrl(refIn(ref, "en"));
 
-  // The negotiation script goes first so a redirect is not preceded by a font
-  // preload we are about to abandon. It is passed in per output file, not per
-  // language: `en.html` is English too, but it must never redirect.
-  const headExtra = (negotiation: string) => `
-    ${negotiation}
+    // The negotiation script goes first so a redirect is not preceded by a font
+    // preload we are about to abandon. Only the site root negotiates: a URL
+    // naming a language must always be honoured.
+    const { preload: fontPreload, style: fontsStyle } = fontHead(prefix);
+    const negotiates = ref.kind === "home" && lang === "en";
+    const head = `
+    ${negotiates ? languageNegotiationScript() : ""}
     ${fontPreload}
     ${fontsStyle}
     <link rel="canonical" href="${escapeHtml(meta.url)}" />
     ${alternates}
     <link rel="alternate" hreflang="x-default" href="${
-    escapeHtml(href("en"))
-  }" />${
-    SITE
-      ? `
+      escapeHtml(xDefault)
+    }" />${
+      SITE
+        ? `
     <link rel="alternate" type="${FEED_MIME}" title="${
-        escapeHtml(title)
-      }" href="${escapeHtml(`${SITE}/${feedFile(lang)}`)}" />`
-      : ""
-  }
-    <meta property="og:type" content="website" />
+          escapeHtml(title)
+        }" href="${escapeHtml(`${SITE}/${feedFile(lang)}`)}" />`
+        : ""
+    }
+    <meta property="og:type" content="${
+      page.kind === "post" ? "article" : "website"
+    }" />
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${escapeHtml(meta.url)}" />
     <meta property="og:locale" content="${meta.ogLocale}" />${
-    SITE
-      ? `
+      SITE
+        ? `
     <meta property="og:image" content="${escapeHtml(`${SITE}/${OG_IMAGE}`)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${escapeHtml(title)}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="${
-        escapeHtml(`${SITE}/${OG_IMAGE}`)
-      }" />`
-      : `
+          escapeHtml(`${SITE}/${OG_IMAGE}`)
+        }" />`
+        : `
     <meta name="twitter:card" content="summary" />`
-  }
+    }
     <script type="application/ld+json">${meta.jsonLd}</script>`;
 
-  for (const { file, negotiates } of outFiles(lang)) {
-    const head = headExtra(negotiates ? languageNegotiationScript() : "");
     const html = await new HTMLRewriter()
       .on("html", {
         element(el) {
@@ -256,6 +296,20 @@ for (const lang of LANGS) {
       .on('meta[name="description"]', {
         element: (el) => void el.setAttribute("content", description),
       })
+      // The bundled shell references "./assets/…"; a page deeper than the root
+      // needs "../…". Rewritten here rather than with a <base>, which would
+      // break the relative links between pages. The <head> injected below is
+      // not re-scanned by this pass—its URLs already carry the prefix.
+      .on("script[src], link[href]", {
+        element(el) {
+          for (const attr of ["src", "href"] as const) {
+            const value = el.getAttribute(attr);
+            if (value?.startsWith("./assets/")) {
+              el.setAttribute(attr, prefix + value.slice(2));
+            }
+          }
+        },
+      })
       .on("style[data-loader]", { element: (el) => void el.remove() })
       .on("head", { element: (el) => void el.append(head, { html: true }) })
       .on("#app", {
@@ -264,10 +318,15 @@ for (const lang of LANGS) {
       .transform(new Response(shell))
       .text();
 
+    const file = `${OUT}/${pagePath(ref)}`;
     await Bun.write(file, html);
+    written.push(ref);
     console.log(`  ${file}  (${lang})`);
   }
 
+  // JSON Feed. Gated on SITE_URL like the sitemap—`feed_url` is the feed's own
+  // identifier, and item ids are built from the page URL, so neither means
+  // anything relative.
   if (SITE) {
     const file = `${OUT}/${feedFile(lang)}`;
     await Bun.write(
@@ -275,7 +334,7 @@ for (const lang of LANGS) {
       feedJson(jsonFeed({
         lang,
         t,
-        homePageUrl: href(lang),
+        homePageUrl: pageUrl({ kind: "home", lang }),
         feedUrl: `${SITE}/${feedFile(lang)}`,
         ...(faviconAsset ? { favicon: `${SITE}/assets/${faviconAsset}` } : {}),
         published,
@@ -296,17 +355,16 @@ await Bun.write(`${OUT}/robots.txt`, robots.join("\n"));
 console.log(`  ${OUT}/robots.txt`);
 
 if (SITE) {
-  // One URL per language. `en.html` is not listed: it is the same page as the
-  // root and points its canonical there, so listing it would offer a crawler a
-  // duplicate it is meant to discard. 404.html is noindex.
+  // Every page that was actually written, in the order it was written.
+  // 404.html is noindex and stays out.
   const lastmod = await contentLastmod();
   if (!lastmod) {
     console.warn(
       "  ! git could not date the content — <lastmod> omitted (shallow clone?)",
     );
   }
-  const entries = LANGS.map((lang) => ({
-    loc: href(lang),
+  const entries = written.map((ref) => ({
+    loc: pageUrl(ref),
     ...(lastmod ? { lastmod } : {}),
   }));
   await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
@@ -320,11 +378,11 @@ if (SITE) {
   console.log(`  ${OUT}/${SITEMAP_CSS_FILE}`);
 }
 
-// Friendly 404 for GitHub Pages, served for any unknown path—including
-// nested ones (/foo/bar), where a relative "./" would resolve to the still-
-// missing directory and 404 again. href("en") is absolute whenever SITE_URL is
-// set (every real deploy); the relative fallback only matters for local dist/
-// previews, which are served from the site root anyway.
+// Friendly 404, served for any unknown path—including nested ones (/foo/bar),
+// where a relative "./" would resolve to the still-missing directory and 404
+// again. The English home is absolute whenever SITE_URL is set (every real
+// deploy); the relative fallback only matters for local dist/ previews, which
+// are served from the site root anyway.
 const notFound = `<!doctype html>
 <html lang="en">
   <head>
@@ -352,8 +410,8 @@ const notFound = `<!doctype html>
     <main>
       <h1>404</h1>
       <p>This page does not exist. <a href="${
-  escapeHtml(href("en"))
-}">Back to the CV</a>.</p>
+  escapeHtml(pageUrl({ kind: "home", lang: "en" }))
+}">Back to the site</a>.</p>
     </main>
   </body>
 </html>
@@ -369,7 +427,7 @@ if ((await typecheck.exited) !== 0) {
 }
 
 console.log(
-  `\n✓ Pre-rendered ${LANGS.flatMap(outFiles).length} pages into ${OUT}/${
+  `\n✓ Pre-rendered ${written.length} pages (${posts.length} article files) into ${OUT}/${
     SITE ? "" : " (relative URLs — set SITE_URL for canonical/hreflang/sitemap)"
   }`,
 );

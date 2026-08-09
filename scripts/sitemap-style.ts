@@ -29,24 +29,33 @@
  */
 
 import { THEME_COLOR } from "../src/config.ts";
-import { langUrl } from "../src/render.ts";
 import { HTML_LANG, LANG_NAME, LANGS, PROFILE } from "../src/translations.ts";
 // The names live with the file that references them, so the dependency runs
 // one way: this module produces what sitemap.ts declares.
 import { SITEMAP_NS } from "./sitemap.ts";
 
 /**
- * One `<xsl:when>` per language, matching the last segment of a `<loc>`—`""`
- * for English, which is the site root. Generated from `langUrl`, the same
- * function the pages and the sitemap take their URLs from, so a language cannot
- * be added to the site and be missing from this column.
+ * One `<xsl:when>` per language, matching the folder a `<loc>` sits in.
+ *
+ * The site puts English at the root and every other language in its own
+ * folder, so the language is a path segment—`/fr/`—and no longer the file
+ * name. English is therefore not matched at all: it is the fallback, reached
+ * when no other language's folder appears in the URL. Matching `/zh/` cannot
+ * swallow `/zh-hant/`, since the trailing slash is part of the test.
+ *
+ * Order matters only in that English must come last, which it does by being
+ * the `<xsl:otherwise>` rather than a `<xsl:when>`.
  */
-const languageRows = LANGS.map((lang) => {
-  const file = langUrl(lang).replace(/^\.\//, "");
+const languageRows = LANGS.filter((lang) => lang !== "en").map((lang) => {
   const name = Bun.escapeHTML(LANG_NAME[lang]);
   const tag = Bun.escapeHTML(HTML_LANG[lang]);
-  return `<xsl:when test="$file = '${file}'"><span lang="${tag}">${name}</span><code>${tag}</code></xsl:when>`;
+  return `<xsl:when test="contains(s:loc, '/${lang}/')"><span lang="${tag}">${name}</span><code>${tag}</code></xsl:when>`;
 }).join("\n                  ");
+
+/** English is whatever carries no other language's folder. */
+const englishRow = `<span lang="${Bun.escapeHTML(HTML_LANG.en)}">${
+  Bun.escapeHTML(LANG_NAME.en)
+}</span><code>${Bun.escapeHTML(HTML_LANG.en)}</code>`;
 
 /**
  * The stylesheet, as a standalone XML document. Values are interpolated from
@@ -108,9 +117,10 @@ export function sitemapXsl(): string {
         <main>
           <h1>Sitemap</h1>
           <p class="lede">
-            <xsl:value-of select="count(s:urlset/s:url)"/> URLs — one CV, one
-            page per language. This is sitemap.xml as a browser draws it;
-            crawlers read the XML underneath, unchanged.
+            <xsl:value-of select="count(s:urlset/s:url)"/> URLs — the home, the
+            CV, the writing index and every article, in each language the site
+            publishes. This is sitemap.xml as a browser draws it; crawlers read
+            the XML underneath, unchanged.
           </p>
           <div class="scroll">
             <table>
@@ -124,18 +134,13 @@ export function sitemapXsl(): string {
               </thead>
               <tbody>
                 <xsl:for-each select="s:urlset/s:url">
-                  <xsl:variable name="file">
-                    <xsl:call-template name="basename">
-                      <xsl:with-param name="path" select="s:loc"/>
-                    </xsl:call-template>
-                  </xsl:variable>
                   <tr>
                     <td class="num"><xsl:value-of select="position()"/></td>
                     <td><a href="{s:loc}"><xsl:value-of select="s:loc"/></a></td>
                     <td>
                       <xsl:choose>
                         ${languageRows}
-                        <xsl:otherwise>—</xsl:otherwise>
+                        <xsl:otherwise>${englishRow}</xsl:otherwise>
                       </xsl:choose>
                     </td>
                     <td>
@@ -164,21 +169,6 @@ export function sitemapXsl(): string {
     </html>
   </xsl:template>
 
-  <!-- The last path segment of a URL. XSLT 1.0 has no ends-with() and no
-       tokenize(), so this walks past one '/' per call until none is left. -->
-  <xsl:template name="basename">
-    <xsl:param name="path"/>
-    <xsl:choose>
-      <xsl:when test="contains($path, '/')">
-        <xsl:call-template name="basename">
-          <xsl:with-param name="path" select="substring-after($path, '/')"/>
-        </xsl:call-template>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$path"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
 </xsl:stylesheet>
 `;
 }

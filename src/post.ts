@@ -24,11 +24,18 @@ export const HOME_POST_COUNT = 5;
 
 const SUMMARY_MAX = 200;
 
-/** A language's posts, newest first. */
-export function byLang(
-  posts: readonly PostMeta[],
+/**
+ * A language's posts, newest first.
+ *
+ * Generic over the post shape so a caller holding richer records—the build
+ * holds `Post`, which carries the rendered body—gets them back unchanged
+ * instead of narrowed to metadata and then searched for again with a
+ * non-null assertion.
+ */
+export function byLang<T extends PostMeta>(
+  posts: readonly T[],
   lang: Lang,
-): PostMeta[] {
+): T[] {
   return posts
     .filter((post) => post.lang === lang)
     .sort((a, b) => {

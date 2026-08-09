@@ -18,6 +18,19 @@ afterEach(async () => {
   );
 });
 
+/*
+ * A site with no articles yet is a legitimate state, not a build failure.
+ * `Bun.Glob().scan()` throws ENOENT on a missing directory instead of yielding
+ * nothing, and that error names no source file — which would break the "every
+ * failure names its file" rule the rest of the pipeline keeps.
+ */
+test("an absent corpus directory yields an empty list, not an error", async () => {
+  const root = await mkdtemp(join(tmpdir(), "cv-content-"));
+  roots.push(root);
+
+  expect(await loadPosts(root)).toEqual([]);
+});
+
 async function corpus(
   files: Record<string, string>,
 ): Promise<string> {
