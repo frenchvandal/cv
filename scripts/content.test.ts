@@ -164,3 +164,87 @@ test("l'ordre de sortie est déterministe, trié par slug puis par langue", asyn
     "zebra/fr",
   ]);
 });
+
+test("Post.text ne colle aucun mot à travers une frontière de bloc", async () => {
+  // Exercises the syntax this blog's articles use: heading, paragraph,
+  // bullet list, table, fenced code block. Measured (see task-5-report.md):
+  // Bun.markdown.render() with no callbacks glues every block straight into
+  // the next one — "Sous-titrePremier", "item unitem deux", "Col ACol B",
+  // "val1val2" — with zero separator, not even a space.
+  const body = [
+    "## Sous-titre",
+    "",
+    "Premier paragraphe.",
+    "",
+    "- item un",
+    "- item deux",
+    "",
+    "| Col A | Col B |",
+    "| ----- | ----- |",
+    "| val1  | val2  |",
+    "",
+    "```js",
+    "const x = 1;",
+    "```",
+    "",
+    "Dernier paragraphe.",
+  ].join("\n");
+  const root = await corpus({
+    "riche/fr.md": [
+      "---",
+      "title: Riche",
+      "date: 2026-08-08",
+      "---",
+      "",
+      body,
+    ].join("\n"),
+  });
+
+  const post = (await loadPosts(root))[0]!;
+
+  for (
+    const glued of [
+      "Sous-titrePremier",
+      "paragraphe.item",
+      "unitem",
+      "deuxCol",
+      "ACol",
+      "Bval1",
+      "val1val2",
+    ]
+  ) {
+    expect(post.text).not.toContain(glued);
+  }
+});
+
+test("le résumé dérivé coupe en fin de première phrase, même sur un texte multi-paragraphe", async () => {
+  // This is the test that proves the dead branch in deriveSummary is
+  // reachable again. Without a separator between blocks, the period at the
+  // end of the first paragraph touches the next paragraph directly (no
+  // space), so deriveSummary's search for ". " never matches and it falls
+  // through to a mid-word truncation instead of cutting on the sentence.
+  const firstSentence =
+    "Ceci est la première phrase du contenu, volontairement assez longue " +
+    "pour bien depasser le tiers du budget de resume et se terminer proprement.";
+  const filler =
+    "Ensuite vient un second paragraphe de remplissage sans aucune " +
+    "ponctuation forte a l intérieur qui sert seulement a pousser le total " +
+    "du texte assez loin au dela de la limite de deux cents caracteres afin " +
+    "de forcer une troncature quelque part dans ce flux de mots";
+  const root = await corpus({
+    "long/fr.md": [
+      "---",
+      "title: Long",
+      "date: 2026-08-08",
+      "---",
+      "",
+      firstSentence,
+      "",
+      filler,
+    ].join("\n"),
+  });
+
+  const post = (await loadPosts(root))[0]!;
+
+  expect(post.summary).toBe(firstSentence);
+});

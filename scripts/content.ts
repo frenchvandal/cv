@@ -32,6 +32,41 @@ export interface Post extends PostMeta {
 
 const DEFAULT_ROOT = "content";
 
+/*
+ * Plain-text rendering for Post.text (glyph-coverage scanning in T13, and
+ * the deriveSummary() fallback below). Measured: Bun.markdown.render(body)
+ * with no callbacks concatenates every block's content with NOTHING between
+ * them, not even a space — "- item un\n- item deux" renders as
+ * "item unitem deux", and a heading immediately glues to the paragraph that
+ * follows it. This is not just cosmetic: deriveSummary looks for a period
+ * followed by a space to cut on a sentence boundary, and a period glued
+ * straight to the next paragraph's first word never matches that pattern, so
+ * every derived summary of a multi-paragraph post silently fell back to a
+ * mid-word cut instead.
+ *
+ * Fixed by giving every block type that can directly hold text its own
+ * trailing separator. Measured across the syntax this blog's articles use
+ * (headings, paragraphs, bullet/numbered/task lists, blockquotes, tables,
+ * fenced code, a thematic break): only headings, paragraphs, list items and
+ * table cells actually need one. Blockquotes, lists, tables, table rows and
+ * the thematic break are pure containers — their content is always one of
+ * the leaf types above (recursively, for nested blockquotes/lists), which
+ * already terminates itself, so giving the container its own separator too
+ * would only double the blank line. Fenced code blocks were measured to
+ * already end in a newline from their raw source text, with or without a
+ * callback — but a callback removes the reliance on that being an
+ * implementation detail rather than a documented guarantee.
+ */
+const withTextSeparator = (children: string) => `${children}\n`;
+const PLAIN_TEXT_CALLBACKS = {
+  heading: withTextSeparator,
+  paragraph: withTextSeparator,
+  listItem: withTextSeparator,
+  code: withTextSeparator,
+  td: withTextSeparator,
+  th: withTextSeparator,
+};
+
 /**
  * Reads and validates one file, returning `null` when it is a draft the
  * caller does not want. A single pass — read once, parse once — rather than
@@ -52,7 +87,7 @@ async function readPost(
   const { data, body } = parseFrontmatter(source, sourcePath);
   if (data.draft && !drafts) return null;
 
-  const text = Bun.markdown.render(body);
+  const text = Bun.markdown.render(body, PLAIN_TEXT_CALLBACKS);
 
   return {
     slug,
