@@ -28,6 +28,13 @@ import {
 import { escapeHtml } from "./dom.ts";
 import { nav, type Theme } from "./render/shell.ts";
 import {
+  blogIndexBody,
+  homeBody,
+  langLinkFor,
+  type Page,
+  postBody,
+} from "./render/blog.ts";
+import {
   about,
   certifications,
   contact,
@@ -189,14 +196,9 @@ export function pageTitle(t: Translation): string {
   return `${t.name.display} — ${t.hero.title}`;
 }
 
-/** The full page markup for one language and theme. */
-export function renderApp(lang: Lang, theme: Theme): string {
-  const t = translations[lang];
+/** The CV chapters, in reading order—the body of the `cv` page. */
+function cvBody(t: Translation, lang: Lang): string {
   return `
-    <div class="page" data-lang="${lang}">
-      <a class="skip-link" href="#main">${escapeHtml(t.ui.skipLink)}</a>
-      ${nav(t, lang, theme)}
-      <main id="main">
         ${hero(t)}
         ${about(t)}
         ${experience(t)}
@@ -206,10 +208,51 @@ export function renderApp(lang: Lang, theme: Theme): string {
         ${hobbies(t)}
         ${dialogue(t, lang)}
         ${contact(t)}
-      </main>
+      `;
+}
+
+function bodyOf(page: Page, t: Translation, lang: Lang): string {
+  switch (page.kind) {
+    case "cv":
+      return cvBody(t, lang);
+    case "home":
+      return homeBody(t, lang, page.posts);
+    case "blogIndex":
+      return blogIndexBody(t, lang, page.posts);
+    case "post":
+      return postBody(t, lang, page.post, page.html);
+  }
+}
+
+/**
+ * The full page markup for one page, language and theme.
+ *
+ * The shell is the same for all four kinds—skip link, nav, `<main>`, footer—so
+ * only the body and the switcher's targets vary. The switcher is the reason
+ * `Page` carries the post list on blog pages: an article with no translation
+ * has to send the reader to that language's index rather than to a page that
+ * does not exist, and only the caller knows which translations were built.
+ */
+export function renderPage(page: Page, lang: Lang, theme: Theme): string {
+  const t = translations[lang];
+  return `
+    <div class="page" data-lang="${lang}">
+      <a class="skip-link" href="#main">${escapeHtml(t.ui.skipLink)}</a>
+      ${nav(t, lang, theme, langLinkFor(page, lang))}
+      <main id="main">${bodyOf(page, t, lang)}</main>
       <footer class="footer">
         <div class="wrap">${escapeHtml(t.contact.footer)}</div>
       </footer>
     </div>
   `;
+}
+
+/**
+ * The CV page, which is what the client re-renders on a reload-free language
+ * switch. Kept as its own name because that switch is the CV's alone: every
+ * translation of it already ships in the bundle, while the blog's bodies do
+ * not and never should.
+ */
+export function renderApp(lang: Lang, theme: Theme): string {
+  return renderPage({ kind: "cv" }, lang, theme);
 }

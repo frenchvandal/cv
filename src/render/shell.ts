@@ -26,6 +26,16 @@ import { langUrl } from "../render.ts";
 export type Theme = "light" | "dark";
 
 /**
+ * Where the switcher leads for one language, as decided by the caller.
+ * `missing` marks a fallback (a blog post with no translation, sent to that
+ * language's index instead)—see `nav`'s doc comment.
+ */
+export interface LangLink {
+  href: string;
+  missing?: boolean;
+}
+
+/**
  * Section shortcuts in the nav bar—a useful subset, not every heading.
  * Exported for the dev-only nav audit in [src/main.ts](src/main.ts), which has
  * to measure the same five labels the bar renders.
@@ -38,7 +48,19 @@ export const NAV_LINKS: readonly (keyof Translation["nav"])[] = [
   "contact",
 ];
 
-export function nav(t: Translation, lang: Lang, theme: Theme): string {
+/**
+ * @param langLink Where the switcher leads, per language—the CV's fixed
+ * sibling pages by default (`langUrl`). Blog pages (home, index, article)
+ * pass their own: the same page in each language, or—on an article with no
+ * translation—that language's index, flagged `missing` (rule: never a dead
+ * link, never a missing page).
+ */
+export function nav(
+  t: Translation,
+  lang: Lang,
+  theme: Theme,
+  langLink?: (code: Lang) => LangLink,
+): string {
   const isLight = theme === "light";
 
   const links = NAV_LINKS.map(
@@ -54,9 +76,16 @@ export function nav(t: Translation, lang: Lang, theme: Theme): string {
   // 简体中文 in its own voice. As real text in a .sr-only span it gets a lang of
   // its own, which is what RGAA 8.7 asks for. The visible glyph is then
   // aria-hidden so the name stays the endonym alone, not "简 简体中文".
-  const languages = SWITCHER_LANGS.map(
-    (code) => `
-        <a href="${langUrl(code)}" hreflang="${
+  const languages = SWITCHER_LANGS.map((code) => {
+    const link = langLink?.(code) ?? { href: langUrl(code) };
+    // Same rule as the endonym above: the "not translated" note is read
+    // content, in the page's own language, not an aria-label—an attribute
+    // still carries no language.
+    const note = link.missing
+      ? `<span class="sr-only"> (${escapeHtml(t.blog.notInLanguage)})</span>`
+      : "";
+    return `
+        <a href="${link.href}" hreflang="${
       HTML_LANG[code]
     }" data-lang="${code}"${current === code ? ' aria-current="page"' : ""}>
           <span lang="${HTML_LANG[code]}" aria-hidden="true">${
@@ -64,9 +93,9 @@ export function nav(t: Translation, lang: Lang, theme: Theme): string {
     }</span>
           <span class="sr-only" lang="${HTML_LANG[code]}">${
       escapeHtml(LANG_NAME[code])
-    }</span>
-        </a>`,
-  ).join("");
+    }</span>${note}
+        </a>`;
+  }).join("");
 
   return `
     <header class="nav">
