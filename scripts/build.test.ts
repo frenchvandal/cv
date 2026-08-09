@@ -279,7 +279,7 @@ test(
     const locs = entries.map((e) => e.loc);
     expect(locs).toContain(`${SITE}/`);
     expect(locs).toContain(`${SITE}/cv.html`);
-    expect(locs).toContain(`${SITE}/fr/blog/index.html`);
+    expect(locs).toContain(`${SITE}/fr/blog/`);
     expect(locs).toContain(`${SITE}/fr/blog/${article.slug}.html`);
     expect(locs.some((l) => l.endsWith("/fr.html"))).toBe(false);
     expect(locs.some((l) => l.endsWith("/en.html"))).toBe(false);
