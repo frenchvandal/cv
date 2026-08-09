@@ -21,7 +21,6 @@ import {
 } from "./translations.ts";
 import {
   langFromPath,
-  langUrl,
   NAV_LINKS,
   pageLang,
   renderApp,
@@ -516,9 +515,30 @@ function observeSections(): void {
  * Rendering & navigation
  * ------------------------------------------------------------------ */
 
+/**
+ * Whether this page can switch language without a reload.
+ *
+ * Only the CV can: every one of its seven translations already ships in the
+ * bundle. The home page, the writing index and an article are built from
+ * content that lives on disk and is deliberately NOT bundled, so their
+ * switcher is an ordinary link and the browser navigates.
+ *
+ * Read from the markup rather than inferred from the URL, because the markup
+ * is what is actually on screen — the same reason `pageLang` trusts
+ * `data-lang` over the path.
+ */
+function canSwitchInPlace(): boolean {
+  return app?.querySelector(".page")?.getAttribute("data-page") === "cv";
+}
+
 function bindEvents(): void {
-  // Language links: real <a> (work without JS) intercepted for an instant,
-  // reload-free switch that keeps the URL shareable via history.pushState.
+  /*
+   * Language links are real <a> elements and work with JS off. On the CV they
+   * are intercepted for an instant, reload-free switch that keeps the URL
+   * shareable via history.pushState; everywhere else the click is left alone,
+   * and the href — computed by `langLinkFor`, which knows the page's depth and
+   * whether a translation exists — does the work.
+   */
   app?.querySelectorAll<HTMLAnchorElement>("a[data-lang]").forEach((link) => {
     link.addEventListener("click", (event) => {
       const next = link.dataset.lang;
@@ -530,16 +550,16 @@ function bindEvents(): void {
       ) {
         return;
       }
-      event.preventDefault();
-      // Record the choice even when nothing changes on screen. A French-browser
-      // visitor sent to fr.html who clicks EN lands back on the root, where
-      // `next === currentLang`—without storing first, the next visit would
-      // negotiate them straight back to French and the switcher would look
-      // broken. Only an explicit click stores; popstate never does.
+      // Record the choice even when the browser is about to navigate: a
+      // French-browser visitor who clicks EN must not be negotiated straight
+      // back to French on their next visit, or the switcher looks broken.
+      // Only an explicit click stores; popstate never does.
       storeLang(next);
+      if (!canSwitchInPlace()) return;
+      event.preventDefault();
       if (next === currentLang) return;
       setLang(next);
-      history.pushState({ lang: next }, "", langUrl(next));
+      history.pushState({ lang: next }, "", link.href);
       render(true);
     });
   });

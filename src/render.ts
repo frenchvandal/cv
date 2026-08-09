@@ -249,8 +249,15 @@ function bodyOf(page: Page, t: Translation, lang: Lang): string {
  */
 export function renderPage(page: Page, lang: Lang, theme: Theme): string {
   const t = translations[lang];
+  /*
+   * `data-page` is what tells the runtime which page it is on. Only the CV can
+   * be re-rendered without a reload — its seven translations all ship in the
+   * bundle — so the language switch has to know the difference rather than
+   * assume, or clicking a language on an article would silently swap the CV in
+   * (see `bindEvents` in [src/main.ts](src/main.ts)).
+   */
   return `
-    <div class="page" data-lang="${lang}">
+    <div class="page" data-lang="${lang}" data-page="${page.kind}">
       <a class="skip-link" href="#main">${escapeHtml(t.ui.skipLink)}</a>
       ${nav(t, lang, theme, langLinkFor(page, lang))}
       <main id="main">${bodyOf(page, t, lang)}</main>
