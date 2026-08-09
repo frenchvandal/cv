@@ -11,8 +11,8 @@ sensación obstinada de leer a través de un cristal. Durante mucho tiempo tomé
 esa lentitud por un handicap. Se ha convertido en mi método y en mi tema: leer
 en una lengua que se aprende cambia lo que significa leer. Y desde el español,
 además, el portugués es una prima engañosa: todo parece entenderse, y ahí es
-donde uno deja de leer. La proximidad daba la ilusión de comprender; la
-lentitud la quitaba.
+donde uno deja de leer. La proximidad daba la ilusión de comprender; la lentitud
+la quitaba.
 
 ## La frase que no se detiene
 
@@ -52,8 +52,8 @@ también la leo como extranjero, y sé lo que cuesta.
 
 ## Leer despacio
 
-Esto es lo que el portugués me enseña en Chengdu: la lentitud no es lo que
-queda por corregir, es lo que queda por leer. Saramago me obliga a seguir la
-frase en lugar de adivinarla; Pessoa me obliga a preguntar _quién_ habla antes
-de preguntar _qué_. En mi lengua leo demasiado deprisa para oír esas preguntas.
-En la suya, no me queda opción.
+Esto es lo que el portugués me enseña en Chengdu: la lentitud no es lo que queda
+por corregir, es lo que queda por leer. Saramago me obliga a seguir la frase en
+lugar de adivinarla; Pessoa me obliga a preguntar _quién_ habla antes de
+preguntar _qué_. En mi lengua leo demasiado deprisa para oír esas preguntas. En
+la suya, no me queda opción.
