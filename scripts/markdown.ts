@@ -160,15 +160,28 @@ function decodeEntities(value: string): string {
   return out;
 }
 
-/** Ce qu'un navigateur retire d'une URL avant de la parser (WHATWG URL,
- * « remove all ASCII tab or newline ») — inséré au milieu d'un schéma, ça le
- * rend méconnaissable à une simple recherche de sous-chaîne. */
-function stripUrlControlChars(value: string): string {
-  let out = "";
+/*
+ * The WHATWG URL parser strips leading/trailing C0-or-space and removes tab
+ * and newline from anywhere before it ever reads a scheme — which is exactly
+ * why "&#1;javascript:alert(1)" resolves to the javascript: scheme in a real
+ * browser: the leading C0 control disappears and "javascript:" becomes the
+ * front of the string. This file used to strip only tab/newline/CR, which
+ * left the other 29 C0 values untouched and, in leading position, just as
+ * exploitable. Reproducing the browser's trim faithfully (leading/trailing
+ * only, plus tab/newline anywhere, but nothing else in the middle) is a
+ * second parsing algorithm to keep in sync with a moving spec — the same
+ * trap this file already fell into once with CommonMark (round 2). A
+ * legitimate URL never contains a raw control character at all, in any
+ * position: rejecting the value outright the moment one survives decoding
+ * closes the whole U+0000-U+001F range, in every position and every
+ * spelling (numeric entity, hex entity, raw byte), without having to reason
+ * about where the browser would or would not have trimmed it.
+ */
+function hasControlChar(value: string): boolean {
   for (const ch of value) {
-    if (ch !== "\t" && ch !== "\n" && ch !== "\r") out += ch;
+    if (ch.charCodeAt(0) <= 0x1f) return true;
   }
-  return out;
+  return false;
 }
 
 function isLowerAsciiLetter(ch: string): boolean {
@@ -212,9 +225,9 @@ const UNRESOLVED_ENTITY =
   /&(?:#(?:[xX][0-9a-fA-F]+|[0-9]+);?|[a-zA-Z][a-zA-Z0-9]*;)/;
 
 function isAllowedUri(rawValue: string): boolean {
-  const normalized = stripUrlControlChars(decodeEntities(rawValue))
-    .trim()
-    .toLowerCase();
+  const decoded = decodeEntities(rawValue);
+  if (hasControlChar(decoded)) return false;
+  const normalized = decoded.trim().toLowerCase();
   if (UNRESOLVED_ENTITY.test(normalized)) return false;
   const scheme = schemeOf(normalized);
   return scheme === null || ALLOWED_URI_SCHEMES.has(scheme);
@@ -229,10 +242,13 @@ function isAllowedUri(rawValue: string): boolean {
  * measured set of what legitimate Markdown/GFM can produce; no `on…`
  * attribute (event handler, on any tag); every `href`/`src` carries an http,
  * https or mailto scheme, or none at all (relative), once entities are
- * decoded and the control characters that could disguise one are removed —
- * and a character reference this decoding does not resolve (named entity
- * outside the five of XML, numeric one out of the Unicode range) is refused,
- * because the browser would resolve it.
+ * decoded — and is refused outright if any C0 control character
+ * (U+0000-U+001F) survives that decoding, in any position, because a
+ * leading one is exactly what a real browser trims before reading the
+ * scheme, and no legitimate URL contains one anyway; and a character
+ * reference this decoding does not resolve (named entity outside the five
+ * of XML, numeric one out of the Unicode range) is refused, because the
+ * browser would resolve it.
  *
  * What it does NOT guarantee: `URI_ATTRIBUTES` holds `href` and `src`, and
  * nothing else is examined as a URL carrier. The other attributes that also

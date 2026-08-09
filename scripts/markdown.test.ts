@@ -307,6 +307,43 @@ test.each([
     .not.toThrow();
 });
 
+test("un caractère de contrôle C0 en tête de href est refusé, sur toute la plage U+0000-U+001F et sous ses trois écritures", () => {
+  // Chrome (headless, --dump-dom, mesuré) résout "&#1;javascript:alert(1)"
+  // en protocol: "javascript:" — le contrôle de tête disparaît au parsing
+  // WHATWG et ce qui reste commence par un schéma interdit. stripUrlControlChars
+  // ne retirait avant ce correctif que \t/\n/\r ; les 29 autres valeurs C0
+  // passaient le garde-fou intactes. Les trois écritures doivent toutes être
+  // fermées : décimale, hexadécimale, et l'octet brut directement dans le HTML.
+  for (let code = 0; code <= 0x1f; code++) {
+    const rawByte = String.fromCodePoint(code);
+    const variants = [
+      `&#${code};javascript:alert(1)`,
+      `&#x${code.toString(16)};javascript:alert(1)`,
+      `${rawByte}javascript:alert(1)`,
+    ];
+    for (const href of variants) {
+      expect(() =>
+        assertSafeHtml(`<a href="${href}">x</a>`, "content/posts/x/fr.md")
+      ).toThrow("content/posts/x/fr.md");
+    }
+  }
+});
+
+test("le correctif C0 ne casse pas les URI légitimes déjà couvertes (non-régression)", () => {
+  for (
+    const source of [
+      "[x](https://exemple.test)",
+      "[x](mailto:a@b.test)",
+      "[x](./cv.html)",
+      "[x](#ancre)",
+      "[voir](https://exemple.test/article?ref=twitter&#comment-42)",
+    ]
+  ) {
+    expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
+      .not.toThrow();
+  }
+});
+
 test("le garde-fou laisse passer toute la syntaxe GFM que le dépôt exerce", async () => {
   // La preuve que la liste blanche n'est pas trop étroite : un article qui
   // utilise chaque construction GFM listée dans la revue (titres, listes,
