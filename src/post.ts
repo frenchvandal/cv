@@ -31,7 +31,16 @@ export function byLang(
 ): PostMeta[] {
   return posts
     .filter((post) => post.lang === lang)
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      // Array.prototype.sort is stable, but that only preserves whatever
+      // order the caller passed in — and nothing guarantees the eventual
+      // disk-discovery module hands posts to this function in a reproducible
+      // order across machines or builds. The slug is unique per language and
+      // intrinsic to the post, so breaking same-date ties on it keeps the
+      // index identical regardless of caller, which keeps deploys diff-free.
+      return a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0;
+    });
 }
 
 /** The languages a post exists in, in the site's canonical order. */
@@ -48,9 +57,20 @@ export function langsOf(posts: readonly PostMeta[], slug: string): Lang[] {
  */
 export function deriveSummary(text: string): string {
   const clean = text.replace(/\s+/g, " ").trim();
-  if (clean.length <= SUMMARY_MAX) return clean;
 
-  const head = clean.slice(0, SUMMARY_MAX);
+  // Count and cut by code point, not by UTF-16 code unit: an astral
+  // character (CJK extension ideographs, most emoji) is one character but
+  // two UTF-16 units, so a raw `.slice(0, SUMMARY_MAX)` can land inside the
+  // pair and leave a lone surrogate behind — invalid UTF-16, which a browser
+  // renders as U+FFFD. This does not reassemble multi-code-point emoji
+  // sequences (flags, ZWJ-joined families): each code point survives whole,
+  // but a cut landing between two of them still splits the visual glyph.
+  // That is a known, accepted gap — this function guarantees valid UTF-16,
+  // not grapheme-cluster integrity.
+  const codePoints = Array.from(clean);
+  if (codePoints.length <= SUMMARY_MAX) return clean;
+
+  const head = codePoints.slice(0, SUMMARY_MAX).join("");
   const sentence = Math.max(
     head.lastIndexOf(". "),
     head.lastIndexOf("。"),
