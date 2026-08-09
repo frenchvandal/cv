@@ -1757,19 +1757,30 @@ const HK_LEXICON: Record<string, string> = {
 };
 
 /**
+ * The Taiwan → Hong Kong lexicon applied to plain text. Exported because blog
+ * posts need it too (see `projectHongKong` in scripts/content.ts): a
+ * projection duplicated in two places would drift, and the Hong Kong post
+ * would silently carry Taiwan vocabulary with nothing failing to flag it.
+ */
+export function toHongKongText(text: string): string {
+  let out = text;
+  for (const [taiwan, hongKong] of Object.entries(HK_LEXICON)) {
+    out = out.replaceAll(taiwan, hongKong);
+  }
+  return out;
+}
+
+/**
  * The Hong Kong / Macau reading of the Traditional page. The round trip goes
  * through JSON because the content is plain data—strings, arrays and objects,
- * no dates, functions or classes—which makes one `replaceAll` per term the
- * whole implementation. The cast is the one place a `JSON.parse` of our own
- * serialization is what it claims to be; `translations.test.ts` pins that down
- * by asserting the result still matches the Taiwan page structurally.
+ * no dates, functions or classes—which lets {@link toHongKongText} do the
+ * whole substitution as one `replaceAll` per term. The cast is the one place
+ * a `JSON.parse` of our own serialization is what it claims to be;
+ * `translations.test.ts` pins that down by asserting the result still
+ * matches the Taiwan page structurally.
  */
 function toHongKong(t: Translation): Translation {
-  let json = JSON.stringify(t);
-  for (const [taiwan, hongKong] of Object.entries(HK_LEXICON)) {
-    json = json.replaceAll(taiwan, hongKong);
-  }
-  return JSON.parse(json) as Translation;
+  return JSON.parse(toHongKongText(JSON.stringify(t))) as Translation;
 }
 
 /** The Taiwan→Hong Kong terms, exposed so the tests can hold the pair to it. */
