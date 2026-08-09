@@ -21,7 +21,6 @@ import {
   ICON_SIGNAL,
   ICON_WIFI,
 } from "../icons.ts";
-import { langUrl } from "../render.ts";
 
 export type Theme = "light" | "dark";
 
@@ -48,23 +47,38 @@ export const NAV_LINKS: readonly (keyof Translation["nav"])[] = [
   "contact",
 ];
 
+/** One entry in the nav bar: where it goes, and what it is called. */
+export interface NavLink {
+  href: string;
+  label: string;
+}
+
 /**
- * @param langLink Where the switcher leads, per language—the CV's fixed
- * sibling pages by default (`langUrl`). Blog pages (home, index, article)
- * pass their own: the same page in each language, or—on an article with no
- * translation—that language's index, flagged `missing` (rule: never a dead
- * link, never a missing page).
+ * The bar every page carries. Nothing in it is decided here, because nothing
+ * in it is the same on every page:
+ *
+ * @param langLink Where the switcher leads, per language. The same page in
+ * each language — or, on an article with no translation, that language's
+ * index, flagged `missing`. Never a dead link, never a missing page.
+ * @param navLinks The shortcuts. On the CV they are in-page anchors to its
+ * chapters; everywhere else those anchors would point at sections that do not
+ * exist on the page, so the caller passes site-level links instead.
+ * @param brandHref Where the name leads. `#top` only resolves on the CV, whose
+ * hero carries that id; every other page sends the reader to its home.
  */
 export function nav(
   t: Translation,
   lang: Lang,
   theme: Theme,
-  langLink?: (code: Lang) => LangLink,
+  langLink: (code: Lang) => LangLink,
+  navLinks: readonly NavLink[],
+  brandHref: string,
 ): string {
   const isLight = theme === "light";
 
-  const links = NAV_LINKS.map(
-    (id) => `<a class="nav__link" href="#${id}">${escapeHtml(t.nav[id])}</a>`,
+  const links = navLinks.map(
+    (link) =>
+      `<a class="nav__link" href="${link.href}">${escapeHtml(link.label)}</a>`,
   ).join("");
 
   // zh-hk has no button of its own—it is Traditional Chinese, so the 繁 entry
@@ -77,7 +91,7 @@ export function nav(
   // its own, which is what RGAA 8.7 asks for. The visible glyph is then
   // aria-hidden so the name stays the endonym alone, not "简 简体中文".
   const languages = SWITCHER_LANGS.map((code) => {
-    const link = langLink?.(code) ?? { href: langUrl(code) };
+    const link = langLink(code);
     // Same rule as the endonym above: the "not translated" note is read
     // content, in the page's own language, not an aria-label—an attribute
     // still carries no language.
@@ -100,7 +114,9 @@ export function nav(
   return `
     <header class="nav">
       <div class="wrap nav__inner">
-        <a class="nav__brand" href="#top">${escapeHtml(t.name.display)}</a>
+        <a class="nav__brand" href="${brandHref}">${
+    escapeHtml(t.name.display)
+  }</a>
         <nav class="nav__links" aria-label="${
     escapeHtml(t.ui.sectionsNav)
   }">${links}</nav>

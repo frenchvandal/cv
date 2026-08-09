@@ -31,7 +31,8 @@ export type Page =
   };
 
 /** Where a page lives, from the two facts a `Page` carries plus the language. */
-function pageRefOf(page: Page, lang: Lang): PageRef {
+// Exported for the facade, which needs it to place the nav links.
+export function pageRefOf(page: Page, lang: Lang): PageRef {
   switch (page.kind) {
     case "home":
       return { kind: "home", lang };

@@ -26,14 +26,16 @@ import {
   translations,
 } from "./translations.ts";
 import { escapeHtml } from "./dom.ts";
-import { nav, type Theme } from "./render/shell.ts";
+import { nav, NAV_LINKS, type NavLink, type Theme } from "./render/shell.ts";
 import {
   blogIndexBody,
   homeBody,
   langLinkFor,
   type Page,
+  pageRefOf,
   postBody,
 } from "./render/blog.ts";
+import { hrefTo } from "./urls.ts";
 import {
   about,
   certifications,
@@ -225,6 +227,26 @@ function cvBody(t: Translation, lang: Lang): string {
       `;
 }
 
+/**
+ * The nav shortcuts a page can honestly offer.
+ *
+ * The CV is one long document, so its shortcuts are anchors to its own
+ * chapters. Every other page is short and has none of those sections: the same
+ * anchors there would be six dead links out of seven, which is what the flat
+ * layout used to ship without noticing. They get the two links that describe
+ * the site instead.
+ */
+function navLinksFor(page: Page, t: Translation, lang: Lang): NavLink[] {
+  const from = pageRefOf(page, lang);
+  if (page.kind === "cv") {
+    return NAV_LINKS.map((id) => ({ href: `#${id}`, label: t.nav[id] }));
+  }
+  return [
+    { href: hrefTo(from, { kind: "blogIndex", lang }), label: t.nav.writing },
+    { href: hrefTo(from, { kind: "cv", lang }), label: t.nav.cv },
+  ];
+}
+
 function bodyOf(page: Page, t: Translation, lang: Lang): string {
   switch (page.kind) {
     case "cv":
@@ -259,7 +281,19 @@ export function renderPage(page: Page, lang: Lang, theme: Theme): string {
   return `
     <div class="page" data-lang="${lang}" data-page="${page.kind}">
       <a class="skip-link" href="#main">${escapeHtml(t.ui.skipLink)}</a>
-      ${nav(t, lang, theme, langLinkFor(page, lang))}
+      ${
+    nav(
+      t,
+      lang,
+      theme,
+      langLinkFor(page, lang),
+      navLinksFor(page, t, lang),
+      // `#top` is the hero's id, and only the CV has a hero.
+      page.kind === "cv"
+        ? "#top"
+        : hrefTo(pageRefOf(page, lang), { kind: "home", lang }),
+    )
+  }
       <main id="main">${bodyOf(page, t, lang)}</main>
       <footer class="footer">
         <div class="wrap">${escapeHtml(t.contact.footer)}</div>
