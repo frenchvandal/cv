@@ -15,24 +15,32 @@ rediscover.
 - **Runtime and tooling:** Bun (package manager, dev server, bundler). No Vite,
   no Webpack. See §2 for the commands.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
-  emitted by [src/render.ts](src/render.ts). Content lives in
+  emitted by the `src/render*` modules. Interface copy and the CV live in
   [src/translations.ts](src/translations.ts): EN, FR, pt-PT, es-ES, zh-Hans,
   zh-Hant, and zh-HK. The regional variants are deliberate; see that file’s
   header. `zh-hk` is a lexicon projection of `zh-hant`, not a hand-written
-  translation, and it is the one language absent from `SWITCHER_LANGS`. Text
-  measurement and layout are done with `@chenglou/pretext` in
-  [src/measure.ts](src/measure.ts).
+  translation, and it is the one language absent from `SWITCHER_LANGS`. Blog
+  articles live on disk in `content/posts/<slug>/<lang>.md`, loaded by
+  [scripts/content.ts](scripts/content.ts). Text measurement and layout are done
+  with `@chenglou/pretext` in [src/measure.ts](src/measure.ts).
 - **UI architecture:** an ordinary scrolling document—no deck, no scroll
-  jacking, no canvas background. [src/render.ts](src/render.ts) emits stacked
-  `<section class="section">` markup and is the **single** renderer: the static
-  build ([scripts/build.ts](scripts/build.ts)) calls it at build time to
-  pre-render one full page per language, and [src/main.ts](src/main.ts) calls
-  the same function at runtime for reload-free language switches. Keep it pure
-  (no DOM access) so both callers stay valid—it runs under Bun, outside a
-  browser, during the build.
+  jacking, no canvas background. [src/render.ts](src/render.ts) is a **facade**:
+  the chrome and URL helpers are [src/render/shell.ts](src/render/shell.ts), the
+  CV chapters [src/render/cv.ts](src/render/cv.ts), the blog pages
+  [src/render/blog.ts](src/render/blog.ts). All of it stays pure (no DOM
+  access), because the static build ([scripts/build.ts](scripts/build.ts)) and
+  the runtime ([src/main.ts](src/main.ts)) call the same `renderPage`—the build
+  pre-renders every page, the client re-renders only the CV on a reload-free
+  language switch; on home, index and article pages the switcher is plain
+  navigation.
 - **Progressive enhancement, strictly.** The pre-rendered HTML is the product;
   every module in the runtime only refines it. With JS off you get the complete,
-  readable, navigable CV. See §9 for the enhancement inventory and its rules.
+  readable, navigable site. See §9 for the enhancement inventory and its rules.
+- **Layout:** English at the root, every other language in its folder, one page
+  per article under `<lang>/blog/`. Asset paths are computed from each page’s
+  depth (`rel(depth)` in [src/urls.ts](src/urls.ts)) and stay relative—`dist/`
+  deploys to any base path. The pre-blog URLs (`fr.html`, `en.html`) are kept
+  alive by noindex relay pages ([scripts/relay.ts](scripts/relay.ts)).
 - **Output:** a fully static `dist/` with relative asset paths—it deploys to
   GitHub Pages (or any static host) at any base path. CI sets `SITE_URL` for
   absolute SEO URLs.
@@ -43,15 +51,23 @@ rediscover.
 
 - `bun run dev` → `bun ./index.html` (dev server and HMR,
   http://localhost:3000/).
-- `bun run build` → `bun scripts/build.ts` (bundle, then pre-render eight pages
-  into `dist/`—seven languages, English written twice as `index.html` and
-  `en.html`—plus `404.html`; runs `tsgo --noEmit` concurrently and gates on it).
+- `bun run build` → `bun scripts/build.ts` (bundle, then pre-render the site
+  into `dist/`—home, CV and blog index per language, one page per article, relay
+  pages for the old URLs, plus `404.html`; runs `tsgo --noEmit` concurrently and
+  gates on it).
+- `bun run preview` → build, then serve `dist/` on http://localhost:4173 with
+  the real URLs ([scripts/preview.ts](scripts/preview.ts);
+  `PORT=8080 bun run
+  preview` to change the port). The way to see an article
+  at its deployed path; `bun run dev` does not know the blog URLs.
 - `bun run check` → `tsgo --noEmit`, the type gate. `bun test` → unit tests.
 - `bun run fonts:update` → `bun scripts/update-fonts.ts`, which re-subsets the
-  vendored Noto `.woff2` files from the characters actually used in the source
-  literals. Run it after changing copy in
-  [src/translations.ts](src/translations.ts) or [src/render.ts](src/render.ts)—a
-  glyph that no subset carries renders as tofu.
+  vendored Noto `.woff2` files LOCALLY with fonttools (`pyftsubset` in the
+  gitignored `.venv-fonts/`—see that script’s header for the one-time setup; the
+  Google Fonts `&text=` API it replaced caps out past a few hundred CJK
+  characters). Run it after changing copy in
+  [src/translations.ts](src/translations.ts), the render modules, or any
+  article—a glyph that no subset carries renders as tofu.
 - `bun run og:update` → `bun scripts/og-image.ts`, which re-renders
   `public/og-image.png` (the 1200×630 link preview) from the English hero and
   the light palette, using local Chrome. The build only copies the file, so run
@@ -88,10 +104,28 @@ rediscover.
 - **Feeds.** [scripts/feed.ts](scripts/feed.ts) writes one JSON Feed 1.1 per
   language, also `SITE_URL`-gated. Same rule as the sitemap, and the same header
   convention: every field is justified there, and **no date is ever
-  synthesized**. The CV’s own ranges (`2019 – Present`) are localized free text,
-  so `date_published` is the `git log -S` date of the commit that first added
-  the entry’s key, and it is dropped when git cannot answer. The item set is
-  read off the translation objects, so a new role needs no second list.
+  synthesized**. The items are the language’s articles: `date_published` is the
+  frontmatter `date` (explicit, author-chosen—no git lookup, nothing a shallow
+  clone can empty), `date_modified` the optional `updated`.
+- **Relay pages.** [scripts/relay.ts](scripts/relay.ts) keeps the pre-blog URLs
+  alive (`fr.html` → `fr/`, `en.html` → the root): canonical, zero-second
+  refresh, `noindex`. Retire them once the old URLs have aged out.
+
+### Writing an article
+
+- Create `content/posts/<slug>/<lang>.md`: the folder name IS the slug
+  (`[a-z0-9-]`, reserved names refused by [src/urls.ts](src/urls.ts)), the file
+  name IS the language. An article exists in 1..n languages; an index lists only
+  what exists in it. `zh-hk` needs no file—writing `zh-hant.md` is enough, the
+  projection derives it; an explicit `zh-hk.md` wins.
+- Frontmatter is a strict micro-grammar (`title`, `date` required; `summary`,
+  `tags`, `draft`, `updated` optional)—no YAML, and every refusal names the file
+  ([scripts/frontmatter.ts](scripts/frontmatter.ts)). A `draft: true` is
+  excluded unless `DRAFTS=1`.
+- Raw HTML in a source is refused by the build’s allowlist guard
+  ([scripts/markdown.ts](scripts/markdown.ts)): GFM only.
+- After writing: `bun run fonts:update` (new glyphs), then `bun run preview` to
+  read it at its real URL.
 
 ## 3. Code Style
 

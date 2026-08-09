@@ -36,17 +36,17 @@ tipográficos liam-se como um atlas.
 
 ## O interlúdio do canvas
 
-Por volta de 2018 julgámos ter encontrado a saída: o `measureText`, num
-contexto de canvas. Sem DOM, sem refluxo, uma resposta em microssegundos.
-Ganhámos velocidade e perdemos precisão. O método devolve avanços, não uma
-composição: sem hifenização nem quebras de linha, um kerning variável consoante
-os motores, e uma dependência silenciosa da ordem de carregamento das fontes.
-Medido cedo demais, o texto era medido numa fonte de recurso — e ninguém dava
-por isso até à demonstração.
+Por volta de 2018 julgámos ter encontrado a saída: o `measureText`, num contexto
+de canvas. Sem DOM, sem refluxo, uma resposta em microssegundos. Ganhámos
+velocidade e perdemos precisão. O método devolve avanços, não uma composição:
+sem hifenização nem quebras de linha, um kerning variável consoante os motores,
+e uma dependência silenciosa da ordem de carregamento das fontes. Medido cedo
+demais, o texto era medido numa fonte de recurso — e ninguém dava por isso até à
+demonstração.
 
-Guardei desse episódio uma lição que ultrapassa a tipografia: uma medição
-rápida mas errada é pior do que uma lenta, porque inspira confiança. Na banca,
-diríamos que passa nos controlos.
+Guardei desse episódio uma lição que ultrapassa a tipografia: uma medição rápida
+mas errada é pior do que uma lenta, porque inspira confiança. Na banca, diríamos
+que passa nos controlos.
 
 ## A medição sai do documento
 
