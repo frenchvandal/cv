@@ -28,3 +28,4 @@ target
 *.njsproj
 *.sln
 *.sw?
+.venv-fonts/
