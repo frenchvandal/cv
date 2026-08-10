@@ -35,6 +35,7 @@ import { loadPosts } from "./content.ts";
 import { relayHtml, relayPages, relayTarget } from "./relay.ts";
 import {
   contentLastmod,
+  postLastmod,
   SITEMAP_CSS_FILE,
   SITEMAP_XSL_FILE,
   sitemapXml,
@@ -370,10 +371,34 @@ if (SITE) {
       "  ! git could not date the content — <lastmod> omitted (shallow clone?)",
     );
   }
-  const entries = written.map((ref) => ({
-    loc: pageUrl(ref),
-    ...(lastmod ? { lastmod } : {}),
-  }));
+  /*
+   * An article is dated from its own source file: it changes on its own
+   * schedule, and borrowing the site-wide date would claim every article was
+   * modified whenever anything else was. The fixed pages keep that site-wide
+   * date, which is what actually governs them.
+   *
+   * The lookups are one per article file and independent, so they run together
+   * rather than one after the other.
+   */
+  const postDates = new Map(
+    await Promise.all(
+      posts.map(async (post) =>
+        [
+          `${post.slug}/${post.lang}`,
+          await postLastmod(post.sourcePath),
+        ] as const
+      ),
+    ),
+  );
+  const entries = written.map((ref) => {
+    const date = ref.kind === "post"
+      ? postDates.get(`${ref.slug}/${ref.lang}`)
+      : lastmod;
+    return {
+      loc: pageUrl(ref),
+      ...(date ? { lastmod: date } : {}),
+    };
+  });
   await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
   console.log(`  ${OUT}/sitemap.xml`);
   // The sitemap points at both by relative name, so the three ship together or

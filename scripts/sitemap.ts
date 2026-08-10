@@ -110,6 +110,25 @@ export async function contentLastmod(): Promise<string | undefined> {
 }
 
 /**
+ * When one article was last touched, from its own source file.
+ *
+ * An article changes on its own schedule, so dating it from the site-wide
+ * `contentLastmod` would claim every article was modified whenever anything
+ * else was — the same inaccuracy that gets the whole signal ignored. A clone
+ * that cannot answer yields nothing rather than a guess, exactly as above.
+ */
+export async function postLastmod(
+  sourcePath: string,
+): Promise<string | undefined> {
+  const git = await $`git log -1 --format=%cI -- ${sourcePath}`
+    .nothrow()
+    .quiet();
+  if (git.exitCode !== 0) return undefined;
+  const date = git.stdout.toString().trim();
+  return isW3CDatetime(date) ? date : undefined;
+}
+
+/**
  * `base` is the directory the sitemap is served from (no trailing slash). The
  * protocol scopes a sitemap to its own location—it "can include URLs starting
  * with http://example.com/catalog/ but not those in parent directories"—so a
