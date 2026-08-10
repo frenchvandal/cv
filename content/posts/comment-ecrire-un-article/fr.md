@@ -79,7 +79,7 @@ le fichier :
 ---
 title: Comment écrire un article
 date: 2026-08-09
-summary: Ce que l'article annonce, en une phrase.
+summary: Ce que l’article annonce, en une phrase.
 tags: [meta, web]
 ---
 ```

@@ -39,7 +39,7 @@ export const FONT_FACES = [
     family: "Noto Sans",
     url: latin1Url,
     range:
-      "U+20-5d, U+5f-7e, U+a0-a1, U+a9, U+ab, U+b7, U+bb, U+bf-c4, U+c7-cf, U+d1-d6, U+d9-dd, U+e0-e4, U+e7-ef, U+f1-f6, U+f9-fd, U+ff, U+106-109, U+11c-11d, U+122-125, U+128-129, U+134-137, U+139-13c, U+143-146, U+153-157, U+15a-15f, U+162-163, U+168-169, U+174-17a, U+1d7-1d8, U+1db-1dc, U+1f4-1f5, U+1f8-1f9, U+228-229, U+300-303, U+308, U+327, U+1e08-1e09, U+1e10-1e11, U+1e26-1e29, U+1e2e-1e31, U+1e3e-1e3f, U+1e4c-1e4f, U+1e54-1e55, U+1e78-1e79, U+1e7c-1e7d, U+1e80-1e85, U+1e8c-1e8d, U+1e90-1e91, U+1e97, U+1ea4-1ea7, U+1eaa-1eab, U+1ebc-1ec1, U+1ec4-1ec5, U+1ed0-1ed3, U+1ed6-1ed7, U+1ef2-1ef3, U+1ef8-1ef9, U+2013-2014, U+2026, U+202f",
+      "U+20-5d, U+5f-7e, U+a0-a1, U+a9, U+ab, U+b7, U+bb, U+bf-c4, U+c7-cf, U+d1-d6, U+d9-dd, U+e0-e4, U+e7-ef, U+f1-f6, U+f9-fd, U+ff, U+106-109, U+11c-11d, U+122-125, U+128-129, U+134-137, U+139-13c, U+143-146, U+153-157, U+15a-15f, U+162-163, U+168-169, U+174-17a, U+1d7-1d8, U+1db-1dc, U+1f4-1f5, U+1f8-1f9, U+228-229, U+300-303, U+308, U+327, U+1e08-1e09, U+1e10-1e11, U+1e26-1e29, U+1e2e-1e31, U+1e3e-1e3f, U+1e4c-1e4f, U+1e54-1e55, U+1e78-1e79, U+1e7c-1e7d, U+1e80-1e85, U+1e8c-1e8d, U+1e90-1e91, U+1e97, U+1ea4-1ea7, U+1eaa-1eab, U+1ebc-1ec1, U+1ec4-1ec5, U+1ed0-1ed3, U+1ed6-1ed7, U+1ef2-1ef3, U+1ef8-1ef9, U+2013-2014, U+2019, U+2026, U+202f",
   },
   {
     family: "Noto Sans SC",
