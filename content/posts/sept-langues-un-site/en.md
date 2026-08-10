@@ -23,7 +23,7 @@ written for you — not converted from French.
 
 Why the insistence? Because I live in Chengdu, and Chinese handed me the best
 metaphor of my career. At a restaurant I order 微辣 — "mildly spicy". The
-dictionary agrees: mildly spicy. Literal, correct, and useless. Chengdu's 微辣
+dictionary agrees: mildly spicy. Literal, correct, and useless. Chengdu’s 微辣
 is a local scale, a convention between the cook and the customer. Machine
 translation renders the words and loses the convention, every single time.
 
@@ -32,7 +32,7 @@ translation renders the words and loses the convention, every single time.
 I watched the same failure for two decades on banking projects: specifications
 "translated" until the business rule fell out of them; screens where value date
 became date de valeur when the market actually says date de valorisation. A
-product's language is not a coat of paint; it is part of its logic.
+product’s language is not a coat of paint; it is part of its logic.
 
 The technical design follows the editorial one. One page per language means no
 shared state, no switch that leaves fragments of one language inside another,

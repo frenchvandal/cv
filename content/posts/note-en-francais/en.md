@@ -1,5 +1,5 @@
 ---
-title: Write it in the reader's language first
+title: Write it in the reader’s language first
 date: 2026-06-10
 summary: A short note on a habit that became a rule — every page of this site is written in its own language first, never translated into it.
 tags: [notes]
@@ -7,7 +7,7 @@ tags: [notes]
 
 A short note, written for my English-speaking readers.
 
-Here is a rule I keep: write the site in the reader's language first. The
+Here is a rule I keep: write the site in the reader’s language first. The
 English page starts life in English — its own sentences, its own jokes, its own
 pace. It is not the French page wearing English clothes.
 

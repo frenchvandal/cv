@@ -27,7 +27,7 @@ The gear itself was a short list:
 The night was the real race. Between kilometre 25 and 55 there is nothing: no
 spectators, no scenery, just the pool of lamplight and the sound of my own
 steps. I crossed two sleeping villages, startled a fox, and walked — yes, walked
-— every steep climb. That is where I learned the rule of ultras: you don't race
+— every steep climb. That is where I learned the rule of ultras: you don’t race
 the others, you manage a budget.
 
 The aid stations were my milestones. I kept a simple discipline there:

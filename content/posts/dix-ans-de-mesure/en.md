@@ -6,7 +6,7 @@ tags: [typographie, rétrospective]
 ---
 
 Ten years ago I measured text in a browser for the first time in my career. The
-requirement fit in one sentence: keep a trader's name inside the header of a
+requirement fit in one sentence: keep a trader’s name inside the header of a
 positions screen, whatever its length, never truncated. The 2016 answer fit in
 one line — a call to `getBoundingClientRect` — and over the years that single
 line cost me more bug-hunting days than any pricing formula I ever shipped. This

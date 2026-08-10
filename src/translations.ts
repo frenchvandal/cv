@@ -155,7 +155,7 @@ const en = {
     tags: "Tags",
   },
   hero: {
-    greeting: "Hello, I'm",
+    greeting: "Hello, I’m",
     title: "Product Owner · Business Analyst — 20 years in financial software",
     location: "Chengdu, China · French national",
     ctaPrimary: "Get in Touch",
@@ -227,7 +227,7 @@ const en = {
     },
     master: {
       school: "Université de Cergy-Pontoise",
-      title: "Master's, Financial Instruments Management",
+      title: "Master’s, Financial Instruments Management",
       date: "2004 – 2005",
       subtitle: "Now CY Cergy Paris Université",
       desc:
@@ -345,7 +345,7 @@ const en = {
       {
         me: true,
         text:
-          "KAPIA-RGI's policyholder web portal. Several insurers, one product.",
+          "KAPIA-RGI’s policyholder web portal. Several insurers, one product.",
       },
       { me: false, text: "What does a product owner actually decide?" },
       {
@@ -354,7 +354,7 @@ const en = {
       },
       {
         me: false,
-        text: "Twenty years in life insurance… isn't that a little dull?",
+        text: "Twenty years in life insurance… isn’t that a little dull?",
       },
       {
         me: true,
@@ -372,13 +372,13 @@ const en = {
       {
         me: true,
         text:
-          "It's like a major version upgrade: long, painful, and no business interruption.",
+          "It’s like a major version upgrade: long, painful, and no business interruption.",
       },
       {
         me: false,
-        text: "And how do I reach you? There isn't even an email…",
+        text: "And how do I reach you? There isn’t even an email…",
       },
-      { me: true, text: "WeChat: frenchvandal. It's 2026." },
+      { me: true, text: "WeChat: frenchvandal. It’s 2026." },
     ],
   },
   contact: {
@@ -418,7 +418,7 @@ const fr: Translation = {
   },
   meta: {
     description:
-      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d'assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine.",
+      "Philippe Ribeiro — Product Owner et Business Analyst, 20 ans dans le logiciel pour services financiers : systèmes cœur d’assurance vie, bancassurance, finances publiques. Basé à Chengdu, Chine.",
   },
   nav: {
     about: "À propos",
@@ -442,8 +442,8 @@ const fr: Translation = {
     published: "Publié le",
     updated: "Mis à jour le",
     backToIndex: "Retour aux écrits",
-    empty: "Rien de publié dans cette langue pour l'instant.",
-    notInLanguage: "Cet article n'est pas disponible dans cette langue",
+    empty: "Rien de publié dans cette langue pour l’instant.",
+    notInLanguage: "Cet article n’est pas disponible dans cette langue",
     tags: "Mots-clés",
   },
   hero: {
@@ -456,24 +456,24 @@ const fr: Translation = {
   },
   about: {
     p1:
-      "Product Owner et Business Analyst, vingt ans dans le logiciel pour services financiers — systèmes cœur d'assurance vie, bancassurance et finances publiques. J'ai travaillé des deux côtés du métier : consultant en régie livrant des projets pour des clients de secteurs variés, puis responsable de produit chez un éditeur, aux commandes d'un progiciel.",
+      "Product Owner et Business Analyst, vingt ans dans le logiciel pour services financiers — systèmes cœur d’assurance vie, bancassurance et finances publiques. J’ai travaillé des deux côtés du métier : consultant en régie livrant des projets pour des clients de secteurs variés, puis responsable de produit chez un éditeur, aux commandes d’un progiciel.",
     p2:
-      "Chez KAPIA-RGI, je porte K4U, un portail web d'assurance destiné aux clients finaux de plusieurs compagnies, de bout en bout : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes. J'ai piloté le déploiement transverse de l'authentification unique (SAML/OIDC), je fonde les décisions sur les retours utilisateurs et l'analyse SQL avancée, et je ne livre que des incréments testés et conformes — testeur certifié ISTQB, formé PSPO.",
+      "Chez KAPIA-RGI, je porte K4U, un portail web d’assurance destiné aux clients finaux de plusieurs compagnies, de bout en bout : vision produit, feuille de route et backlog, priorisés entre des demandes concurrentes. J’ai piloté le déploiement transverse de l’authentification unique (SAML/OIDC), je fonde les décisions sur les retours utilisateurs et l’analyse SQL avancée, et je ne livre que des incréments testés et conformes — testeur certifié ISTQB, formé PSPO.",
     p3:
-      "Installé à Chengdu depuis 2025 après une année de mandarin à temps plein à l'Université du Sichuan — le quotidien se vit en mandarin (HSK 4, HSK 5 en préparation). Français et portugais langues maternelles, anglais courant, espagnol professionnel.",
+      "Installé à Chengdu depuis 2025 après une année de mandarin à temps plein à l’Université du Sichuan — le quotidien se vit en mandarin (HSK 4, HSK 5 en préparation). Français et portugais langues maternelles, anglais courant, espagnol professionnel.",
     stats: {
       years: "Ans dans le logiciel",
       languages: "Langues",
-      defects: "% d'anomalies en moins",
+      defects: "% d’anomalies en moins",
       clients: "Nouveaux clients signés",
     },
   },
   experience: {
     kapiaRgi: {
-      date: "2019 – aujourd'hui",
+      date: "2019 – aujourd’hui",
       company: "KAPIA-RGI",
       location: "Paris, France",
-      sector: "Édition de logiciels d'assurance vie",
+      sector: "Édition de logiciels d’assurance vie",
       title: "Web Product Owner",
     },
     open: {
@@ -487,7 +487,7 @@ const fr: Translation = {
       date: "2011 – 2014",
       company: "KAPIA Solutions (KAPIA-RGI)",
       location: "Paris, France",
-      sector: "Édition de logiciels d'assurance vie",
+      sector: "Édition de logiciels d’assurance vie",
       title: "Business Analyst",
     },
     adneom: {
@@ -514,7 +514,7 @@ const fr: Translation = {
       items: [
         "Année sabbatique de KAPIA-RGI pour étudier le mandarin à temps plein ; programme achevé en juillet 2026",
         "Résultats finaux : GPA de 3,88 / 4 sur 39 crédits — chinois intégré 92,8/100, compréhension et expression orales 93,9, expression écrite 92,8, informatique et Internet en chinois 90,3",
-        "Cours, vie quotidienne et échanges en mandarin — une connaissance de l'intérieur de l'université chinoise",
+        "Cours, vie quotidienne et échanges en mandarin — une connaissance de l’intérieur de l’université chinoise",
         "HSK 4 obtenu (2023) ; HSK 5 en préparation",
       ],
     },
@@ -522,13 +522,13 @@ const fr: Translation = {
       school: "Université de Cergy-Pontoise",
       title: "Master, Gestion des instruments financiers",
       date: "2004 – 2005",
-      subtitle: "Aujourd'hui CY Cergy Paris Université",
+      subtitle: "Aujourd’hui CY Cergy Paris Université",
       desc:
-        "Ingénierie financière et gestion d'instruments — le socle quantitatif de vingt ans dans le logiciel financier.",
+        "Ingénierie financière et gestion d’instruments — le socle quantitatif de vingt ans dans le logiciel financier.",
     },
     edc: {
       school: "EDC Paris Business School",
-      title: "Diplôme d'école de commerce — Majeure Finance",
+      title: "Diplôme d’école de commerce — Majeure Finance",
       date: "2000 – 2004",
       desc: "Commerce et gestion, avec une spécialisation en finance.",
     },
@@ -574,7 +574,7 @@ const fr: Translation = {
     domains: {
       title: "Domaines",
       tags: [
-        "Systèmes cœur d'assurance vie",
+        "Systèmes cœur d’assurance vie",
         "Bancassurance",
         "Parcours numériques & SSO",
         "Finances publiques",
@@ -605,7 +605,7 @@ const fr: Translation = {
   hobbies: {
     running: {
       title: "Course de fond",
-      desc: "Du 10 km à l'ultramarathon — dont deux marathons de Paris.",
+      desc: "Du 10 km à l’ultramarathon — dont deux marathons de Paris.",
     },
     cycling: {
       title: "Cyclisme",
@@ -619,7 +619,7 @@ const fr: Translation = {
     cinema: {
       title: "Cinéma",
       desc:
-        "Wong Kar-wai, Melville, King Hu — la critique de films en français est mon exercice d'écriture le plus constant.",
+        "Wong Kar-wai, Melville, King Hu — la critique de films en français est mon exercice d’écriture le plus constant.",
     },
     language: {
       title: "Apprentissage des langues",
@@ -634,7 +634,7 @@ const fr: Translation = {
     disclaimer:
       "Les questions qui reviennent vraiment, avec les réponses que je donne vraiment.",
     messages: [
-      { me: false, text: "K4U, c'est quoi ?" },
+      { me: false, text: "K4U, c’est quoi ?" },
       {
         me: true,
         text:
@@ -643,11 +643,11 @@ const fr: Translation = {
       { me: false, text: "Un Product Owner, ça arbitre quoi au juste ?" },
       {
         me: true,
-        text: "Trois compagnies veulent le même sprint. Une seule l'aura.",
+        text: "Trois compagnies veulent le même sprint. Une seule l’aura.",
       },
       {
         me: false,
-        text: "Vingt ans dans l'assurance vie… ce n'est pas un peu monotone ?",
+        text: "Vingt ans dans l’assurance vie… ce n’est pas un peu monotone ?",
       },
       {
         me: true,
@@ -658,26 +658,26 @@ const fr: Translation = {
       {
         me: true,
         text:
-          "Je suis venu pour le mandarin. Le hotpot m'a convaincu de prolonger.",
+          "Je suis venu pour le mandarin. Le hotpot m’a convaincu de prolonger.",
       },
       { me: false, text: "Votre niveau de piment ?" },
-      { me: true, text: "微辣 — doux. J'ai dit adaptable, pas téméraire." },
+      { me: true, text: "微辣 — doux. J’ai dit adaptable, pas téméraire." },
       { me: false, text: "Un ultramarathon, sérieusement ?" },
       {
         me: true,
         text:
-          "C'est comme une montée de version majeure : long, douloureux, sans interruption d'activité.",
+          "C’est comme une montée de version majeure : long, douloureux, sans interruption d’activité.",
       },
       {
         me: false,
-        text: "Et je vous contacte comment ? Il n'y a même pas d'e-mail…",
+        text: "Et je vous contacte comment ? Il n’y a même pas d’e-mail…",
       },
       { me: true, text: "WeChat : frenchvandal. On est en 2026." },
     ],
   },
   contact: {
     intro:
-      "Vingt ans dans le logiciel financier réglementé, aujourd'hui depuis Chengdu. Ci-dessous : où me joindre, et où vit le reste du travail.",
+      "Vingt ans dans le logiciel financier réglementé, aujourd’hui depuis Chengdu. Ci-dessous : où me joindre, et où vit le reste du travail.",
     wechatLabel: "WeChat",
     githubLabel: "GitHub",
     linkedinLabel: "LinkedIn",
@@ -689,7 +689,7 @@ const fr: Translation = {
     intro: "Introduction",
     languageNav: "Langue",
     sectionsNav: "Sections",
-    copyWechat: "Copier l'ID WeChat",
+    copyWechat: "Copier l’ID WeChat",
     copied: "Copié",
     theme: {
       light: "Thème : clair",

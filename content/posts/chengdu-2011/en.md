@@ -30,7 +30,7 @@ Everything exceeded me by half a tone. Children shouted hello at the sight of
 me, strangers invited me to their weddings. The sky stayed grey for weeks —
 there is a proverb, 蜀犬吠日: the dogs of Sichuan bark when the sun comes out,
 so unfamiliar is the sight. At night the click of mahjong tiles rose from the
-inner courtyards, and in the afternoon, in People's Park, old men drank jasmine
+inner courtyards, and in the afternoon, in People’s Park, old men drank jasmine
 tea in bamboo chairs while the ear cleaners made their tweezers chime. The 2008
 earthquake was still in every conversation; people showed you the cracks the way
 you show scars.

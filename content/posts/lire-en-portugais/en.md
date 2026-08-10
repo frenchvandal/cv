@@ -1,7 +1,7 @@
 ---
 title: Reading Saramago and Pessoa in Portuguese
 date: 2026-03-14
-summary: "What reading in a language you are still learning changes about reading itself: Saramago's endless sentence, Pessoa's heteronyms, and slowness as a method, from Chengdu."
+summary: "What reading in a language you are still learning changes about reading itself: Saramago’s endless sentence, Pessoa’s heteronyms, and slowness as a method, from Chengdu."
 tags: [lecture, langues]
 ---
 
@@ -17,7 +17,7 @@ is.
 In Saramago, the sentence does not know the full stop. It moves forward by
 commas, swallows dialogue, declines to say who is speaking, and starts again. In
 _Memorial do convento_ — _Baltasar and Blimunda_ in English — a single period
-can cross a whole page: you walk into a sentence in Baltasar's company and walk
+can cross a whole page: you walk into a sentence in Baltasar’s company and walk
 out beside Blimunda without ever passing a door. The translations I kept at hand
 used to "fix" this, with periods, dashes, order. I closed them the day I
 understood that what they were repairing was exactly what I had come for.
@@ -39,7 +39,7 @@ wrote that things have no meaning — they have existence. Ricardo Reis, the
 physician and classicist of odes. Álvaro de Campos, the engineer who smoked and
 was bored with genius. Bernardo Soares, the assistant bookkeeper who kept the
 _Livro do desassossego_, _The Book of Disquiet_. The word _heteronym_ is not a
-critic's refinement: each one has a style, a biography, sometimes a death. To
+critic’s refinement: each one has a style, a biography, sometimes a death. To
 translate Pessoa is to be forced to choose a single voice for four.
 
 > O meu país é a língua portuguesa.

@@ -10,7 +10,7 @@ dependencies before counting features. I have inherited too many build pipelines
 where half the packages had lost their maintainer and nobody could remember why
 they were there. When I rebuilt my online CV, the rule was therefore fixed
 before the first line of code: zero build dependencies. No Vite, no webpack, no
-plugin kept alive by a stranger's goodwill.
+plugin kept alive by a stranger’s goodwill.
 
 ## Three capabilities, not one more
 

@@ -1,7 +1,7 @@
 ---
 title: Knuth–Plass in practice, and what the browser gets wrong about justification
 date: 2025-11-21
-summary: A practitioner's notes on optimal paragraph breaking, hyphenation, and why the glue's shrink has to be zero when CSS can only stretch spaces.
+summary: A practitioner’s notes on optimal paragraph breaking, hyphenation, and why the glue’s shrink has to be zero when CSS can only stretch spaces.
 tags: [typographie, algorithmes]
 ---
 
@@ -13,9 +13,9 @@ Paragraph justification in the browser is a small, perfect example.
 
 What a browser does with `text-align: justify` is greedy: it fills one line at a
 time, in order, and stops at the first word that no longer fits. Then it
-stretches that line's spaces out to the right margin. Each line is locally
+stretches that line’s spaces out to the right margin. Each line is locally
 acceptable, and the whole is a mess — a line full of gaping white sits above a
-cramped one, and the reader's eye stumbles at every return sweep.
+cramped one, and the reader’s eye stumbles at every return sweep.
 
 Knuth and Plass published the alternative in 1981, for TeX: treat the paragraph
 as a whole. The text becomes a sequence of boxes (the words), glue (the spaces,

@@ -1,23 +1,23 @@
 ---
-title: An online CV doesn't apply — it answers
+title: An online CV doesn’t apply — it answers
 date: 2026-05-23
 summary: "Why this site exists instead of a PDF: deep links, languages written for their readers, measured text — what the web gives and a frozen document never will."
 tags: [web, carrière]
 ---
 
-People still ask me where the PDF is. There isn't one, and that is a decision,
+People still ask me where the PDF is. There isn’t one, and that is a decision,
 not an oversight. After twenty years of writing requirements in financial
 software — business analyst first, then product owner — I applied the same
 discipline to my own CV: work out who reads it and why, then choose the medium.
 
-## A CV doesn't apply — it answers
+## A CV doesn’t apply — it answers
 
 ### The PDF knocks; the site waits
 
 A PDF applies: you send it off, it knocks on a door, it joins a hundred other
 attachments in an inbox. A site does not apply. It waits — for the recruiter who
 has heard your name, the former colleague who wants to quote you, the stranger
-who clicked a link. Each visitor arrives with a precise question. The page's job
+who clicked a link. Each visitor arrives with a precise question. The page’s job
 is to answer it in ten seconds.
 
 ### Thirty seconds, not two pages
@@ -32,7 +32,7 @@ straight to the answer.
 ### Deep links
 
 Every section of this site has its own address. When someone asks whether I have
-ever run a core-banking migration, I don't attach a document and say "see page
+ever run a core-banking migration, I don’t attach a document and say "see page
 two" — I send a link that opens on that exact experience. The link is the
 answer.
 
@@ -48,7 +48,7 @@ shareable.
 
 The web measures what a document merely prints. Here the text is measured before
 it is shown: the size of the headings, the breaking of the lines, the width of
-every column adapt to the reader's screen. A PDF imposes its A4 sheet on every
+every column adapt to the reader’s screen. A PDF imposes its A4 sheet on every
 device; a web page adjusts to whoever is reading it.
 
 Twenty years of financial software taught me that a good document answers the
