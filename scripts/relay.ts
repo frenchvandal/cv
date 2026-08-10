@@ -53,7 +53,7 @@ export function relayHtml(target: string, title: string): string {
 export function relayPages(): { file: string; target: PageRef }[] {
   return LANGS.map((lang) => ({
     file: `${lang}.html`,
-    target: { kind: "home", lang } as PageRef,
+    target: { kind: "home", lang } satisfies PageRef,
   }));
 }
 
