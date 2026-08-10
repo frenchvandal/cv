@@ -9,7 +9,7 @@
  * `fr.html`, so a head still describing English leaves the document describing
  * a page the address bar no longer points at.
  *
- * Keeping the values here means the two can't drift: `pageMeta` is what the
+ * Keeping the values here means the two can’t drift: `pageMeta` is what the
  * build interpolates, and `headMeta` is the same values addressed by the
  * selector each one lives at, which is all the runtime needs to apply them.
  * [scripts/build.test.ts](scripts/build.test.ts) asserts every selector below
@@ -41,7 +41,7 @@ const OG_LOCALE: Record<Lang, string> = {
 export interface PageMeta {
   title: string;
   description: string;
-  /** The page's own public URL: canonical and `og:url` both. */
+  /** The page’s own public URL: canonical and `og:url` both. */
   url: string;
   ogLocale: string;
   /** Serialized `Person`, safe to drop straight into a `<script>` block. */
@@ -51,7 +51,7 @@ export interface PageMeta {
 /**
  * What a page announces about itself when it is not the CV. An article has its
  * own title and summary, and without them every blog page would present the
- * CV's—wrong in the tab, wrong in a search result, wrong in a link preview.
+ * CV’s—wrong in the tab, wrong in a search result, wrong in a link preview.
  */
 export interface MetaOverride {
   title: string;
@@ -59,12 +59,12 @@ export interface MetaOverride {
 }
 
 /**
- * `url` is the page's public URL—absolute when the build runs with SITE_URL,
+ * `url` is the page’s public URL—absolute when the build runs with SITE_URL,
  * and resolved against `location` at runtime. It is passed in rather than
  * derived because only the caller knows the deployed base.
  *
  * The `Person` JSON-LD is deliberately kept on every page: it describes the
- * site's author, who is the same whichever page is being read.
+ * site’s author, who is the same whichever page is being read.
  */
 export function pageMeta(
   lang: Lang,
@@ -98,11 +98,11 @@ export function pageMeta(
   };
 }
 
-/** One head element's value, addressed by where it lives. */
+/** One head element’s value, addressed by where it lives. */
 export interface HeadMeta {
   /** CSS selector of the single element carrying this value. */
   selector: string;
-  /** Attribute to set, or `"text"` to replace the element's text content. */
+  /** Attribute to set, or `"text"` to replace the element’s text content. */
   attr: string;
   value: string;
 }
@@ -152,7 +152,7 @@ export function headMeta(meta: PageMeta): HeadMeta[] {
 }
 
 /**
- * The public URL of a language's CV page, resolved against the document
+ * The public URL of a language’s CV page, resolved against the document
  * switching to it. The runtime has no SITE_URL to read, so the page it is
  * switching *from* is the only base available—which is also the right one: it
  * carries whatever host and base path the site was deployed at. Query and hash
@@ -161,7 +161,7 @@ export function headMeta(meta: PageMeta): HeadMeta[] {
  * Both languages are needed because the link between them is depth-dependent
  * now: `fr/cv.html` reaches `pt/cv.html` as `../pt/cv.html`, and resolving a
  * root-relative `pt/` against the French page would land on `fr/pt/`. Only the
- * CV is asked for, because the reload-free switch is the CV's alone.
+ * CV is asked for, because the reload-free switch is the CV’s alone.
  */
 export function pageUrl(from: Lang, to: Lang, base: string): string {
   return new URL(

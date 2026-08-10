@@ -82,7 +82,7 @@ test("the visible date is localized by Intl, never the raw ISO date", () => {
   );
 
   // Both are the same 2026-08-08 ISO date—UTC and locale-formatted, or the
-  // build machine's local timezone could push it a day off in either script.
+  // build machine’s local timezone could push it a day off in either script.
   expect(fr).toContain("8 août 2026");
   expect(zh).toContain("2026年8月8日");
 });
@@ -105,7 +105,7 @@ test("otherwise it leads to that language's index, with an audible note", () => 
 
   expect(html).toContain('href="../../blog/index.html"');
   // The note must be readable text (.sr-only), not an aria-label: an
-  // attribute carries no language, so a French reader's screen reader would
+  // attribute carries no language, so a French reader’s screen reader would
   // read this Chinese-page fallback aloud in its own voice.
   expect(html).toContain(escapeHtml(translations.fr.blog.notInLanguage));
   expect(html).not.toContain(

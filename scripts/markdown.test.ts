@@ -70,7 +70,7 @@ test("une page chinoise ne marque rien : il n'y a pas de changement de langue", 
 });
 
 test("le marquage CJK n'entre pas dans du code inline", async () => {
-  // Décision : du code n'est pas de la prose, un lecteur d'écran n'a rien à
+  // Décision : du code n’est pas de la prose, un lecteur d’écran n’a rien à
   // gagner à un changement de langue sur un identifiant. Le handler `text` sur
   // "p, li, td, th, h2, h3, h4, blockquote" reçoit quand même le texte des
   // descendants (ici <code> imbriqué dans <p>) : le compteur de profondeur
@@ -125,10 +125,10 @@ test.each([
   "le garde-fou laisse passer %s : la barre oblique collée au nom de balise n'ouvre pas de balise en CommonMark",
   (source) => {
     // Mesuré : Bun.markdown.html() exige un espace avant un attribut (grammaire
-    // CommonMark des balises en ligne). Sans cet espace, "<img/onerror=…>" n'est
+    // CommonMark des balises en ligne). Sans cet espace, "<img/onerror=…>" n’est
     // reconnu comme balise par aucun parseur CommonMark ; il ressort en texte
     // échappé — &lt;img/onerror=alert(1)&gt; — donc jamais comme noeud <img> réel.
-    // assertSafeHtml n'a rien à refuser : il n'y a rien à exécuter dans la page.
+    // assertSafeHtml n’a rien à refuser : il n’y a rien à exécuter dans la page.
     const html = Bun.markdown.html(source);
     expect(html).not.toContain("<img");
     expect(html).not.toContain("<svg");
@@ -141,7 +141,7 @@ test("le garde-fou refuse un <script> qu'un backtick échappé laisse passer (r�
   // `\`` est un backtick échappé : CommonMark n'ouvre donc aucun span de code,
   // et Bun.markdown.html() laisse ressortir le <script> qui suit tel quel,
   // exécutable. Une regex sur la source qui apparie ce backtick échappé avec
-  // le backtick réel plus loin le manquerait ; l'analyse porte sur le HTML
+  // le backtick réel plus loin le manquerait ; l’analyse porte sur le HTML
   // rendu, où ce <script> est un noeud bien réel.
   const source = "before \\` <script>alert(1)</script>` after";
   expect(Bun.markdown.html(source)).toContain("<script>");
@@ -151,9 +151,9 @@ test("le garde-fou refuse un <script> qu'un backtick échappé laisse passer (r�
 
 test("le garde-fou laisse passer une fence à l'intérieur d'un blockquote", () => {
   // FENCED_CODE exigeait la fence en début de ligne ; une fence indentée sous
-  // un ">" de citation la ratait — faux positif que l'analyse du HTML rendu
-  // corrige gratuitement, puisque Bun.markdown.html() sait déjà que c'est du
-  // <pre><code> à l'intérieur d'un <blockquote>, peu importe l'indentation
+  // un ">" de citation la ratait — faux positif que l’analyse du HTML rendu
+  // corrige gratuitement, puisque Bun.markdown.html() sait déjà que c’est du
+  // <pre><code> à l’intérieur d’un <blockquote>, peu importe l’indentation
   // source.
   const source = [
     "> Voici un exemple :",
@@ -188,11 +188,11 @@ test.each([
   (source) => {
     // Chacun produit un noeud réel dans Bun.markdown.html() (measuré) et
     // franchissait le garde-fou en liste noire du round précédent : aucun
-    // n'est <script>/<iframe>/<object>/<embed>, aucun n'a d'attribut on…=,
+    // n’est <script>/<iframe>/<object>/<embed>, aucun n’a d’attribut on…=,
     // et le schéma javascript: y est soit sur un attribut jamais examiné
     // (action, formaction, xlink:href) soit déguisé (entité, tabulation,
-    // saut de ligne). La liste blanche d'éléments refuse form/button/svg/meta
-    // sans les avoir jamais nommés ; la normalisation d'URI démasque les
+    // saut de ligne). La liste blanche d’éléments refuse form/button/svg/meta
+    // sans les avoir jamais nommés ; la normalisation d’URI démasque les
     // trois déguisements sur <a href>.
     expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
       .toThrow("content/posts/x/fr.md");
@@ -215,7 +215,7 @@ test.each([
   (source) => {
     // Le navigateur décode &colon;, &Tab;, &NewLine; (table HTML5 complète)
     // et les références numériques sans point-virgule (&#106… → j). Le
-    // garde-fou ne reproduit pas la table : ce qu'il ne sait pas décoder
+    // garde-fou ne reproduit pas la table : ce qu’il ne sait pas décoder
     // est refusé, par défaut, comme tout le reste.
     expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
       .toThrow("content/posts/x/fr.md");
@@ -223,7 +223,7 @@ test.each([
 );
 
 test("le garde-fou laisse passer une query string avec un « & » ordinaire", () => {
-  // « & » sans référence complète n'est pas une entité : le refus par défaut
+  // « & » sans référence complète n’est pas une entité : le refus par défaut
   // ne doit pas casser les URL de query ordinaires.
   expect(() =>
     assertSafeMarkdown(
@@ -313,7 +313,7 @@ test("un caractère de contrôle C0 en tête de href est refusé, sur toute la p
   // WHATWG et ce qui reste commence par un schéma interdit. stripUrlControlChars
   // ne retirait avant ce correctif que \t/\n/\r ; les 29 autres valeurs C0
   // passaient le garde-fou intactes. Les trois écritures doivent toutes être
-  // fermées : décimale, hexadécimale, et l'octet brut directement dans le HTML.
+  // fermées : décimale, hexadécimale, et l’octet brut directement dans le HTML.
   for (let code = 0; code <= 0x1f; code++) {
     const rawByte = String.fromCodePoint(code);
     const variants = [
@@ -345,7 +345,7 @@ test("le correctif C0 ne casse pas les URI légitimes déjà couvertes (non-rég
 });
 
 test("le garde-fou laisse passer toute la syntaxe GFM que le dépôt exerce", async () => {
-  // La preuve que la liste blanche n'est pas trop étroite : un article qui
+  // La preuve que la liste blanche n’est pas trop étroite : un article qui
   // utilise chaque construction GFM listée dans la revue (titres, listes,
   // listes de tâches, tables avec alignement, code en ligne et en bloc,
   // citations, liens dont un autolien, images, emphase, barré, règle

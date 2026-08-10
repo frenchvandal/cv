@@ -1,5 +1,5 @@
 /*
- * The blog page bodies: home's "latest writing", the full index, and one
+ * The blog page bodies: home’s "latest writing", the full index, and one
  * article. Pure string rendering like the rest of src/render—no DOM, no
  * disk—so the static build and the client share the same code. Page assembly
  * (nav + body inside the shared shell) is `renderPage` in
@@ -45,10 +45,10 @@ export function pageRefOf(page: Page, lang: Lang): PageRef {
 }
 
 /*
- * The readable date, in the page's language. HTML_LANG already carries the
- * site's BCP-47 tags (pt-PT, es-ES, zh-Hant, zh-HK): reuse it rather than open a
+ * The readable date, in the page’s language. HTML_LANG already carries the
+ * site’s BCP-47 tags (pt-PT, es-ES, zh-Hant, zh-HK): reuse it rather than open a
  * second table that would drift. `timeZone: "UTC"` is required—without it a
- * bare date is read in the build machine's own zone and slips a day west of
+ * bare date is read in the build machine’s own zone and slips a day west of
  * Greenwich.
  */
 function formatDate(date: string, lang: Lang): string {
@@ -90,7 +90,7 @@ function emptyList(t: Translation): string {
   return `<p class="post-list__empty">${escapeHtml(t.blog.empty)}</p>`;
 }
 
-/** Home: the CV hero, then the language's latest writing. */
+/** Home: the CV hero, then the language’s latest writing. */
 export function homeBody(
   t: Translation,
   lang: Lang,
@@ -172,7 +172,7 @@ export function postBody(
    * ran the full width of the window — a line of prose the width of a desk,
    * touching both edges — which is unreadable long before it is ugly.
    *
-   * `.post` narrows it further. The site's column was sized for a CV, whose
+   * `.post` narrows it further. The site’s column was sized for a CV, whose
    * longest run is a bullet; an article is continuous prose, and prose wants
    * roughly 65 characters a line, not 100.
    */
@@ -203,8 +203,8 @@ export function postBody(
  * Where the language switcher leads from a blog page. Home and index show the
  * same content in every language, so the target is just that page in the
  * other language. An article leads to its translation when one exists, and
- * otherwise to that language's index—flagged `missing`, which `nav()` turns
- * into a `.sr-only` note—so the switcher never links to a page that doesn't
+ * otherwise to that language’s index—flagged `missing`, which `nav()` turns
+ * into a `.sr-only` note—so the switcher never links to a page that doesn’t
  * exist.
  */
 export function langLinkFor(

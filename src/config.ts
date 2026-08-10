@@ -13,7 +13,7 @@
  * Browser-chrome color per theme (`<meta name="theme-color">`, the 404 page).
  * Mirrors `--bg` in [src/styles.css](src/styles.css); the runtime reads the
  * live custom property first and falls back to these only when the stylesheet
- * hasn't applied.
+ * hasn’t applied.
  */
 export const THEME_COLOR = {
   dark: "#000000",
@@ -73,7 +73,7 @@ export const NAV_FONT = { weight: 400, letterSpacingEm: 0 } as const;
  * the type, and `minPx` stops one step below `maxPx`—0.8125rem is already the
  * smallest size in the ramp, so anything under 12px is a new, lonelier step.
  *
- * `maxPx` mirrors `.nav__link`'s font-size and `maxGapPx` the `--space-md` gap;
+ * `maxPx` mirrors `.nav__link`’s font-size and `maxGapPx` the `--space-md` gap;
  * `desktopMinRem` mirrors the breakpoint below which the shortcuts are hidden
  * outright. Keep the four in sync with [src/styles.css](src/styles.css).
  */
@@ -86,9 +86,9 @@ export const NAV_FIT = {
 } as const;
 
 /**
- * The Dialogue phone's screen width, in px, and the range its control offers.
+ * The Dialogue phone’s screen width, in px, and the range its control offers.
  *
- * `initial` is the pretext demo's own 340px, and the bounds stay inside what a
+ * `initial` is the pretext demo’s own 340px, and the bounds stay inside what a
  * real handset measures—an iPhone SE is 320pt across, a Pro Max 430—so the
  * frame reads as a phone at either end of the slider rather than as a box that
  * happens to hold bubbles. `.phone` in [src/styles.css](src/styles.css) carries

@@ -1,5 +1,5 @@
 /*
- * The feed's items are the articles now. These tests build Post objects by
+ * The feed’s items are the articles now. These tests build Post objects by
  * hand—no disk, no git—because what matters is the mapping, not the corpus.
  */
 

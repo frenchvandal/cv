@@ -1,6 +1,6 @@
 /*
- * La disposition met l'anglais à la racine et chaque autre langue dans son
- * dossier. La profondeur cesse donc d'être uniforme, et tout chemin d'asset ou
+ * La disposition met l’anglais à la racine et chaque autre langue dans son
+ * dossier. La profondeur cesse donc d’être uniforme, et tout chemin d’asset ou
  * de lien se calcule. Ces tests sont ce qui empêche un `../` de trop.
  */
 

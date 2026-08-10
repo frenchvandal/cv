@@ -27,7 +27,7 @@ export type Theme = "light" | "dark";
 /**
  * Where the switcher leads for one language, as decided by the caller.
  * `missing` marks a fallback (a blog post with no translation, sent to that
- * language's index instead)—see `nav`'s doc comment.
+ * language’s index instead)—see `nav`’s doc comment.
  */
 export interface LangLink {
   href: string;
@@ -58,7 +58,7 @@ export interface NavLink {
  * in it is the same on every page:
  *
  * @param langLink Where the switcher leads, per language. The same page in
- * each language — or, on an article with no translation, that language's
+ * each language — or, on an article with no translation, that language’s
  * index, flagged `missing`. Never a dead link, never a missing page.
  * @param navLinks The shortcuts. On the CV they are in-page anchors to its
  * chapters; everywhere else those anchors would point at sections that do not
@@ -102,7 +102,7 @@ export function nav(
   const languages = SWITCHER_LANGS.map((code) => {
     const link = langLink(code);
     // Same rule as the endonym above: the "not translated" note is read
-    // content, in the page's own language, not an aria-label—an attribute
+    // content, in the page’s own language, not an aria-label—an attribute
     // still carries no language.
     const note = link.missing
       ? `<span class="sr-only"> (${escapeHtml(t.blog.notInLanguage)})</span>`
@@ -171,9 +171,9 @@ export function section(
  * The device the thread is drawn inside: status bar, conversation bar, and the
  * composer under it. Pure decoration—every part of it is `aria-hidden`, so a
  * screen reader hears the thread and nothing about the phone around it. `9:41`
- * is Apple's own canonical time and is language-invariant, as are the glyphs;
+ * is Apple’s own canonical time and is language-invariant, as are the glyphs;
  * the only translated string is the contact name, which is the visitor, since
- * the screen we are looking over is Philippe's.
+ * the screen we are looking over is Philippe’s.
  */
 export function phoneChrome(t: Translation): { status: string; bar: string } {
   const visitor = escapeHtml(t.dialogue.visitor);
@@ -204,7 +204,7 @@ const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
 
 /**
  * RGAA 8.7: a run of Chinese inside a page written in another language has to
- * say so, or a screen reader pronounces it with the page's voice. Only the
+ * say so, or a screen reader pronounces it with the page’s voice. Only the
  * dialogue needs this today (「微辣」in the English, French, Portuguese and
  * Spanish threads); on the Chinese pages there is no change of language to mark.
  *

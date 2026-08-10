@@ -3,7 +3,7 @@ declare module "*.css" {
 }
 
 declare module "*.woff2" {
-  // Bun's `file` loader returns the emitted asset URL (hashed, public-path aware).
+  // Bun’s `file` loader returns the emitted asset URL (hashed, public-path aware).
   const url: string;
   export default url;
 }

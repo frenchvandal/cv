@@ -39,7 +39,7 @@ import sichuanUniversity from "./logos/sichuan-university.svg" with {
 };
 
 /**
- * Keyed by the education entry that draws the logo, not by the institution's
+ * Keyed by the education entry that draws the logo, not by the institution’s
  * name: [src/render.ts](src/render.ts) reads `LOGOS.master` beside the `master`
  * entry, so the key is what ties the two together across a rename.
  */

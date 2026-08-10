@@ -4,10 +4,10 @@
  * `<?xml-stylesheet?>` instruction.
  *
  * There used to be an XSLT 1.0 stylesheet beside it, drawing a table with the
- * URLs as links and each page's language. It was deleted rather than kept to
+ * URLs as links and each page’s language. It was deleted rather than kept to
  * the end: Chrome removes XSLT in 158, with WebKit and Gecko agreed, and in
  * the meantime it had already fallen out of step with the site — it read each
- * page's language from a file name, which the move to per-language folders had
+ * page’s language from a file name, which the move to per-language folders had
  * made meaningless. A second language to keep in step, for a few months of
  * life, in exchange for a table.
  *
@@ -15,7 +15,7 @@
  * selector can read element text, so the URLs are inert and there is no
  * language column. That is the whole cost.
  *
- * This is chrome, not content, so it borrows the site's palette but not its
+ * This is chrome, not content, so it borrows the site’s palette but not its
  * fonts: the hashed `assets/noto-sans-*.woff2` names are only known to the
  * bundler, and a stylesheet that guessed at one would ship a 404. Same call,
  * and the same system stack, as the 404 page in
@@ -32,10 +32,10 @@ import { THEME_COLOR } from "../src/config.ts";
 import { SITEMAP_NS } from "./sitemap.ts";
 
 /**
- * The fallback, styling the sitemap's own elements. `@namespace` is the whole
+ * The fallback, styling the sitemap’s own elements. `@namespace` is the whole
  * trick and the whole risk: `<loc>` is in the sitemaps.org namespace, so an
  * unprefixed `loc` selector matches nothing at all and the page renders as the
- * browser's bare XML tree.
+ * browser’s bare XML tree.
  *
  * `<loc>` is deliberately not tinted like a link—CSS cannot make it one, and
  * blue text that does nothing when clicked is worse than plain text.
@@ -43,7 +43,7 @@ import { SITEMAP_NS } from "./sitemap.ts";
 export function sitemapCss(): string {
   return `@namespace url(${SITEMAP_NS});
 
-/* The root element's background propagates to the canvas, so this fills the
+/* The root element’s background propagates to the canvas, so this fills the
    viewport even though the box is centred and capped. */
 urlset {
   display: block;

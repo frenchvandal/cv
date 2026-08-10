@@ -1,7 +1,7 @@
 /*
  * Measurement layer, powered by @chenglou/pretext.
  *
- * pretext measures text with the browser's font engine (canvas) WITHOUT touching
+ * pretext measures text with the browser’s font engine (canvas) WITHOUT touching
  * the DOM, so there is no layout reflow. We use it for three real, multilingual
  * fit problems that plain CSS `clamp()` only approximates:
  *
@@ -13,7 +13,7 @@
  *
  * The site renders with self-hosted Noto Sans / Noto Sans SC/TC—named fonts,
  * which pretext requires for accuracy (system-ui is explicitly unsafe). Callers
- * pass the page's computed font stack via `FitFont.family` so CJK text is
+ * pass the page’s computed font stack via `FitFont.family` so CJK text is
  * measured with the family it actually renders in (SC on zh, TC on zh-hant).
  * Measurement waits for `document.fonts.ready` so it runs against the real
  * glyphs, and each fit keeps a small safety margin (MEASURE_SAFETY) as insurance
@@ -45,14 +45,14 @@ export interface FitFont {
   weight: number;
   /** CSS `letter-spacing` in em (scales with font size). */
   letterSpacingEm: number;
-  /** Defaults to the Latin stack; pass the page's computed one on CJK pages. */
+  /** Defaults to the Latin stack; pass the page’s computed one on CJK pages. */
   family?: string;
   /** CSS `font-style`. Defaults to `normal`. */
   style?: string;
 }
 
 /**
- * Width of `text` per 1px of font size, for the given font. Cached: pretext's
+ * Width of `text` per 1px of font size, for the given font. Cached: pretext’s
  * `prepare` pass is the expensive part, so we never repeat it for the same
  * (text, font)—exactly what the library asks for.
  */
@@ -270,15 +270,15 @@ export interface NavAuditEntry {
 }
 
 export interface NavAuditOptions {
-  /** Content width of the bar's flex row, in px (its `.wrap` less padding). */
+  /** Content width of the bar’s flex row, in px (its `.wrap` less padding). */
   rowPx: number;
-  /** Gap between the bar's three parts, in px. */
+  /** Gap between the bar’s three parts, in px. */
   rowGapPx: number;
   /** Width of the right-hand cluster—switcher plus theme toggle, in px. */
   actionsPx: number;
-  /** The brand's type, whose width is the one part of the bar that varies by language. */
+  /** The brand’s type, whose width is the one part of the bar that varies by language. */
   brand: FitFont & { sizePx: number };
-  /** The shortcuts' type, and how far the fitter may squeeze it. */
+  /** The shortcuts’ type, and how far the fitter may squeeze it. */
   link: FitFont & NavFitBounds;
 }
 
@@ -333,7 +333,7 @@ export function auditNavLinks(
 }
 
 /**
- * The two measurement inputs an element's computed style implies: the CSS
+ * The two measurement inputs an element’s computed style implies: the CSS
  * `font` shorthand, and the tracking—which pretext takes as a separate
  * option, because `letter-spacing` is not part of that shorthand and would be
  * dropped on the floor by a caller that only builds the string.

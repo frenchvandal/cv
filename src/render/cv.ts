@@ -90,7 +90,7 @@ export function about(t: Translation): string {
 type TimelineEntry = {
   /** Free text, not a machine date—the ranges read "2011 – 2014 · 2019 – Present". */
   date: string;
-  /** The employer or the institution—the event's heading. */
+  /** The employer or the institution—the event’s heading. */
   org: string;
   /** The role held, or the diploma earned. */
   role: string;
@@ -98,7 +98,7 @@ type TimelineEntry = {
   note?: string;
   /** Trusted inline SVG from [src/logos.ts](src/logos.ts); see `timelineItem`. */
   logo?: string;
-  /** Experience only: "City, Country" and the employer's sector, in that order. */
+  /** Experience only: "City, Country" and the employer’s sector, in that order. */
   location?: string;
   sector?: string;
   items?: readonly string[];
@@ -108,10 +108,10 @@ type TimelineEntry = {
 };
 
 /**
- * An event, rendered as Ant Design's Timeline item read through the HIG.
+ * An event, rendered as Ant Design’s Timeline item read through the HIG.
  *
- * Ant's structure survives—a rail, one node per event, the content beside it,
- * dates in their own column (Ant's `label` mode, on wide viewports only). Its
+ * Ant’s structure survives—a rail, one node per event, the content beside it,
+ * dates in their own column (Ant’s `label` mode, on wide viewports only). Its
  * decoration does not: the node is a hairline ring in the neutral ramp, the
  * filled accent node is spent on the single fact it can carry (which role is
  * still running), and the content sits on the page instead of in a card, so
@@ -119,7 +119,7 @@ type TimelineEntry = {
  *
  * `logo` is trusted static markup and is inlined unescaped; it is decorative,
  * since the heading right under it already names the school, so the wrapper
- * hides it from assistive tech rather than letting the SVG's own label announce
+ * hides it from assistive tech rather than letting the SVG’s own label announce
  * the name a second time.
  *
  * `index` only staggers the reveal, reusing the shared `animate--delayed-*`
@@ -212,7 +212,7 @@ export function experience(t: Translation): string {
 }
 
 /**
- * The same rail, opened by each institution's mark instead of its name. The
+ * The same rail, opened by each institution’s mark instead of its name. The
  * marks are taller than a line of text, so `timeline--marks` re-centres the
  * node and the date on them (see src/styles.css).
  */
@@ -349,7 +349,7 @@ export function hobbies(t: Translation): string {
  * scrolls inside it as it would on the device—which is why `.chat` carries
  * `tabindex="0"`: a scrollable region has to be reachable by keyboard, and the
  * `role="group"` it already had does not make it focusable. The width control is the
- * pretext demo's own (chenglou.me/pretext/bubbles): dragging it re-tightens
+ * pretext demo’s own (chenglou.me/pretext/bubbles): dragging it re-tightens
  * every bubble live, which is the whole point of measuring instead of
  * guessing. It is `.js`-gated in CSS, since a range input that moves nothing
  * would be a lie without the script.

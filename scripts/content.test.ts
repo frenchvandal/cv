@@ -179,7 +179,7 @@ test("l'ordre de sortie est déterministe, trié par slug puis par langue", asyn
 });
 
 test("Post.text ne colle aucun mot à travers une frontière de bloc", async () => {
-  // Exercises the syntax this blog's articles use: heading, paragraph,
+  // Exercises the syntax this blog’s articles use: heading, paragraph,
   // bullet list, table, fenced code block. Measured (see task-5-report.md):
   // Bun.markdown.render() with no callbacks glues every block straight into
   // the next one — "Sous-titrePremier", "item unitem deux", "Col ACol B",
@@ -234,7 +234,7 @@ test("le résumé dérivé coupe en fin de première phrase, même sur un texte 
   // This is the test that proves the dead branch in deriveSummary is
   // reachable again. Without a separator between blocks, the period at the
   // end of the first paragraph touches the next paragraph directly (no
-  // space), so deriveSummary's search for ". " never matches and it falls
+  // space), so deriveSummary’s search for ". " never matches and it falls
   // through to a mid-word truncation instead of cutting on the sentence.
   const firstSentence =
     "Ceci est la première phrase du contenu, volontairement assez longue " +

@@ -1,6 +1,6 @@
 /*
  * The social preview card. Two things can go wrong with an image nobody looks
- * at until it is already in someone's chat window:
+ * at until it is already in someone’s chat window:
  *
  *   - it says something the site does not. The previous card advertised
  *     "Available immediately" and "mobile nationwide"—claims this CV stopped
@@ -9,7 +9,7 @@
  *     every page by [scripts/build.ts](scripts/build.ts); a re-render at
  *     another size crops or letterboxes on whichever platform trusts them.
  *
- * The first is testable because the card's text is generated, not typed: it
+ * The first is testable because the card’s text is generated, not typed: it
  * comes from the same PROFILE and translations the page renders from. The
  * second is asserted on the shipped bytes.
  */

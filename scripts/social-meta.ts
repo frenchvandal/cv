@@ -1,5 +1,5 @@
 /*
- * Reads the social-preview metadata back out of a page—Bun's "extract social
+ * Reads the social-preview metadata back out of a page—Bun’s "extract social
  * share metadata" HTMLRewriter pattern, pointed at our own `dist/` instead of a
  * remote URL (the pages are on disk at build time; fetching them would only add
  * a server).
@@ -8,7 +8,7 @@
  * read them back, and every way they can break is silent: a misspelt property
  * (`og:titel`), a description that lost its language, or an `og:image` that
  * stayed relative all end the same way—the scraper drops the field, no build
- * error anywhere, and the first sign is a bare link in someone's chat window.
+ * error anywhere, and the first sign is a bare link in someone’s chat window.
  * [scripts/build.test.ts](scripts/build.test.ts) asserts against `previewCard`,
  * which resolves the tags the way a scraper does.
  *

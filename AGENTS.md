@@ -172,36 +172,41 @@ the code itself.
 
 ### Prose: language and typography
 
-Everything written in this repository is written in English—comments, documents,
-and commit messages alike. The site itself is the exception that proves it: the
-seven translations under `src/translations.ts` are content, not prose about the
-code.
+Three kinds of writing live here, and only one of them is a matter of taste.
 
-- **Code comments and Markdown documents are written in English.** That covers
-  every `//` and `/* */` in `src/` and `scripts/`, plus `README.md`, this file,
-  and anything under `docs/`. A file whose comments drift into another language
-  reads as two files; when that happens, convert the whole file rather than the
-  paragraph you touched.
-- **Commit messages are written in English**, to
+**The repository is written in English.** Comments, documents, commit messages,
+test names, and everything a run prints: one language, no exceptions to
+negotiate file by file.
+
+- **Code comments and Markdown documents.** That covers every `//` and `/* */`
+  in `src/` and `scripts/`, plus `README.md`, this file, and anything under
+  `docs/`. A file whose comments drift into another language reads as two files;
+  when that happens, convert the whole file rather than the paragraph you
+  touched.
+- **Commit messages**, to
   [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
-  `type(optional scope): description`, where the type is one of `feat`, `fix`,
-  `refactor`, `test`, `docs`, `perf`, `build`, `ci`, `chore`, or `style`. The
-  description is a lowercase imperative with no closing
-  period—`fix: give the
-  article page its text column`, not
-  `fixed the article page`. A breaking change is marked `!` before the colon and
-  explained in a `BREAKING CHANGE:` footer. Commits made before this rule are
-  French and stay that way: history is not rewritten to satisfy a convention
-  adopted after it.
-- **Everything a run prints is written in English**, to the same Chicago
-  typography: `throw new Error()` messages, `console.log`/`warn`/`error`, usage
-  lines, and test names. A build failure is read by whoever has to fix it, so
-  the sentence says which file failed and what would fix
-  it—`content/
-  posts/x/fr.md: unknown language "fr-CA"` beats `invalid input`.
-  The literals inside such a message—paths, identifiers, schemes—are quoted
-  verbatim under the ASCII exception below, while the sentence around them is
-  typeset.
+  `type(scope): description`, the type being one of `feat`, `fix`, `refactor`,
+  `test`, `docs`, `perf`, `build`, `ci`, `chore`, or `style`. The description is
+  a lowercase imperative with no closing period. A breaking change is marked `!`
+  before the colon and explained in a `BREAKING CHANGE:` footer. Commits made
+  before this rule are French and stay that way: history is not rewritten to
+  satisfy a convention adopted after it.
+- **Everything a run prints**, to the same typography: `throw new Error()`
+  messages, `console.log`/`warn`/`error`, usage lines, and test names. A build
+  failure is read by whoever has to fix it, so the sentence names the file and
+  what would fix it, rather than saying `invalid input`. The literals inside
+  such a message—paths, identifiers, schemes—are quoted verbatim under the ASCII
+  exception below, while the sentence around them is typeset.
+
+**The site is multilingual, with English as the default.** The seven
+translations in [src/translations.ts](src/translations.ts) and the articles
+under `content/posts/` are content, not prose about the code; each obeys the
+typography of its own language, and the file’s header records the variants that
+were chosen deliberately.
+
+**A conversation is neither.** An agent talks to whoever it is working with in
+that person’s own language—here, French. What gets committed is English; what
+gets said about it is not.
 
 English prose follows the **Chicago Manual of Style**, and its typography is
 part of the contract, not a flourish. Prose is typeset, not typed:

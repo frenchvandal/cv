@@ -1,17 +1,17 @@
 /*
- * Tight-wrapped chat bubbles, after pretext's "bubbles" demo
+ * Tight-wrapped chat bubbles, after pretext’s "bubbles" demo
  * (http://chenglou.me/pretext/bubbles/).
  *
  * CSS wraps a bubble greedily at its max-width and then leaves the box as wide
  * as its widest line, so the last line often trails visual slack. For each
  * bubble we instead binary-search the smallest wrap width that keeps the line
- * count the max-width wrap produces, and set the bubble's width to that line's
+ * count the max-width wrap produces, and set the bubble’s width to that line’s
  * real width—same break points, no wasted pixels.
  *
  * Pure progressive enhancement: the pre-rendered bubbles are plain max-width
  * boxes that look fine without JS; this only tightens them. Like every other
  * measurement on the site, it must run after `document.fonts.ready` and with
- * the page's named font stack (see [src/measure.ts](src/measure.ts)).
+ * the page’s named font stack (see [src/measure.ts](src/measure.ts)).
  */
 
 import {

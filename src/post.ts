@@ -1,5 +1,5 @@
 /*
- * A post's metadata, and the only operations rendering performs on it.
+ * A post’s metadata, and the only operations rendering performs on it.
  *
  * This module is the boundary: it is all a post exposes to the client. The
  * Markdown body, the rendered HTML and the disk path live in
@@ -25,7 +25,7 @@ export const HOME_POST_COUNT = 5;
 const SUMMARY_MAX = 200;
 
 /**
- * A language's posts, newest first.
+ * A language’s posts, newest first.
  *
  * Generic over the post shape so a caller holding richer records—the build
  * holds `Post`, which carries the rendered body—gets them back unchanged
@@ -50,7 +50,7 @@ export function byLang<T extends PostMeta>(
     });
 }
 
-/** The languages a post exists in, in the site's canonical order. */
+/** The languages a post exists in, in the site’s canonical order. */
 export function langsOf(posts: readonly PostMeta[], slug: string): Lang[] {
   const present = new Set(
     posts.filter((post) => post.slug === slug).map((post) => post.lang),
@@ -74,7 +74,7 @@ export function deriveSummary(text: string): string {
    * measured, `🇫🇷` truncated at a code-point boundary keeps 🇫 and drops 🇷,
    * so the flag renders as a lone letter F.
    *
-   * `Intl.Segmenter` is the platform's own answer and needs no dependency, so
+   * `Intl.Segmenter` is the platform’s own answer and needs no dependency, so
    * there is nothing to hand-roll here. No locale is passed: cluster
    * boundaries are the same in every locale this site publishes, and naming
    * one would suggest a dependence that does not exist.

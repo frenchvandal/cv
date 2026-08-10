@@ -2,7 +2,7 @@
  * Coverage guard for the vendored font subsets: every character the pages can
  * display must fall inside the unicode-range of the face meant to render it.
  * This fails exactly when user-visible text gained a glyph the committed
- * .woff2 subsets don't carry—the browser would silently fall back to a
+ * .woff2 subsets don’t carry—the browser would silently fall back to a
  * system font for it (and pretext would measure the wrong face)—i.e., when a
  * text change forgot `bun run fonts:update`. Pure string work: no canvas, no
  * network, safe for CI.
@@ -14,7 +14,7 @@ import { renderApp } from "../src/render.ts";
 import { LANGS } from "../src/translations.ts";
 import { glyphSets, rangesByFamily, uncovered } from "./glyphs.ts";
 
-// The range parser and the family join live with `glyphSets`, so the build's
+// The range parser and the family join live with `glyphSets`, so the build’s
 // gate and this test cannot disagree about what "covered" means.
 const RANGE = rangesByFamily(FONT_FACES);
 const sets = await glyphSets();
@@ -38,7 +38,7 @@ test.each(
 );
 
 /*
- * The test above inherits `glyphSets`' blind spot: `isLatin`/`isCjk` decide
+ * The test above inherits `glyphSets`’ blind spot: `isLatin`/`isCjk` decide
  * which characters are collected, and the assertion then checks the collected
  * ones—so a character both predicates reject is not "covered", it is
  * invisible, and no assertion can ever fail on it. That is how ☾ and ☀ sat
@@ -52,7 +52,7 @@ test.each(
  */
 
 /**
- * Characters deliberately left to the visitor's system font. ☾ ☀ are the theme
+ * Characters deliberately left to the visitor’s system font. ☾ ☀ are the theme
  * toggle: Noto Sans does not carry U+263E/U+2600 (measured—a Google Fonts
  * `&text=☾☀` request returns the same 1664-byte empty woff2 as a request for
  * an emoji it certainly lacks), so subsetting them in would ship a file without

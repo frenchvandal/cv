@@ -7,7 +7,7 @@
  * stop answering.
  *
  * Object storage cannot return a 301 without a rule configured on the CDN in
- * front of it, and this project's whole deployment story is that `dist/`
+ * front of it, and this project’s whole deployment story is that `dist/`
  * uploads anywhere unchanged. A relay page is the only redirect that depends
  * on no host configuration at all: a canonical link naming the new location,
  * a zero-second refresh for browsers, and a clickable link for anyone the

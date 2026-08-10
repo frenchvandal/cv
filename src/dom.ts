@@ -13,11 +13,11 @@
  * inherits it.
  *
  * The contract, precisely: **every interpolated value that is text** goes
- * through this function. Three things legitimately don't, and they are the
+ * through this function. Three things legitimately don’t, and they are the
  * whole list to audit—markup already assembled from escaped parts (`links`,
  * `body`, `rows`…), identifiers drawn from closed unions (`lang`, `id`, the
  * `HTML_LANG`/`LANG_LABEL` records, class-name ternaries), and
- * [src/render.ts](src/render.ts)'s `pageTitle`, which returns a plain string
+ * [src/render.ts](src/render.ts)’s `pageTitle`, which returns a plain string
  * for `document.title` and `HTMLRewriter.setInnerContent`—both escape on
  * their own, and pre-escaping would double-encode the meta tags.
  */

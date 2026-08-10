@@ -1,5 +1,5 @@
 /*
- * The generator's protocol contract, asserted through `parseSitemap`—the
+ * The generator’s protocol contract, asserted through `parseSitemap`—the
  * sitemap only exists to be read by machines we never see, so it is checked by
  * something that reads it back rather than by substring. The build-output side
  * (which URLs, which dates) lives in scripts/build.test.ts, on the dist/ the
@@ -71,7 +71,7 @@ test("the CSS fallback is bound to the sitemap namespace", () => {
   const css = sitemapCss();
 
   // Without this, every selector below matches nothing and the fallback
-  // silently renders as the browser's bare XML tree.
+  // silently renders as the browser’s bare XML tree.
   expect(css.startsWith(`@namespace url(${SITEMAP_NS});`)).toBe(true);
   for (const selector of ["urlset", "url", "loc", "lastmod"]) {
     expect(css).toContain(`\n${selector} {`);
@@ -81,7 +81,7 @@ test("the CSS fallback is bound to the sitemap namespace", () => {
 test("rejects anything the protocol would make a crawler discard", () => {
   // Not absolute.
   expect(() => sitemapXml(BASE, [{ loc: "/fr.html" }])).toThrow("not absolute");
-  // Another host, or a parent directory of the sitemap's own location.
+  // Another host, or a parent directory of the sitemap’s own location.
   expect(() => sitemapXml(BASE, [{ loc: "https://elsewhere.test/fr.html" }]))
     .toThrow("outside");
   expect(() => sitemapXml(BASE, [{ loc: "https://example.test/fr.html" }]))

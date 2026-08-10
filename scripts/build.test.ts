@@ -3,8 +3,8 @@
  * dist/ pages carry their pre-rendered content, SEO head tags and font rules—
  * the contract deploys rely on. A full bundle plus eight pre-renders costs
  * ~110ms locally; the explicit timeout is headroom for a cold CI runner, not a
- * sign this is slow. SITE_URL is stripped from the env so the assertions don't
- * depend on the caller's setup.
+ * sign this is slow. SITE_URL is stripped from the env so the assertions don’t
+ * depend on the caller’s setup.
  */
 
 import { $ } from "bun";
@@ -34,7 +34,7 @@ const hasHistory = await $`git rev-parse --is-shallow-repository`
   .then((out) => out.trim() === "false", () => false);
 
 /*
- * Where a language's pages live in dist/. English sits at the site root and
+ * Where a language’s pages live in dist/. English sits at the site root and
  * every other language in its own folder, so these are not siblings and the
  * depth differs — which is exactly what the asset-path assertions below check.
  */
@@ -55,7 +55,7 @@ async function countMatches(html: string, selector: string): Promise<number> {
   return n;
 }
 
-/** An element's text content, appended chunk by chunk as lol-html streams it. */
+/** An element’s text content, appended chunk by chunk as lol-html streams it. */
 async function textOf(html: string, selector: string): Promise<string> {
   let text = "";
   await new HTMLRewriter()
@@ -145,7 +145,7 @@ test(
     expect(await Bun.file(`${ROOT}/dist/index.html`).text())
       .not.toContain('content="noindex"');
 
-    // Only the site root negotiates the visitor's language: a URL that names a
+    // Only the site root negotiates the visitor’s language: a URL that names a
     // language must always be honoured, or a shared link would change language
     // on the recipient.
     const root = await Bun.file(`${ROOT}/dist/index.html`).text();
@@ -181,10 +181,10 @@ test(
 
 /*
  * The deploy shape (deploy.yaml sets SITE_URL from the Pages base URL), read
- * back through the same HTMLRewriter a scraper's parser stands in for. The tags
+ * back through the same HTMLRewriter a scraper’s parser stands in for. The tags
  * only exist to be consumed by machines we never see, so asserting them by
  * substring is how a card silently loses a field; `previewCard` resolves them
- * with the scrapers' own precedence instead. dist/ is left holding these test
+ * with the scrapers’ own precedence instead. dist/ is left holding these test
  * URLs—both workflows rebuild after `bun test`, so nothing deploys them.
  */
 test(
@@ -212,7 +212,7 @@ test(
       const t = translations[lang];
 
       /*
-       * The card is this language's, and points at this language's page. The
+       * The card is this language’s, and points at this language’s page. The
        * CV names itself rather than carrying the site title: the home, the CV
        * and the writing index used to ship one identical title and
        * description across all three, which is a duplicate in a search result
@@ -239,7 +239,7 @@ test(
 
       // The JSON-LD is the one head tag no scraper vocabulary covers, so
       // `extractSocialTags` never looked at it and nothing has read it back:
-      // a Person that kept English's jobTitle on all seven pages would ship
+      // a Person that kept English’s jobTitle on all seven pages would ship
       // silently. Compared against the shared builder, which is also what the
       // runtime writes on a language switch.
       const meta = pageMeta(lang, url);
@@ -253,7 +253,7 @@ test(
       // ([src/main.ts](src/main.ts)) has to exist here, exactly once. A
       // selector matching nothing fails silently—`querySelector` returns null,
       // the update is skipped, and the switched page keeps the previous
-      // language's canonical, card or Person with no error anywhere.
+      // language’s canonical, card or Person with no error anywhere.
       for (const { selector } of headMeta(meta)) {
         expect([selector, await countMatches(html, selector)])
           .toEqual([selector, 1]);
@@ -265,10 +265,10 @@ test(
 
     /*
      * Seven pages, seven distinct previews: a shared description or locale
-     * would mean a language fell back to another's metadata.
+     * would mean a language fell back to another’s metadata.
      *
      * The check is on the description, not the title. Since the CV page names
-     * itself, its title is the word for "CV" plus the author's name — and that
+     * itself, its title is the word for "CV" plus the author’s name — and that
      * word is identical in English, French, Portuguese and Spanish, so four
      * titles legitimately coincide. The description is prose, and prose is
      * translated.
@@ -319,14 +319,14 @@ test(
     expect(new Set(entries.map((e) => e.loc))).toEqual(canonicals);
 
     /*
-     * lastmod is the content's date from git, not the build's — the whole
-     * point of the field. The fixed pages share the site's own date; an
+     * lastmod is the content’s date from git, not the build’s — the whole
+     * point of the field. The fixed pages share the site’s own date; an
      * article carries the date of its own source file, so that editing one
      * post does not re-date the other ninety-five.
      *
      * A date can legitimately be absent: a shallow clone cannot answer, and
      * neither can git for a file that is not committed yet. Absent is the
-     * honest answer, and far better than the build's own clock.
+     * honest answer, and far better than the build’s own clock.
      */
     const lastmod = await contentLastmod();
     const fixed = LANGS.flatMap((lang) => {
@@ -343,7 +343,7 @@ test(
       expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
     }
     // Independent truth: with history available, the field must exist. The
-    // loop above compares the build's answer to the same function's answer,
+    // loop above compares the build’s answer to the same function’s answer,
     // so a broken git lookup would otherwise pass vacuously (undefined ===
     // undefined) in exactly the shallow clones the gates used to run.
     if (hasHistory) expect(lastmod).toBeDefined();
@@ -369,7 +369,7 @@ test(
      *
      * A language with no article gets an empty feed, which is valid and
      * honest: it says there is nothing rather than pointing at another
-     * language's writing. The corpus is empty in this checkout, so that is the
+     * language’s writing. The corpus is empty in this checkout, so that is the
      * shape asserted here; the assertion still catches a feed that invented
      * items from somewhere.
      */
@@ -377,13 +377,13 @@ test(
       const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
       expect(feed.version).toBe(FEED_VERSION);
       expect(feed.feed_url).toBe(`${SITE}/${feedFile(lang)}`);
-      // The feed's home is the language's home page, published as a directory
+      // The feed’s home is the language’s home page, published as a directory
       // URL like every other index.
       expect(feed.home_page_url).toBe(
         lang === "en" ? `${SITE}/` : `${SITE}/${lang}/`,
       );
       expect(Array.isArray(feed.items)).toBe(true);
-      // Every item carries a date, and it is the article's own — never
+      // Every item carries a date, and it is the article’s own — never
       // synthesized, never absent.
       for (const item of feed.items) {
         expect(item.date_published).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00Z$/);
@@ -398,7 +398,7 @@ test(
         new RegExp(`^${SITE}/assets/favicon-[^/]+\\.svg$`),
       );
 
-      // Discovery: the page declares the feed with the spec's type.
+      // Discovery: the page declares the feed with the spec’s type.
       const html = await Bun.file(`${ROOT}/dist/${outFile(lang)}`).text();
       expect(html).toContain(
         `<link rel="alternate" type="${FEED_MIME}" title=`,

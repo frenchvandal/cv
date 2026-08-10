@@ -52,7 +52,7 @@ export { NAV_LINKS, type Theme } from "./render/shell.ts";
 export type { Page } from "./render/blog.ts";
 
 /**
- * A language's home, as a URL relative to the SITE ROOT.
+ * A language’s home, as a URL relative to the SITE ROOT.
  *
  * English is the root itself; every other language is a folder. Published as a
  * directory URL (`fr/`, not `fr/index.html`) so it matches the canonical the
@@ -62,7 +62,7 @@ export type { Page } from "./render/blog.ts";
  * caller left: the language-negotiation script, which only ever runs on the
  * root. From anywhere else, `fr/` would resolve against the current folder —
  * `fr/blog/fr/` from an article — so every other link between pages goes
- * through `hrefTo` in [src/urls.ts](src/urls.ts), which knows the page's depth.
+ * through `hrefTo` in [src/urls.ts](src/urls.ts), which knows the page’s depth.
  */
 export function langUrl(lang: Lang): string {
   return lang === "en" ? "./" : `${lang}/`;
@@ -71,7 +71,7 @@ export function langUrl(lang: Lang): string {
 /**
  * The language a URL path names, or null when it names none—the English root
  * (`/`, `/index.html`) and anything unrecognized. The exact inverse of
- * `langUrl`, kept beside it so the two can't drift apart, and pure so it is
+ * `langUrl`, kept beside it so the two can’t drift apart, and pure so it is
  * testable without a document.
  *
  * Returning null rather than "en" is deliberate: "this path carries no language"
@@ -131,7 +131,7 @@ export const STORAGE_LANG_KEY = "cv-lang";
  * root never becomes a history entry: without that, Back from the language page
  * would land on the root, be redirected again, and the button would look broken.
  *
- * A hand-picked language (localStorage) outranks the browser's list, so the
+ * A hand-picked language (localStorage) outranks the browser’s list, so the
  * switcher is always the last word. English needs no redirect—it is what the
  * root already serves.
  *
@@ -207,7 +207,7 @@ export function languageNegotiationScript(): string {
 </script>`;
 }
 
-/** Document title for a language's page—shared by the SSG build and the client. */
+/** Document title for a language’s page—shared by the SSG build and the client. */
 export function pageTitle(t: Translation): string {
   return `${t.name.display} — ${t.hero.title}`;
 }
@@ -264,9 +264,9 @@ function bodyOf(page: Page, t: Translation, lang: Lang): string {
  * The full page markup for one page, language and theme.
  *
  * The shell is the same for all four kinds—skip link, nav, `<main>`, footer—so
- * only the body and the switcher's targets vary. The switcher is the reason
+ * only the body and the switcher’s targets vary. The switcher is the reason
  * `Page` carries the post list on blog pages: an article with no translation
- * has to send the reader to that language's index rather than to a page that
+ * has to send the reader to that language’s index rather than to a page that
  * does not exist, and only the caller knows which translations were built.
  */
 export function renderPage(page: Page, lang: Lang, theme: Theme): string {
@@ -288,7 +288,7 @@ export function renderPage(page: Page, lang: Lang, theme: Theme): string {
       theme,
       langLinkFor(page, lang),
       navLinksFor(page, t, lang),
-      // `#top` is the hero's id, and only the CV has a hero.
+      // `#top` is the hero’s id, and only the CV has a hero.
       page.kind === "cv"
         ? "#top"
         : hrefTo(pageRefOf(page, lang), { kind: "home", lang }),
@@ -304,8 +304,8 @@ export function renderPage(page: Page, lang: Lang, theme: Theme): string {
 
 /**
  * The CV page, which is what the client re-renders on a reload-free language
- * switch. Kept as its own name because that switch is the CV's alone: every
- * translation of it already ships in the bundle, while the blog's bodies do
+ * switch. Kept as its own name because that switch is the CV’s alone: every
+ * translation of it already ships in the bundle, while the blog’s bodies do
  * not and never should.
  */
 export function renderApp(lang: Lang, theme: Theme): string {

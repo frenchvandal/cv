@@ -2,7 +2,7 @@
  * Glyph extraction shared by scripts/update-fonts.ts (which requests exactly
  * these characters from Google Fonts) and scripts/fonts-coverage.test.ts
  * (which asserts the committed unicode-ranges still cover them). One
- * implementation, so the generator and its guard can't drift—the same rule
+ * implementation, so the generator and its guard can’t drift—the same rule
  * as escapeHtml in [src/dom.ts](../src/dom.ts).
  */
 
@@ -54,7 +54,7 @@ const isCjk = (cp: number, ch: string): boolean =>
   "—·".includes(ch);
 
 /*
- * The language switcher renders every language's own label and name (简 / 繁,
+ * The language switcher renders every language’s own label and name (简 / 繁,
  * 简体中文 / 繁體中文), so both Chinese pages show Simplified AND Traditional
  * glyphs regardless of which one they are written in. These live outside the
  * per-language translation objects, so scanning those alone missed them and the
@@ -70,7 +70,7 @@ const switcher = SWITCHER_LANGS.map((lang) =>
  * every source file that contains user-visible literals—the translations AND
  * the renderer modules, since the markup carries text of its own (the
  * `@handle` in contact) that never passes through a translation object—plus
- * the articles' rendered text. The two Chinese sets are extracted per language
+ * the articles’ rendered text. The two Chinese sets are extracted per language
  * (from the imported translation objects, not the raw file): Simplified and
  * Traditional pages each ship only their own script.
  *
@@ -137,7 +137,7 @@ export async function glyphSets(): Promise<
       JSON.stringify(translations["zh-hant"]) + switcher + textIn(["zh-hant"]),
       isCjk,
     ),
-    // Hong Kong shares Taiwan's script but not all its glyph FORMS (骨, 過, 溫
+    // Hong Kong shares Taiwan’s script but not all its glyph FORMS (骨, 過, 溫
     // are drawn to a different standard), so it gets its own subset rather than
     // reusing the TC one—and its own vocabulary means its own character set.
     hk: unique(
@@ -173,7 +173,7 @@ export function uncovered(text: string, range: string): string[] {
 }
 
 /**
- * A family's ranges, joined. One family spans several files: the generator
+ * A family’s ranges, joined. One family spans several files: the generator
  * asks Google in batches, because the endpoint stops text-subsetting above
  * roughly 800 glyphs. Keying by family without joining would silently keep one
  * batch and check a fraction of the coverage.

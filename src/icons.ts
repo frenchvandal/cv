@@ -1,6 +1,6 @@
 /*
  * The chrome of the phone the Dialogue section is drawn inside: status bar
- * glyphs, the two navigation chevrons, and the composer's controls.
+ * glyphs, the two navigation chevrons, and the composer’s controls.
  *
  * Drawn here rather than vendored as files (the way [src/logos.ts](src/logos.ts)
  * carries the school marks): these are a handful of primitives—bars, arcs, a

@@ -47,7 +47,7 @@ console.log(
 /*
  * How many glyphs one request may carry.
  *
- * Google's css2 endpoint text-subsets a family only while the request stays
+ * Google’s css2 endpoint text-subsets a family only while the request stays
  * small. Measured on 2026-08-10: 800 glyphs still returns ONE face carrying
  * exactly those glyphs; 900 returns 101 faces — the endpoint has given up on
  * subsetting and fallen back to serving the complete font split by unicode
@@ -59,8 +59,8 @@ console.log(
 const BATCH = 600;
 
 /**
- * One family's subsets, one per batch. Each returned face carries its own
- * `unicode-range`, so the browser fetches only the batches a page's text
+ * One family’s subsets, one per batch. Each returned face carries its own
+ * `unicode-range`, so the browser fetches only the batches a page’s text
  * actually needs — the same mechanism that already kept the CJK files lazy,
  * now at a finer grain.
  *
@@ -168,8 +168,8 @@ const fontsTs = `/*
  * The woff2 files are imported (not referenced via CSS \`url()\`): Bun inlines
  * CSS-referenced fonts as base64, but a JS import goes through the \`file\` loader
  * and is emitted as a separate hashed asset. \`unicode-range\` keeps the CJK files
- * lazy, and each page's \`--font\` stack names only its own CJK family (SC or TC),
- * so a visitor never downloads a Chinese subset they don't read.
+ * lazy, and each page’s \`--font\` stack names only its own CJK family (SC or TC),
+ * so a visitor never downloads a Chinese subset they don’t read.
  *
  * The @font-face rules exist in two places, on purpose:
  *   - the SSG build ([scripts/build.ts](scripts/build.ts)) inlines them into each
@@ -188,10 +188,10 @@ ${
 /**
  * Every subset, with its build-emitted URL and the unicode range it covers.
  *
- * A family can span several files: Google's endpoint stops text-subsetting
+ * A family can span several files: Google’s endpoint stops text-subsetting
  * above roughly 800 glyphs, so the generator asks in batches and each batch
  * comes back with its own range. The browser then fetches only the batches a
- * page's text needs, which is the same laziness the single files had, at a
+ * page’s text needs, which is the same laziness the single files had, at a
  * finer grain.
  */
 export const FONT_FACES = [
@@ -230,7 +230,7 @@ if (
 
 await Bun.write("src/fonts.ts", fontsTs);
 // The template above is written pre-formatted, but the ranges vary in length
-// from run to run—let the project's formatter have the last word so a
+// from run to run—let the project’s formatter have the last word so a
 // regeneration never shows up as style churn in the diff.
 await Bun.$`deno fmt --quiet src/fonts.ts`.nothrow();
 console.log("  wrote src/fonts.ts");

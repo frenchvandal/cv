@@ -36,17 +36,17 @@ const DEFAULT_ROOT = "content";
 /*
  * Plain-text rendering for Post.text (glyph-coverage scanning in T13, and
  * the deriveSummary() fallback below). Measured: Bun.markdown.render(body)
- * with no callbacks concatenates every block's content with NOTHING between
+ * with no callbacks concatenates every block’s content with NOTHING between
  * them, not even a space — "- item un\n- item deux" renders as
  * "item unitem deux", and a heading immediately glues to the paragraph that
  * follows it. This is not just cosmetic: deriveSummary looks for a period
  * followed by a space to cut on a sentence boundary, and a period glued
- * straight to the next paragraph's first word never matches that pattern, so
+ * straight to the next paragraph’s first word never matches that pattern, so
  * every derived summary of a multi-paragraph post silently fell back to a
  * mid-word cut instead.
  *
  * Fixed by giving every block type that can directly hold text its own
- * trailing separator. Measured across the syntax this blog's articles use
+ * trailing separator. Measured across the syntax this blog’s articles use
  * (headings, paragraphs, bullet/numbered/task lists, blockquotes, tables,
  * fenced code, a thematic break): only headings, paragraphs, list items and
  * table cells actually need one. Blockquotes, lists, tables, table rows and
@@ -73,8 +73,8 @@ const PLAIN_TEXT_CALLBACKS = {
  * caller does not want. A single pass — read once, parse once — rather than
  * a first pass to filter drafts and a second to build the Post: the corpus
  * is read once per build, not in a hot loop, so there is nothing to gain
- * from splitting it, and one pass means a draft's Markdown is validated the
- * same as a published post's, catching an unsafe draft before publication
+ * from splitting it, and one pass means a draft’s Markdown is validated the
+ * same as a published post’s, catching an unsafe draft before publication
  * rather than the day it goes live.
  */
 async function readPost(
@@ -107,7 +107,7 @@ async function readPost(
   };
 }
 
-/** The Hong Kong version of a Taiwan post, via the CV's shared lexicon. */
+/** The Hong Kong version of a Taiwan post, via the CV’s shared lexicon. */
 async function projectHongKong(taiwan: Post): Promise<Post> {
   const body = toHongKongText(taiwan.body);
   return {
@@ -122,7 +122,7 @@ async function projectHongKong(taiwan: Post): Promise<Post> {
 }
 
 /**
- * Total order on posts: slug first, then the site's canonical language
+ * Total order on posts: slug first, then the site’s canonical language
  * order. `Bun.Glob().scan()` was measured (see task-5-report.md) to hand
  * back entries in an order that is neither insertion order nor
  * lexicographic — stable within a process, but not something a build may

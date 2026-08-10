@@ -28,7 +28,7 @@ export const OG_SIZE = { width: 1200, height: 630 } as const;
 
 /**
  * The card, as a standalone page. `fontCss` carries the @font-face rules: the
- * renderer inlines the real subsets so the card is set in the site's own Noto
+ * renderer inlines the real subsets so the card is set in the site’s own Noto
  * Sans, and the test calls this with none, since it only reads the text.
  */
 export function ogCardHtml(fontCss = ""): string {
@@ -39,7 +39,7 @@ export function ogCardHtml(fontCss = ""): string {
 <meta charset="utf-8" />
 <style>
 ${fontCss}
-/* The light palette of src/styles.css—the card is the page's first frame. */
+/* The light palette of src/styles.css—the card is the page’s first frame. */
 :root {
   --bg: #ffffff;
   --bg-secondary: #f5f5f7;

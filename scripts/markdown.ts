@@ -1,8 +1,8 @@
 /*
  * Markdown → HTML, en deux temps.
  *
- * 1. `Bun.markdown.html()` fait le rendu GFM. Il est natif, donc le blog n'a
- *    aucune dépendance de rendu — mais il laisse passer le HTML brut, d'où le
+ * 1. `Bun.markdown.html()` fait le rendu GFM. Il est natif, donc le blog n’a
+ *    aucune dépendance de rendu — mais il laisse passer le HTML brut, d’où le
  *    garde-fou ci-dessous.
  * 2. Une passe `HTMLRewriter` applique ce que le rendu ne fait pas : ancres de
  *    titres, `rel` sur les liens externes, tables défilables, images
@@ -12,18 +12,18 @@
  * expression régulière sur une chaîne échappée comme dans src/render.ts : il ne
  * peut donc structurellement pas atteindre un attribut ou un nom de balise.
  *
- * LIENS INTERNES : aucune réécriture, et c'est un choix mesuré. Les articles
+ * LIENS INTERNES : aucune réécriture, et c’est un choix mesuré. Les articles
  * vivent à `blog/x.html` en anglais et `<lang>/blog/x.html` ailleurs, donc la
  * même écriture relative résout juste aux deux profondeurs :
  *
- *   ./autre.html   → l'article voisin        (blog/autre.html, fr/blog/autre.html)
+ *   ./autre.html   → l’article voisin        (blog/autre.html, fr/blog/autre.html)
  *   ../cv.html     → le CV de cette langue   (cv.html, fr/cv.html)
- *   ../            → l'accueil de la langue  (/, fr/)
- *   ./             → l'index du blog         (blog/, fr/blog/)
+ *   ../            → l’accueil de la langue  (/, fr/)
+ *   ./             → l’index du blog         (blog/, fr/blog/)
  *
- * Le CV est toujours d'un cran au-dessus de `blog/`, dans chaque langue : c'est
+ * Le CV est toujours d’un cran au-dessus de `blog/`, dans chaque langue : c’est
  * ce qui rend la disposition auto-cohérente. Réécrire `./x` en « depuis la
- * racine du site » casserait au contraire le lien le plus naturel qu'un article
+ * racine du site » casserait au contraire le lien le plus naturel qu’un article
  * puisse porter, celui vers son voisin.
  */
 
@@ -39,10 +39,10 @@ const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
  * numérotées et de tâches, tables avec alignement, liens dont les autoliens,
  * images, règle horizontale, saut de ligne dur). Un round précédent
  * bloquait des balises connues une par une (`script`, `iframe`…) ; un audit
- * a trouvé sept vecteurs qui n'y figuraient pas (`form`, `button`, `svg`…).
- * Une liste noire de balises est ouverte par construction — il suffit d'un
- * huitième vecteur non prévu. Cette liste est fermée dans l'autre sens :
- * tout ce qui n'y figure pas est refusé, connu ou non.
+ * a trouvé sept vecteurs qui n’y figuraient pas (`form`, `button`, `svg`…).
+ * Une liste noire de balises est ouverte par construction — il suffit d’un
+ * huitième vecteur non prévu. Cette liste est fermée dans l’autre sens :
+ * tout ce qui n’y figure pas est refusé, connu ou non.
  */
 const ALLOWED_TAGS = new Set([
   "a",
@@ -74,18 +74,18 @@ const ALLOWED_TAGS = new Set([
   "ul",
 ]);
 
-/** Attributs de navigation/chargement — les seuls où un schéma d'URI s'exécute. */
+/** Attributs de navigation/chargement — les seuls où un schéma d’URI s’exécute. */
 const URI_ATTRIBUTES = new Set(["href", "src"]);
 
 /*
  * `href`/`src` fermés à leur tour : seuls http, https, mailto et le relatif
  * (pas de schéma) sont légitimes dans un article. Comme pour les balises,
- * fermer la liste évite de devoir connaître à l'avance chaque façon
- * d'écrire "javascript:" — entité HTML, tabulation, casse…
+ * fermer la liste évite de devoir connaître à l’avance chaque façon
+ * d’écrire "javascript:" — entité HTML, tabulation, casse…
  */
 const ALLOWED_URI_SCHEMES = new Set(["http", "https", "mailto"]);
 
-/** HTMLRewriter normalise déjà les noms d'attribut en minuscules : un préfixe suffit. */
+/** HTMLRewriter normalise déjà les noms d’attribut en minuscules : un préfixe suffit. */
 function isEventAttribute(name: string): boolean {
   return name.startsWith("on");
 }
@@ -181,7 +181,7 @@ function decodeEntities(value: string): string {
  * browser: the leading C0 control disappears and "javascript:" becomes the
  * front of the string. This file used to strip only tab/newline/CR, which
  * left the other 29 C0 values untouched and, in leading position, just as
- * exploitable. Reproducing the browser's trim faithfully (leading/trailing
+ * exploitable. Reproducing the browser’s trim faithfully (leading/trailing
  * only, plus tab/newline anywhere, but nothing else in the middle) is a
  * second parsing algorithm to keep in sync with a moving spec — the same
  * trap this file already fell into once with CommonMark (round 2). A
@@ -208,9 +208,9 @@ function isSchemeChar(ch: string): boolean {
 }
 
 /**
- * Le préfixe de schéma d'une URI (RFC 3986 §3.1) : une lettre puis
- * lettres/chiffres/+/-/. jusqu'au premier ':'. Ce qui n'a pas cette forme
- * n'est pas un schéma — "./a:b" a un ':' dans un chemin relatif, pas de
+ * Le préfixe de schéma d’une URI (RFC 3986 §3.1) : une lettre puis
+ * lettres/chiffres/+/-/. jusqu’au premier ':'. Ce qui n’a pas cette forme
+ * n’est pas un schéma — "./a:b" a un ':' dans un chemin relatif, pas de
  * schéma. `null` veut dire "relatif", pas "à refuser".
  */
 function schemeOf(value: string): string | null {
@@ -280,7 +280,7 @@ function isAllowedUri(rawValue: string): boolean {
 export function assertSafeHtml(html: string, path: string): void {
   let violation: string | undefined;
 
-  // Les handlers HTMLRewriter de Bun s'exécutent de façon synchrone pour une
+  // Les handlers HTMLRewriter de Bun s’exécutent de façon synchrone pour une
   // entrée string (vérifié empiriquement) : pas de flux à consommer, donc
   // `assertSafeHtml` reste une fonction synchrone comme son appelante.
   new HTMLRewriter().on("*", {
@@ -346,27 +346,27 @@ function uniqueId(base: string, used: Set<string>): string {
 export async function renderMarkdown(
   body: string,
   lang: Lang,
-  // Optionnel et par défaut générique : la signature d'origine (body, lang)
-  // reste valable pour les appelants qui n'ont pas de chemin d'article (les
+  // Optionnel et par défaut générique : la signature d’origine (body, lang)
+  // reste valable pour les appelants qui n’ont pas de chemin d’article (les
   // tests). Un vrai appelant du pipeline de contenu peut fournir le chemin
-  // réel pour un message d'erreur exploitable.
+  // réel pour un message d’erreur exploitable.
   path = "<markdown>",
 ): Promise<string> {
   const rendered = Bun.markdown.html(body);
-  // Vérifie le HTML qu'on vient de produire, pas la source : assertSafeHtml
-  // n'a pas besoin de re-rendre (contrairement à assertSafeMarkdown, qui elle
-  // part de la source et n'a que ça).
+  // Vérifie le HTML qu’on vient de produire, pas la source : assertSafeHtml
+  // n’a pas besoin de re-rendre (contrairement à assertSafeMarkdown, qui elle
+  // part de la source et n’a que ça).
   assertSafeHtml(rendered, path);
 
   // Le HTMLRewriter de Bun expose bien `el.onEndTag()`, mais contrairement à
-  // l'API Cloudflare dont le brief s'inspirait, l'appeler ne permet pas de
+  // l’API Cloudflare dont le brief s’inspirait, l’appeler ne permet pas de
   // poser un attribut a posteriori : la balise ouvrante est déjà sérialisée
-  // avant que le callback s'exécute (`setAttribute` dans `onEndTag` n'a alors
-  // aucun effet — vérifié empiriquement). Or l'id d'un titre dépend de tout
-  // son texte, connu seulement une fois la balise fermante atteinte. D'où les
-  // deux passes : la première recueille le texte de chaque titre dans l'ordre
+  // avant que le callback s’exécute (`setAttribute` dans `onEndTag` n’a alors
+  // aucun effet — vérifié empiriquement). Or l’id d’un titre dépend de tout
+  // son texte, connu seulement une fois la balise fermante atteinte. D’où les
+  // deux passes : la première recueille le texte de chaque titre dans l’ordre
   // de rencontre (un tableau local, donc sûr sous Promise.all), la seconde
-  // pose les ids en s'appuyant sur cette collecte pendant que `element()` peut
+  // pose les ids en s’appuyant sur cette collecte pendant que `element()` peut
   // encore modifier la balise ouvrante.
   const headingTexts: string[] = [];
   await new HTMLRewriter()
@@ -384,15 +384,15 @@ export async function renderMarkdown(
 
   const usedIds = new Set<string>();
   let headingIndex = 0;
-  // Vrai quand la page n'est PAS écrite en chinois : c'est alors qu'un run CJK
+  // Vrai quand la page n’est PAS écrite en chinois : c’est alors qu’un run CJK
   // est un changement de langue à déclarer (RGAA 8.7). Sur une page zh*, le
-  // chinois est la langue de la page elle-même, il n'y a rien à marquer.
+  // chinois est la langue de la page elle-même, il n’y a rien à marquer.
   const markCjk = !lang.startsWith("zh");
-  // Profondeur d'imbrication sous <code> ou <pre>. Le handler `text` d'un
+  // Profondeur d’imbrication sous <code> ou <pre>. Le handler `text` d’un
   // ancêtre (p, li…) reçoit aussi le texte de ses descendants, donc un
   // <code> niché dans un <p> passerait par le marquage CJK au même titre que
-  // la prose — décision : du code n'est pas de la prose, ni en ligne ni en
-  // bloc, un lecteur d'écran n'a rien à gagner à un changement de langue sur
+  // la prose — décision : du code n’est pas de la prose, ni en ligne ni en
+  // bloc, un lecteur d’écran n’a rien à gagner à un changement de langue sur
   // un identifiant. `onEndTag` ne peut pas modifier SA PROPRE balise (voir
   // plus haut) mais son callback se déclenche bien au bon moment dans le
   // flux, avant le texte qui suit : suffisant pour un simple compteur.

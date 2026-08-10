@@ -6,7 +6,7 @@
  * 3. For each language we take the built shell and write one file per page —
  *    home, CV, blog index, and one per article that language has — injecting
  *    the pre-rendered markup (the same pure `renderPage` the client uses) plus
- *    the page's own <head> meta and the @font-face rules, so fonts load before
+ *    the page’s own <head> meta and the @font-face rules, so fonts load before
  *    any JS and no-JS visitors get them too.
  *
  * English sits at the site root and every other language in its own folder, so
@@ -26,7 +26,7 @@ import {
 // The per-page <head>, shared with the runtime so a reload-free language
 // switch rewrites exactly what this file bakes in.
 import { pageMeta } from "../src/meta.ts";
-// The same escaper the renderer uses—one implementation, so the two can't
+// The same escaper the renderer uses—one implementation, so the two can’t
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
 import { byLang, langsOf } from "../src/post.ts";
@@ -105,7 +105,7 @@ if (shortfall.length > 0) {
 }
 
 /**
- * A page's public URL. Indexes are published as directory URLs (`fr/` is the
+ * A page’s public URL. Indexes are published as directory URLs (`fr/` is the
  * French home) so the canonical never carries a file name a reader would have
  * to type; articles keep theirs.
  */
@@ -138,7 +138,7 @@ await Bun.build({
   // `./assets/…`, and chunks import each other by bare sibling name), and
   // `"./"` actively breaks the sourcemaps—Bun prefixes it to the full output
   // path, emitting `sourceMappingURL=./assets/index-….js.map` inside a file
-  // that already lives in assets/. Browsers resolve that against the script's
+  // that already lives in assets/. Browsers resolve that against the script’s
   // own URL, ask for /assets/assets/… and log a 404 for every chunk.
   // Dynamic imports (the per-language hyphenation patterns) become their own
   // chunks: a visitor only downloads the patterns of the language they read.
@@ -232,12 +232,12 @@ function firstSentence(text: string, max = 160): string {
 /**
  * What a page says about itself in the `<head>`.
  *
- * Every page used to carry the CV's title and description — the site name for
+ * Every page used to carry the CV’s title and description — the site name for
  * the home, the CV and the writing index alike, in all seven languages. Three
  * different pages announcing themselves identically is a duplicate title in a
  * search result and, worse, a writing index that presents itself as a CV.
  *
- * The home keeps the site's own title, because it IS the front door. The other
+ * The home keeps the site’s own title, because it IS the front door. The other
  * three name themselves, and each takes a description from content it already
  * owns rather than from a new translation string: the CV opens with `about.p1`,
  * the index with its own intro, an article with its summary.
@@ -379,7 +379,7 @@ for (const lang of LANGS) {
     console.log(`  ${file}  (${lang})`);
   }
 
-  // JSON Feed. Gated on SITE_URL like the sitemap—`feed_url` is the feed's own
+  // JSON Feed. Gated on SITE_URL like the sitemap—`feed_url` is the feed’s own
   // identifier, and item ids are built from the page URL, so neither means
   // anything relative.
   if (SITE) {

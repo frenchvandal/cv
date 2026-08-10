@@ -94,7 +94,7 @@ test("pageUrl absolutizes the CV page it switches to, from the one it is on", ()
   expect(pageUrl("fr", "en", "https://social.example/cv/fr/cv.html")).toBe(
     "https://social.example/cv/cv.html",
   );
-  // Query and hash belong to the visit, not to the page's identity.
+  // Query and hash belong to the visit, not to the page’s identity.
   expect(
     pageUrl("en", "pt", "https://social.example/cv/cv.html?utm=x#experience"),
   ).toBe("https://social.example/cv/pt/cv.html");
@@ -134,7 +134,7 @@ test("headMeta values are the page's, not the previous language's", () => {
   expect(french.get('meta[property="og:title"]')).toBe(
     pageTitle(translations.fr),
   );
-  // The alt text of the shared preview image is the card's own title.
+  // The alt text of the shared preview image is the card’s own title.
   expect(french.get('meta[property="og:image:alt"]')).toBe(
     pageTitle(translations.fr),
   );

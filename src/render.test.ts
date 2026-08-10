@@ -95,7 +95,7 @@ test.each([...LANGS])(
 );
 
 /**
- * Runs the root page's real negotiation script against a stubbed browser and
+ * Runs the root page’s real negotiation script against a stubbed browser and
  * reports where it would send the visitor—null meaning it stays on the root.
  * The script ships as a string of ES5, so this executes the shipped source
  * itself rather than a second copy of the rule.
@@ -123,7 +123,7 @@ function negotiationTarget(
 
 test.each(
   [
-    // The browser's language decides; English is the root, so it never redirects.
+    // The browser’s language decides; English is the root, so it never redirects.
     [["fr-CA"], null, "fr/"],
     [["pt-BR"], null, "pt/"],
     [["es-MX"], null, "es/"],
@@ -166,7 +166,7 @@ test.each(
     [["fr-FR"], "es", "es/"],
     [["de"], "zh-hant", "zh-hant/"],
     [["fr-FR"], "en", null],
-    // A stored value we don't build is ignored, and the browser decides again.
+    // A stored value we don’t build is ignored, and the browser decides again.
     [["fr-FR"], "klingon", "fr/"],
   ] as const,
 )(

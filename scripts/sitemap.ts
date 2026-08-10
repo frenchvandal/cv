@@ -52,9 +52,9 @@ export const SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
  *
  * There used to be two. The other was XSLT 1.0, which drew the sitemap as a
  * table; Chrome removes XSLT in 158, with WebKit and Gecko agreed. Carrying it
- * meant keeping a second language in step with the site's layout for a few
+ * meant keeping a second language in step with the site’s layout for a few
  * months of life — and it had already fallen out of step once, deducing each
- * page's language from a file name that the move to folders had made
+ * page’s language from a file name that the move to folders had made
  * meaningless. The CSS half is not deprecated and does the same job with less.
  */
 export const SITEMAP_CSS_FILE = "sitemap.css";
@@ -79,7 +79,7 @@ function isW3CDatetime(value: string): boolean {
   return W3C_DATETIME.test(value) && !Number.isNaN(Date.parse(value));
 }
 
-/** The protocol's ceiling on a single `<loc>`. */
+/** The protocol’s ceiling on a single `<loc>`. */
 const MAX_LOC = 2048;
 
 /*
@@ -141,7 +141,7 @@ export async function postLastmod(
  * `loc` outside it throws here instead of shipping a file crawlers reject.
  *
  * Values go through `Bun.escapeHTML`, which covers all five characters the
- * protocol's escaping table lists; it writes `'` as `&#x27;` where the table
+ * protocol’s escaping table lists; it writes `'` as `&#x27;` where the table
  * shows `&apos;`, the same character by a numeric reference (no URL here
  * contains one either way).
  */
@@ -171,7 +171,7 @@ export function sitemapXml(
 
   // 50,000 URLs / 50 MB is the per-file ceiling; a hundred pages will not
   // approach it, so there is no sitemap index and no gzip variant. The
-  // stylesheet href is relative and resolves against the sitemap's own URL—the
+  // stylesheet href is relative and resolves against the sitemap’s own URL—the
   // two files are written side by side, so the site can still move to any host
   // or base path.
   return `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/css" href="${SITEMAP_CSS_FILE}"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
@@ -180,7 +180,7 @@ export function sitemapXml(
 /**
  * Read a sitemap back—element text only, which is all `<loc>`/`<lastmod>`
  * are. HTMLRewriter is an HTML parser, not an XML one, but these tags carry no
- * attributes and no namespace prefixes, so it sees exactly what a crawler's
+ * attributes and no namespace prefixes, so it sees exactly what a crawler’s
  * parser sees.
  *
  * Values come back escaped exactly as written, the same convention as

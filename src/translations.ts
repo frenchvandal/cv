@@ -10,7 +10,7 @@
  * a neighbour, and several are region-locked on purpose:
  *   - `zh` (Simplified) and `zh-hant` (Traditional) are independent, not script
  *     conversions of each other—vocabulary differs (软件/軟體, 业务分析师/
- *     商業分析師, 待办列表/待辦清單…). Both use Philippe's Chinese name, 李北洛.
+ *     商業分析師, 待办列表/待辦清單…). Both use Philippe’s Chinese name, 李北洛.
  *     `zh-hant` follows Taiwan usage (軟體, 專案), matching the Noto Sans TC
  *     glyph forms that page ships; Hong Kong and Macau get `zh-hk`, which is a
  *     five-term projection of it (see HK_LEXICON at the bottom of this file)
@@ -119,7 +119,7 @@ export const SAME_AS: readonly string[] = Object.values(PROFILE_URLS);
 
 const en = {
   name: {
-    /** Display name for the page title and headings on this language's page. */
+    /** Display name for the page title and headings on this language’s page. */
     display: "Philippe Ribeiro",
     /** Hero name, one entry per line. */
     lines: ["Philippe Ribeiro"],

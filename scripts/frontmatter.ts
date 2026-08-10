@@ -62,7 +62,7 @@ function assertNoDuplicateKeys(block: string, path: string): void {
 }
 
 /**
- * YAML's own error, reworded. Its message names a line and a token, which is
+ * YAML’s own error, reworded. Its message names a line and a token, which is
  * useless without the file; and the one syntax error an author actually hits
  * is an unquoted colon-space inside a title, which deserves to be named.
  */

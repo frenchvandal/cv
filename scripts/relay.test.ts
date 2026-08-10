@@ -27,8 +27,8 @@ test("there is one relay per old language URL, en.html included", () => {
 });
 
 /*
- * The root is a real page — the one that negotiates the visitor's language.
- * A relay written over it would replace the site's entry point with a
+ * The root is a real page — the one that negotiates the visitor’s language.
+ * A relay written over it would replace the site’s entry point with a
  * redirect to itself.
  */
 test("no relay shadows the site root", () => {
@@ -41,7 +41,7 @@ test("no relay shadows the site root", () => {
 /*
  * Indexes are published as directory URLs everywhere else, so a relay must
  * point at `./fr/` and not `./fr/index.html`: the second spelling would make
- * the relay's canonical disagree with the canonical of the page it points to.
+ * the relay’s canonical disagree with the canonical of the page it points to.
  */
 test("a relay points at the directory URL, not the index file", () => {
   expect(relayTarget({ kind: "home", lang: "fr" })).toBe("./fr/");

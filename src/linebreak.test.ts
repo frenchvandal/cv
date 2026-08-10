@@ -1,7 +1,7 @@
 /*
  * Knuth–Plass unit tests, canvas-free: a synthetic monospace measure (10px per
  * character) is injected instead of pretext, so the algorithm itself—break
- * feasibility, width limits, hyphenation, NBSP handling—is what's under test.
+ * feasibility, width limits, hyphenation, NBSP handling—is what’s under test.
  */
 
 import { expect, test } from "bun:test";

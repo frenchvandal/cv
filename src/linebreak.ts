@@ -71,12 +71,12 @@ const hyphenators = new Map<Lang, Promise<Hyphenate | null>>();
 
 /**
  * Lazily load the hyphenation patterns for `lang`; resolves to null where
- * hyphenation doesn't apply (Chinese wraps per character). Cached per language.
+ * hyphenation doesn’t apply (Chinese wraps per character). Cached per language.
  */
 /**
- * The pattern module for a language, or null where hyphenation doesn't apply.
+ * The pattern module for a language, or null where hyphenation doesn’t apply.
  * Every specifier is a literal so the bundler can see them and split each
- * language's patterns into its own chunk—build them from a variable and
+ * language’s patterns into its own chunk—build them from a variable and
  * `splitting: true` has nothing to split. The switch is exhaustive over `Lang`,
  * so adding a language is a compile error here until it is answered for.
  */
@@ -393,7 +393,7 @@ function toLines(items: BreakItem[], breaks: number[]): string[] {
 
 /**
  * Break `text` into optimal justified lines for the given font and column width.
- * Resolves to null when the language isn't hyphenated here (e.g., Chinese) or no
+ * Resolves to null when the language isn’t hyphenated here (e.g., Chinese) or no
  * feasible layout is found—the caller then keeps the plain paragraph.
  * `measure` defaults to pretext (canvas) with no tracking; a caller whose
  * paragraph carries `letter-spacing` passes `pretextMeasure(px)` instead, and

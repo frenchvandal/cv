@@ -62,9 +62,9 @@ function setLang(next: Lang): void {
 }
 
 /**
- * Remember a language the visitor picked by hand. The root page's negotiation
+ * Remember a language the visitor picked by hand. The root page’s negotiation
  * script (see `languageNegotiationScript` in [src/render.ts](src/render.ts))
- * reads this and lets it outrank the browser's own list, so the switcher always
+ * reads this and lets it outrank the browser’s own list, so the switcher always
  * has the last word.
  */
 function storeLang(lang: Lang): void {
@@ -72,7 +72,7 @@ function storeLang(lang: Lang): void {
     localStorage.setItem(STORAGE_LANG_KEY, lang);
   } catch {
     // Storage may be unavailable (private mode)—the switch still works, it
-    // just won't survive the visit.
+    // just won’t survive the visit.
   }
 }
 
@@ -93,7 +93,7 @@ function storedTheme(): Theme | null {
   }
 }
 
-/** Keep the toggle button's icon and label in sync (it is not re-rendered on toggle). */
+/** Keep the toggle button’s icon and label in sync (it is not re-rendered on toggle). */
 function syncThemeToggle(): void {
   const button = app?.querySelector<HTMLElement>("[data-theme-toggle]");
   if (!button) return;
@@ -138,7 +138,7 @@ function applyTheme(next: Theme, persist: boolean): void {
  * `og:url` or JSON-LD still naming English would describe a page the address bar
  * no longer points at. The SSG bakes these same values in per page
  * ([scripts/build.ts](scripts/build.ts)); both read them from
- * [src/meta.ts](src/meta.ts), so the two heads can't diverge.
+ * [src/meta.ts](src/meta.ts), so the two heads can’t diverge.
  *
  * A selector that matches nothing is skipped: the image tags only exist in a
  * SITE_URL build, and the dev shell has no canonical at all.
@@ -161,7 +161,7 @@ function syncDocumentMeta(): void {
  * ------------------------------------------------------------------ */
 
 /**
- * The page's real font stack, so CJK titles are measured with the family they
+ * The page’s real font stack, so CJK titles are measured with the family they
  * render in (Noto Sans SC on zh, Noto Sans TC on zh-hant).
  */
 function pageFontFamily(): string {
@@ -222,7 +222,7 @@ function applyChatWidth(px: number): void {
   if (readout) readout.textContent = `${clamped} px`;
 }
 
-/** The slider's handler: a new width, then the bubbles re-tightened to it. */
+/** The slider’s handler: a new width, then the bubbles re-tightened to it. */
 function setChatWidth(px: number): void {
   applyChatWidth(px);
   enhanceChat();
@@ -279,7 +279,7 @@ async function enhanceAboutKp(): Promise<void> {
     }
 
     // Small safety margin: keep KP lines just inside the box so canvas-vs-DOM
-    // rounding never makes the browser wrap a line that justify then can't fill.
+    // rounding never makes the browser wrap a line that justify then can’t fill.
     const lines = await breakIntoLines(
       text,
       font,
@@ -305,7 +305,7 @@ function isDevHost(): boolean {
 }
 
 /**
- * Both CJK families in one stack: each language's text resolves to the family it
+ * Both CJK families in one stack: each language’s text resolves to the family it
  * would render with, regardless of the page the audit runs from.
  */
 function allFontsFamily(): string {
@@ -363,7 +363,7 @@ function auditTitles(): void {
  * them. `clipped` is the one that matters—it means the CSS floor is doing the
  * work and a label is actually being cut.
  *
- * The bar's geometry comes from the live DOM rather than from constants: the
+ * The bar’s geometry comes from the live DOM rather than from constants: the
  * row width, its gaps and the switcher cluster are all language-invariant, so
  * whichever page this runs on measures them correctly. Only meaningful at or
  * above `desktopMinRem`, where the shortcuts are on screen at all.
@@ -460,7 +460,7 @@ function startStat(stat: HTMLElement): void {
   requestAnimationFrame(frame);
 }
 
-/** Reveal a container's animated elements and start any stat counters it holds. */
+/** Reveal a container’s animated elements and start any stat counters it holds. */
 function reveal(container: Element): void {
   if (container.classList.contains("animate")) {
     container.classList.add("is-revealed");
@@ -536,7 +536,7 @@ function bindEvents(): void {
    * Language links are real <a> elements and work with JS off. On the CV they
    * are intercepted for an instant, reload-free switch that keeps the URL
    * shareable via history.pushState; everywhere else the click is left alone,
-   * and the href — computed by `langLinkFor`, which knows the page's depth and
+   * and the href — computed by `langLinkFor`, which knows the page’s depth and
    * whether a translation exists — does the work.
    */
   app?.querySelectorAll<HTMLAnchorElement>("a[data-lang]").forEach((link) => {
@@ -569,7 +569,7 @@ function bindEvents(): void {
     applyTheme(theme === "light" ? "dark" : "light", true);
   });
 
-  // Dialogue: the phone's width control. Every drag re-tightens the bubbles,
+  // Dialogue: the phone’s width control. Every drag re-tightens the bubbles,
   // which is the point—the widths come from a measurement, so they can follow
   // a width the reader chooses instead of the one the stylesheet assumed.
   const widthRange = app?.querySelector<HTMLInputElement>("[data-chat-width]");
@@ -612,7 +612,7 @@ function afterPaint(): void {
 }
 
 /**
- * The armed fade-out of a transition that hasn't painted yet. Two switches
+ * The armed fade-out of a transition that hasn’t painted yet. Two switches
  * inside PAGE_SWAP_MS would otherwise stack two paints, and the first one—
  * rendering an already-stale language—would land after the second.
  */
@@ -647,7 +647,7 @@ function render(transition: boolean): void {
 
 /**
  * First load of a pre-rendered page: the markup is already exactly what
- * `renderApp` would produce, so don't rebuild it—just bind events, sync the
+ * `renderApp` would produce, so don’t rebuild it—just bind events, sync the
  * theme toggle (pre-rendered as light) and start the enhancements.
  */
 function hydrate(): void {
@@ -682,7 +682,7 @@ function init(): void {
     render(false); // dev shell (loader) or stale markup
   }
 
-  // Follow the OS appearance for as long as the visitor hasn't overridden it.
+  // Follow the OS appearance for as long as the visitor hasn’t overridden it.
   // `addEventListener` on a MediaQueryList is Safari 14+; the `?.` on the call
   // keeps an older engine from throwing here, which would abort `init()` before
   // the popstate and resize listeners below are ever bound.
