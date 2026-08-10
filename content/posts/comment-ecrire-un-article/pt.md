@@ -102,14 +102,17 @@ PORT=8080 bun run preview # outra porta
 DRAFTS=1 bun run preview  # rascunhos incluídos
 ```
 
-Depois de escrever, mais um comando:
+As fontes não pedem atenção: ao empurrar para `main`, um fluxo de trabalho volta
+a subdividir as Noto do sítio e confirma os ficheiros. Para ver o artigo na sua
+tipografia verdadeira antes de empurrar:
 
 ```bash
 bun run fonts:update
 ```
 
-Volta a subdividir as fontes Noto do sítio: um glifo ausente do subconjunto
-aparece em tofu — uma falha que só se descobre no ecrã do leitor.
+Um glifo ausente do subconjunto aparece em tofu, e a construção recusa-se a
+emitir um `dist/` que não o cubra — esquecer-se é portanto uma falha ruidosa,
+nunca uma surpresa no ecrã do leitor.
 
 Por fim, a regra `zh-hk`: escrever `zh-hant.md` chega — a versão de Hong Kong é
 projectada a partir da de Taiwan pelo léxico do sítio, e um `zh-hk.md` explícito

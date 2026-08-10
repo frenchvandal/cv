@@ -96,14 +96,17 @@ PORT=8080 bun run preview # different port
 DRAFTS=1 bun run preview  # drafts included
 ```
 
-After any writing, one more command:
+The fonts need no thought: pushing to `main` runs a workflow that re-subsets the
+site’s Noto files and commits them. To see the article in its real type before
+pushing:
 
 ```bash
 bun run fonts:update
 ```
 
-It re-subsets the site’s Noto fonts locally: a glyph no subset carries renders
-as tofu — a mistake you only discover on a reader’s screen.
+A glyph no subset carries renders as tofu, and the build refuses to emit a
+`dist/` that does not cover one — so forgetting is a loud failure, never a
+surprise on a reader’s screen.
 
 Finally, the `zh-hk` rule: writing `zh-hant.md` is enough — the Hong Kong
 version is projected from the Taiwan one by the site’s lexicon, and an explicit

@@ -99,15 +99,17 @@ PORT=8080 bun run preview # autre port
 DRAFTS=1 bun run preview  # brouillons inclus
 ```
 
-Après toute écriture, une commande de plus :
+Les polices ne demandent aucune attention : à la poussée sur `main`, un workflow
+re-sous-ensemble les Noto du site et committe les fichiers. Pour voir l’article
+dans sa vraie typographie avant de pousser :
 
 ```bash
 bun run fonts:update
 ```
 
-Elle re-sous-ensemble les polices Noto du site : un glyphe absent du
-sous-ensemble s’affiche en tofu — une faute qu’on ne découvre que chez le
-lecteur.
+Un glyphe absent du sous-ensemble s’affiche en tofu, et le build refuse
+d’émettre un `dist/` qui n’en couvre pas un — l’oubli est donc un échec bruyant,
+jamais une surprise chez le lecteur.
 
 Enfin, la règle `zh-hk` : écrire `zh-hant.md` suffit — la version de Hong Kong
 est projetée par le lexique, et un `zh-hk.md` explicite l’emporte. Les
