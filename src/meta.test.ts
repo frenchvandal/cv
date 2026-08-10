@@ -23,7 +23,7 @@ const SITE = "https://social.example/cv";
 const url = (lang: Lang) =>
   lang === "en" ? `${SITE}/` : `${SITE}/${langUrl(lang)}`;
 
-test("pageMeta carries this language's title, description and page URL", () => {
+test("pageMeta carries this language’s title, description and page URL", () => {
   const meta = pageMeta("fr", url("fr"));
   const t = translations.fr;
 
@@ -48,7 +48,7 @@ test("every language gets its own Open Graph locale", () => {
   expect(pageMeta("zh-hk", url("zh-hk")).ogLocale).toBe("zh_HK");
 });
 
-test("the JSON-LD Person is this language's, and parses", () => {
+test("the JSON-LD Person is this language’s, and parses", () => {
   for (const lang of LANGS) {
     const t = translations[lang];
     const person = JSON.parse(pageMeta(lang, url(lang)).jsonLd);
@@ -125,7 +125,7 @@ test("headMeta names one head element per value, and nothing twice", () => {
   expect(attrs.get('meta[property="og:url"]')).toBe("content");
 });
 
-test("headMeta values are the page's, not the previous language's", () => {
+test("headMeta values are the page’s, not the previous language’s", () => {
   const french = new Map(
     headMeta(pageMeta("fr", url("fr"))).map((u) => [u.selector, u.value]),
   );

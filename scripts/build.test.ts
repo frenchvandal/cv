@@ -305,14 +305,14 @@ test(
     const author = graph["@graph"].find(
       (node: { "@type": string }) => node["@type"] === "Person",
     );
-    // The headline is the article's own title, not the tab title, and the
+    // The headline is the article’s own title, not the tab title, and the
     // author is a reference to the Person node rather than a second copy of
     // it — two copies are how the same fact ends up stated two ways.
     expect(posting.headline).toBe(somePost.title);
     expect(posting.datePublished).toBe(`${somePost.date}T00:00:00Z`);
     expect(posting.inLanguage).toBe(HTML_LANG.fr);
     expect(posting.author["@id"]).toBe(author["@id"]);
-    // The author's own URL is the site, not whichever post is being read.
+    // The author’s own URL is the site, not whichever post is being read.
     expect(author.url).toBe(`${SITE}/fr/`);
 
     /*

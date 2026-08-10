@@ -21,7 +21,7 @@ const CORPUS: PostMeta[] = [
   post("c", "zh", "2026-02-01"),
 ];
 
-test("a language's index holds only its own posts, newest first", () => {
+test("a language’s index holds only its own posts, newest first", () => {
   expect(byLang(CORPUS, "fr").map((p) => p.slug)).toEqual(["b", "a"]);
   expect(byLang(CORPUS, "zh").map((p) => p.slug)).toEqual(["c"]);
   expect(byLang(CORPUS, "es")).toEqual([]);

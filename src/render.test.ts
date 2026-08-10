@@ -24,7 +24,7 @@ test("escapeHtml escapes every markup-significant character", () => {
   expect(escapeHtml("plain text")).toBe("plain text");
 });
 
-test("langUrl points at a language's home, relative to the site root", () => {
+test("langUrl points at a language’s home, relative to the site root", () => {
   // English is the root; the rest are folders, published as directory URLs so
   // they match the canonical the page itself declares.
   expect(langUrl("en")).toBe("./");

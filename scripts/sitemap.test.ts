@@ -39,7 +39,7 @@ test("the fields the protocol makes optional and useless are not emitted", () =>
   expect(xml).not.toContain("priority");
 });
 
-test("escapes a <loc> per the protocol's entity table", async () => {
+test("escapes a <loc> per the protocol’s entity table", async () => {
   const loc = `${BASE}/x.html?a=1&b='2'&c="3"&d=<4>`;
 
   const xml = sitemapXml(BASE, [{ loc }]);

@@ -54,7 +54,7 @@
     Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 
   /* Radii. Large values read as the continuous corners HIG asks for; the pill
-     is Apple's own button radius. */
+     is Apple’s own button radius. */
   --r-sm: 8px;
   --r-lg: 18px;
   --r-pill: 980px;
@@ -77,7 +77,7 @@
   --wrap: 48.5rem;
   --nav-h: 3rem;
 
-  /* The system's own deceleration curve—motion that settles rather than stops. */
+  /* The system’s own deceleration curve—motion that settles rather than stops. */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -236,7 +236,7 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Navigation bar—the page's one translucent material
+ * Navigation bar—the page’s one translucent material
  * ------------------------------------------------------------------ */
 
 .nav {
@@ -277,7 +277,7 @@ a:hover {
   color: var(--fg-secondary);
 }
 
-/* Section links: the deck's progress dots, replaced by plain labelled anchors.
+/* Section links: the deck’s progress dots, replaced by plain labelled anchors.
    Hidden on narrow viewports—the document scrolls, so they are a shortcut,
    never the only way through. */
 .nav__links {
@@ -477,8 +477,8 @@ a:hover {
      every language. This clamp is what the page shows until that runs: on first
      paint, and for the ~30ms after a language switch replaces #app. So it is
      not a rough guess but the same curve solved in CSS. `fitHeroName` computes
-     `available * fill / widest` between HERO_FIT's two bounds, where `available`
-     is the element's own width (`100vw` less `.wrap`'s 2.5rem of padding) and
+     `available * fill / widest` between HERO_FIT’s two bounds, where `available`
+     is the element’s own width (`100vw` less `.wrap`'s 2.5rem of padding) and
      `fill` is `HERO_FIT.fill * MEASURE_SAFETY` = 0.92 * 0.98 = 0.9016. The
      0.12305 here is that over `widest`, which measures 7.327em for "Philippe
      Ribeiro" at this weight and tracking—the one number in this file that came
@@ -487,7 +487,7 @@ a:hover {
      Two things deliberately absent. `--wrap` caps `available` at 46rem, but
      maxPx binds first (at a 657px viewport, against 776px for the cap), so the
      cap is unobservable and `min(…, 46rem)` would be dead arithmetic. And the
-     bounds are px, not rem, because HERO_FIT's are: in rem they would scale
+     bounds are px, not rem, because HERO_FIT’s are: in rem they would scale
      with the root font size while the fitter did not, and the flash this rule
      exists to remove would come back for anyone who changed that setting. */
   font-size: clamp(34px, calc((100vw - 2.5rem) * 0.12305), 76px);
@@ -719,11 +719,11 @@ a:hover {
 }
 
 /* ------------------------------------------------------------------ *
- * Timeline—Ant Design's Timeline, re-read through the HIG
+ * Timeline—Ant Design’s Timeline, re-read through the HIG
  *
- * Ant's structure survives: a vertical rail, one node per event, the event's
+ * Ant’s structure survives: a vertical rail, one node per event, the event’s
  * content beside it, and—on wide viewports—the dates in a column of their
- * own (Ant's `label` mode). Everything decorative is the HIG's: the rail is a
+ * own (Ant’s `label` mode). Everything decorative is the HIG’s: the rail is a
  * hairline separator, the node a small ring in the neutral ramp, and the one
  * filled accent node is spent on the single fact it can carry—which role is
  * still running. Deference: the content sits directly on the page, unboxed, so
@@ -734,17 +734,17 @@ a:hover {
   list-style: none;
   padding: 0;
 
-  /* Height of an event's first line box. The heading and the date share it, so
+  /* Height of an event’s first line box. The heading and the date share it, so
      both centre on the node without a per-element magic offset. */
   --tl-lead: 1.55rem;
-  /* The node's centre, from the top of the event. Narrow viewports open with
-     the date, whose line box is the body's—half of it puts the node on the
-     date's optical centre. */
+  /* The node’s centre, from the top of the event. Narrow viewports open with
+     the date, whose line box is the body’s—half of it puts the node on the
+     date’s optical centre. */
   --tl-node-y: 0.63rem;
   --tl-node: 0.5625rem;
   --tl-rail-col: 1.5rem;
   /* Wide enough to hold the longest date on one line in every language—the
-     dual ranges ("2011 – 2014 · 2019 – aujourd'hui", the widest at 196px).
+     dual ranges ("2011 – 2014 · 2019 – aujourd’hui", the widest at 196px).
      Narrower and they wrap after the separator, leaving it dangling. */
   --tl-date-col: 13rem;
   --tl-logo: 3.25rem;
@@ -752,7 +752,7 @@ a:hover {
 }
 
 /* Narrow: two columns, the rail spanning both rows, the date sitting above the
-   content the way a card's meta line would. */
+   content the way a card’s meta line would. */
 .timeline__item {
   display: grid;
   grid-template-columns: var(--tl-rail-col) minmax(0, 1fr);
@@ -782,9 +782,9 @@ a:hover {
 
 /* The line has to run the full height of the event *including* the gap below
    it, or the rail breaks between events—a grid track stops at the content
-   edge, and the spacing is the item's padding. Hence the negative `bottom`:
-   it carries the line across the padding to meet the next event's. The first
-   event's line starts at its node and the last one's ends there, so the rail
+   edge, and the spacing is the item’s padding. Hence the negative `bottom`:
+   it carries the line across the padding to meet the next event’s. The first
+   event’s line starts at its node and the last one’s ends there, so the rail
    has two ends rather than two stubs. */
 .timeline__rail::before {
   content: '';
@@ -921,7 +921,7 @@ a:hover {
   margin-top: var(--space-xs);
 }
 
-/* Wide enough for the dates to leave the content column: Ant's `label` mode.
+/* Wide enough for the dates to leave the content column: Ant’s `label` mode.
    Every event then opens on one line—date, node, heading—and the reader
    scans the years down one edge. */
 @media (min-width: 52rem) {
@@ -939,7 +939,7 @@ a:hover {
     line-height: var(--tl-lead);
   }
 
-  /* Education opens on the institution's mark, which is taller than a line of
+  /* Education opens on the institution’s mark, which is taller than a line of
      text: the node and the date move down to its centre instead. */
   .timeline--marks {
     --tl-node-y: calc(var(--tl-logo) / 2);
@@ -1023,11 +1023,11 @@ a:hover {
 
 /* The thread is drawn on the device it belongs to: a phone in the middle of the
    column, its screen following the page appearance the way a real one follows
-   the system's. Everything inside is sized in px, not rem—this is a handset
-   at 1:1, so its chrome must not scale with the page's reading size.
+   the system’s. Everything inside is sized in px, not rem—this is a handset
+   at 1:1, so its chrome must not scale with the page’s reading size.
 
    Only the frame is new; the bubbles keep answering to src/chat.ts, which sets
-   each one's width from a pretext measurement. That is also why the tail is a
+   each one’s width from a pretext measurement. That is also why the tail is a
    corner radius rather than a pseudo-element: a per-corner radius is immune to
    the width the script writes, while a tail drawn beside the box would have to
    be re-placed on every resize. */
@@ -1057,7 +1057,7 @@ a:hover {
 }
 
 /* 19.5:9, the aspect every handset since the X has shipped (390 x 844pt here),
-   so the frame keeps a phone's silhouette at any width the slider picks. The
+   so the frame keeps a phone’s silhouette at any width the slider picks. The
    thread scrolls inside it, the way it does on the device—which is the whole
    reason the height can be fixed rather than dictated by twelve messages.
    `aspect-ratio` rather than a height computed from `--phone-w`: on a narrow
@@ -1073,7 +1073,7 @@ a:hover {
   color: var(--fg);
 }
 
-/* Status bar. `9:41` is Apple's canonical time; the island is the cutout, and
+/* Status bar. `9:41` is Apple’s canonical time; the island is the cutout, and
    it is drawn, not implied, because it is what says "phone" at a glance. */
 .phone__status {
   position: relative;
@@ -1265,7 +1265,7 @@ a:hover {
   background: var(--fg);
 }
 
-/* The pretext demo's own control (chenglou.me/pretext/bubbles): drag it and
+/* The pretext demo’s own control (chenglou.me/pretext/bubbles): drag it and
    every bubble re-tightens live. Hidden without JS, where it would move
    nothing. */
 .chat__width {
@@ -1295,7 +1295,7 @@ a:hover {
 }
 
 /* The screen follows the page appearance, the way a handset follows the
-   system's. Scoped to `@media screen` like the rest of the dark ramp—paper
+   system’s. Scoped to `@media screen` like the rest of the dark ramp—paper
    never gets it. */
 @media screen {
   :root[data-theme='dark'] .phone {
@@ -1341,7 +1341,7 @@ a:hover {
   letter-spacing: -0.01em;
   color: var(--fg);
   /* `anywhere` rather than `break-word`: only this one also shrinks the flex
-     item's min-content width, which is what stops "in/philipperibeiro"—one
+     item’s min-content width, which is what stops "in/philipperibeiro"—one
      unbreakable 18-character run at 36px—from pushing the page sideways. */
   overflow-wrap: anywhere;
 }
@@ -1370,7 +1370,7 @@ a:hover {
     --space-2xl: 4.5rem;
   }
 
-  /* Below the fitter's threshold (TITLE_FIT.desktopMinRem) titles wrap
+  /* Below the fitter’s threshold (TITLE_FIT.desktopMinRem) titles wrap
      normally—src/measure.ts clears the inline size to match. */
   .section__title {
     white-space: normal;
@@ -1450,7 +1450,7 @@ a:hover {
    can break between almost any two characters; on Latin text it is the
    documented interim (spec §6.3–6.5). */
 
-/* The site's column (--wrap, 48.5rem) was sized for a CV, whose longest run is
+/* The site’s column (--wrap, 48.5rem) was sized for a CV, whose longest run is
    a bullet. Continuous prose wants a shorter measure — around 65 characters a
    line, which is where the eye finds the next line without hunting. `ch` is
    the width of "0" in the current font, so this tracks the type size instead

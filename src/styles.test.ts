@@ -37,7 +37,7 @@ function mustMatch(re: RegExp, what: string): RegExpMatchArray {
   const found = css.match(re);
   if (!found) {
     throw new Error(
-      `${what} not found in styles.css—the rule's shape changed, so this guard no longer watches it.`,
+      `${what} not found in styles.css—the rule’s shape changed, so this guard no longer watches it.`,
     );
   }
   return found;
@@ -48,21 +48,21 @@ const [, heroMin, heroPadding, heroSlope, heroMax] = mustMatch(
   "the .hero__name clamp",
 ).map(Number);
 
-test("the hero clamp's bounds are HERO_FIT's, in px as HERO_FIT has them", () => {
+test("the hero clamp’s bounds are HERO_FIT’s, in px as HERO_FIT has them", () => {
   // px, not rem: HERO_FIT is in px, so rem bounds would scale with the root
   // font size while the fitter did not, and the flash would come back.
   expect(heroMin).toBe(HERO_FIT.minPx);
   expect(heroMax).toBe(HERO_FIT.maxPx);
 });
 
-test("the hero clamp's slope is fill × MEASURE_SAFETY over the measured width", () => {
+test("the hero clamp’s slope is fill × MEASURE_SAFETY over the measured width", () => {
   expect(heroSlope).toBeCloseTo(
     HERO_FIT.fill * MEASURE_SAFETY / HERO_WIDEST_EM,
     4,
   );
 });
 
-test("the hero clamp subtracts exactly .wrap's two paddings", () => {
+test("the hero clamp subtracts exactly .wrap’s two paddings", () => {
   const spaceMd = Number(
     mustMatch(/--space-md:\s*([\d.]+)rem/, "--space-md")[1],
   );

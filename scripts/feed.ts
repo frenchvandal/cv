@@ -175,7 +175,7 @@ export function jsonFeed(options: FeedOptions): JsonFeed {
     feed_url: feedUrl,
     description: t.meta.description,
     user_comment:
-      "A JSON Feed (https://jsonfeed.org/) of this site's writing. One feed " +
+      "A JSON Feed (https://jsonfeed.org/) of this site’s writing. One feed " +
       "per language; see the alternate links in the page head.",
     ...(favicon ? { favicon } : {}),
     language: HTML_LANG[lang],

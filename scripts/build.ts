@@ -320,7 +320,7 @@ for (const lang of LANGS) {
      * The locales this page also exists in. Facebook reads og:locale:alternate
      * to offer a reader the version in their own language; the hreflang links
      * above say the same thing to a crawler, and neither audience reads the
-     * other one's tag.
+     * other one’s tag.
      */
     const alternateLocales = alternateLangs
       .filter((l) => l !== lang)

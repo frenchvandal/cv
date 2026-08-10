@@ -85,7 +85,7 @@ body {
   color: var(--fg-secondary);
   /* Wide enough for the English title to take two lines. A narrow measure
      ragged over four lines reads as a paragraph, and the card is shown small:
-     two lines is the most a scraper's thumbnail carries. */
+     two lines is the most a scraper’s thumbnail carries. */
   max-width: 880px;
   /* Balanced, so the break lands where a reader would put it. */
   text-wrap: balance;

@@ -32,7 +32,7 @@ const POSTS: PostMeta[] = [
   post("b", "fr", "2026-09-01"),
 ];
 
-test("home shows the hero and the language's latest writing", () => {
+test("home shows the hero and the language’s latest writing", () => {
   const html = renderPage({ kind: "home", posts: POSTS }, "fr", "light");
 
   expect(html).toContain("hero__name");
@@ -96,7 +96,7 @@ test("the language switcher leads to the translation when one exists", () => {
   expect(html).toContain('href="../../blog/a.html"');
 });
 
-test("otherwise it leads to that language's index, with an audible note", () => {
+test("otherwise it leads to that language’s index, with an audible note", () => {
   const html = renderPage(
     { kind: "post", post: post("b", "fr"), html: "", posts: POSTS },
     "fr",
@@ -113,7 +113,7 @@ test("otherwise it leads to that language's index, with an audible note", () => 
   );
 });
 
-test("an article's body is never escaped, its title always is", () => {
+test("an article’s body is never escaped, its title always is", () => {
   const html = renderPage(
     {
       kind: "post",

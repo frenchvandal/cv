@@ -89,7 +89,7 @@ async function subsets(
     if (faces.length !== 1 || ranges.length !== 1) {
       throw new Error(
         `${family} batch ${index + 1}: expected one @font-face, got ` +
-          `${faces.length}. The batch is above the endpoint's subsetting ` +
+          `${faces.length}. The batch is above the endpoint’s subsetting ` +
           `cliff — lower BATCH.`,
       );
     }
