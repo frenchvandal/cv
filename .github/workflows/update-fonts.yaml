@@ -97,8 +97,13 @@ jobs:
           git commit -m "chore: re-subset the fonts for the new text"
           git push
 
+      # Both deploys, because the push above was made with GITHUB_TOKEN and
+      # triggers neither. Whichever one is retired will simply not be there;
+      # the OSS job also self-skips until its bucket variable exists.
       - name: Deploy the site with the new subsets
         if: steps.diff.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy.yaml --ref main
+        run: |
+          gh workflow run deploy.yaml --ref main || true
+          gh workflow run deploy-oss.yaml --ref main || true

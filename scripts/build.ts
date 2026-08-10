@@ -30,7 +30,13 @@ import { type MetaOverride, OG_LOCALE, pageMeta } from "../src/meta.ts";
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
 import { byLang, deriveSummary, langsOf } from "../src/post.ts";
-import { pageDepth, pagePath, type PageRef, rel } from "../src/urls.ts";
+import {
+  pageDepth,
+  pageHref,
+  pagePath,
+  type PageRef,
+  rel,
+} from "../src/urls.ts";
 import { loadPosts } from "./content.ts";
 import { relayHtml, relayPages, relayTarget } from "./relay.ts";
 import {
@@ -118,7 +124,7 @@ if (shortfall.length > 0) {
  * in every local build.
  */
 function pageUrl(ref: PageRef, from: PageRef = ref): string {
-  const path = pagePath(ref).replace(/(^|\/)index\.html$/, "$1");
+  const path = pageHref(ref);
   return SITE ? `${SITE}/${path}` : `${rel(pageDepth(from))}${path}`;
 }
 
@@ -209,11 +215,23 @@ const CJK_FAMILY: Record<Lang, string> = {
  * batch 1 carries the switcher endonyms every page renders — without it that
  * file waits for the CSS to parse, one round trip behind.
  */
-function fontHead(prefix: string, lang: Lang): {
+function fontHead(prefix: string, lang: Lang, kind: Page["kind"]): {
   preload: string;
   style: string;
 } {
-  const wanted = new Set(["Noto Sans", CJK_FAMILY[lang]]);
+  /*
+   * The CV is the one page that changes language WITHOUT a navigation: the
+   * client re-renders it in place, and the `--font` stack changes with the
+   * `data-lang` attribute. A CV that declared only its own family would ask
+   * for `Noto Sans SC` after a switch to Chinese and find no `@font-face` to
+   * match — measured in Chrome: no Chinese subset fetched at all, the text
+   * falling back to whatever the system has, and pretext measuring a family
+   * that never loaded. So the CV declares every family it can become. The
+   * blog pages navigate, so each gets its own and nothing more.
+   */
+  const wanted = kind === "cv"
+    ? new Set(["Noto Sans", ...Object.values(CJK_FAMILY)])
+    : new Set(["Noto Sans", CJK_FAMILY[lang]]);
   const faces = FONT_FACES
     .filter((face) => wanted.has(face.family))
     .map((face) => ({
@@ -398,7 +416,11 @@ for (const lang of LANGS) {
      * they were never going to see. Charset stays first, since it has to be
      * inside the first 1024 bytes.
      */
-    const { preload: fontPreload, style: fontsStyle } = fontHead(prefix, lang);
+    const { preload: fontPreload, style: fontsStyle } = fontHead(
+      prefix,
+      lang,
+      page.kind,
+    );
     const negotiates = ref.kind === "home" && lang === "en";
     const head = `
     ${fontPreload}

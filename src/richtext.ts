@@ -179,19 +179,66 @@ export function copiedText(fragment: DocumentFragment): string | null {
   const lines = [...fragment.querySelectorAll(".kp-line")];
   if (lines.length === 0) return null;
 
-  const joined = lines
+  // Anything selected outside the lines—a heading, a paragraph the observer
+  // has not reached—would be dropped by the join below, so refuse instead.
+  const strip = (text: string) => text.replace(/\s+/gu, "");
+  const inLines = lines.map((line) => line.textContent ?? "").join("");
+  if (strip(fragment.textContent ?? "") !== strip(inLines)) return null;
+
+  /*
+   * Lines of one paragraph share a parent in the clone; two paragraphs give
+   * two parents. Without that grouping, selecting two paragraphs produced one
+   * run-on paragraph, which is a different text from the one on screen — the
+   * line break is an accident of this column, but the paragraph break is the
+   * author’s.
+   */
+  return groupByParagraph(lines)
+    .map((paragraph) => joinLines(paragraph, (line) => line.textContent ?? ""))
+    .join("\n\n");
+}
+
+/**
+ * The same passage as markup, so a paste into a rich-text target keeps the
+ * links and the emphasis the article carries. Without it, repairing the plain
+ * text would have cost the reader everything the markup said — a poor trade
+ * for a paragraph whose whole point is that its markup survives typesetting.
+ */
+export function copiedHtml(fragment: DocumentFragment): string | null {
+  const lines = [...fragment.querySelectorAll(".kp-line")];
+  if (lines.length === 0) return null;
+
+  return groupByParagraph(lines)
+    .map((paragraph) =>
+      `<p>${joinLines(paragraph, (line) => line.innerHTML)}</p>`
+    )
+    .join("");
+}
+
+/** Lines that share a parent belong to the same paragraph, in document order. */
+function groupByParagraph(lines: readonly Element[]): Element[][] {
+  const groups: Element[][] = [];
+  let parent: ParentNode | null = null;
+
+  for (const line of lines) {
+    if (line.parentNode !== parent) {
+      groups.push([]);
+      parent = line.parentNode;
+    }
+    groups[groups.length - 1]!.push(line);
+  }
+  return groups;
+}
+
+/** The breaker’s own rule: nothing after a mid-word break, a space otherwise. */
+function joinLines(
+  lines: readonly Element[],
+  read: (line: Element) => string,
+): string {
+  return lines
     .map((line, i) => {
-      const text = line.textContent ?? "";
       const previous = lines[i - 1];
-      if (!previous) return text;
-      return (previous.hasAttribute("data-hyphen") ? "" : " ") + text;
+      if (!previous) return read(line);
+      return (previous.hasAttribute("data-hyphen") ? "" : " ") + read(line);
     })
     .join("");
-
-  // Anything selected outside the lines—a heading, a paragraph the observer
-  // has not reached—would be dropped by the join above, so refuse instead.
-  const inLines = lines.map((line) => line.textContent ?? "").join("");
-  const all = fragment.textContent ?? "";
-  const strip = (text: string) => text.replace(/\s+/gu, "");
-  return strip(all) === strip(inLines) ? joined : null;
 }

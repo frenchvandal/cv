@@ -40,7 +40,7 @@ import {
   whenFontsReady,
 } from "./measure.ts";
 import { breakIntoLines, pretextMeasure } from "./linebreak.ts";
-import { copiedText, renderLines, runsFrom } from "./richtext.ts";
+import { copiedHtml, copiedText, renderLines, runsFrom } from "./richtext.ts";
 import { enhanceChat } from "./chat.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
@@ -353,10 +353,17 @@ function repairCopy(event: ClipboardEvent): void {
   const selection = getSelection();
   if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
 
-  const text = copiedText(selection.getRangeAt(0).cloneContents());
-  if (text === null) return;
+  const fragment = selection.getRangeAt(0).cloneContents();
+  const text = copiedText(fragment);
+  const clipboard = event.clipboardData;
+  if (text === null || !clipboard) return;
 
-  event.clipboardData?.setData("text/plain", text);
+  clipboard.setData("text/plain", text);
+  // Both flavours or none: a rich-text target reads text/html, and setting
+  // only the plain one would have made repairing the text cost the reader
+  // every link and every emphasis in the passage.
+  const html = copiedHtml(fragment);
+  if (html !== null) clipboard.setData("text/html", html);
   event.preventDefault();
 }
 

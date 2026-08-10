@@ -283,8 +283,8 @@ if (import.meta.main) {
 
     if (!dryRun && deletesLookLikeAMistake(plan) && !prune) {
       throw new Error(
-        `deploy: the plan removes ${plan.deletes.length} object(s) to upload ` +
-          `${plan.uploads.length} — more than the whole site. That usually ` +
+        `deploy: the plan removes ${plan.deletes.length} object(s), more than the ` +
+          `${plan.siteSize} the site has. That usually ` +
           "means the wrong bucket, or the right one at the wrong OSS_PREFIX. " +
           "Read the list above; pass --prune if you meant it.",
       );

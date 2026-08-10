@@ -657,10 +657,16 @@ a:hover {
    is not part of the document text, so a reader selecting the paragraph copies
    the word whole — measured in Chrome, where the hyphen used to come along and
    paste as "do-" plus a newline. A screen reader reads the text nodes, which
-   never held it either. U+2010 is the hyphen proper, not the ASCII
-   hyphen-minus. */
+   never held it either.
+
+   U+002D, and not the typographically nicer U+2010: the breaker charged this
+   line `measure("-", font)` for the hyphen it decided to draw, and the subsets
+   carry U+002D because that is the character the text contains. Drawing U+2010
+   here — which it did, for one commit — asked for a glyph no subset covers, so
+   every hyphenated line ended in a fallback font at a width nobody measured,
+   with the glyph gate green because it never reads this file. */
 .kp-line[data-hyphen]::after {
-  content: "\2010";
+  content: "-";
 }
 
 /* ------------------------------------------------------------------ *
