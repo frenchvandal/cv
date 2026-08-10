@@ -28,7 +28,7 @@ import {
   type Theme,
 } from "./render.ts";
 import { headMeta, pageMeta, pageUrl } from "./meta.ts";
-import { escapeHtml, reducedMotion } from "./dom.ts";
+import { reducedMotion } from "./dom.ts";
 import {
   auditNavLinks,
   auditSectionTitles,
@@ -40,6 +40,7 @@ import {
   whenFontsReady,
 } from "./measure.ts";
 import { breakIntoLines, pretextMeasure } from "./linebreak.ts";
+import { renderLines, runsFrom } from "./richtext.ts";
 import { enhanceChat } from "./chat.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
@@ -252,50 +253,104 @@ function restoreChatWidth(): void {
 const KP_MIN_WIDTH_PX = 280;
 
 /**
- * Re-typeset the About paragraphs with Knuth–Plass optimal line breaking and
- * syllable hyphenation (Latin languages only; Chinese wraps natively). A pure
- * progressive enhancement over the plain, pre-rendered paragraph.
+ * Re-typeset one prose paragraph with Knuth–Plass optimal line breaking and
+ * syllable hyphenation, markup intact (Latin languages only; Chinese wraps
+ * natively). A pure progressive enhancement over the plain, pre-rendered
+ * paragraph: every early return leaves what the reader already has on screen.
+ *
+ * The About paragraphs are the degenerate case—one run, no markup. An
+ * article’s paragraphs carry `em`, `strong`, `code`, links and marked Chinese
+ * runs, each measured in its own font and reopened per line by
+ * [src/richtext.ts](src/richtext.ts).
  */
-async function enhanceAboutKp(): Promise<void> {
-  if (!app || currentLang.startsWith("zh")) return;
+async function justifyParagraph(p: HTMLParagraphElement): Promise<void> {
   const lang = currentLang;
+  /*
+   * The source markup, kept for re-runs. Every pass starts from it rather than
+   * from the line spans of the pass before—otherwise a resize would measure
+   * `.kp-line` blocks instead of prose. It is also the undo path: restoring it
+   * and stopping is what a column too narrow to justify leaves behind.
+   */
+  p.dataset.rich ??= p.innerHTML;
+  p.innerHTML = p.dataset.rich;
 
-  for (const p of app.querySelectorAll<HTMLParagraphElement>("p.kp")) {
-    const text = p.dataset.text ?? p.textContent ?? "";
-    if (!text.trim()) continue;
-    p.dataset.text = text; // keep the source text for re-runs (resize)
+  const style = getComputedStyle(p);
+  const { letterSpacing } = fontSpecFrom(style);
+  const width = p.clientWidth -
+    (parseFloat(style.paddingLeft) || 0) -
+    (parseFloat(style.paddingRight) || 0);
+  if (width < KP_MIN_WIDTH_PX) return;
 
-    const style = getComputedStyle(p);
-    const { font, letterSpacing } = fontSpecFrom(style);
-    const width = p.clientWidth -
-      (parseFloat(style.paddingLeft) || 0) -
-      (parseFloat(style.paddingRight) || 0);
+  const runs = runsFrom(p);
+  if (!runs) return;
 
-    // Also the undo path: a resize down from a wide column must drop the
-    // per-line spans, not leave the last justified layout behind.
-    if (width < KP_MIN_WIDTH_PX) {
-      p.textContent = text;
-      continue;
+  // Small safety margin: keep KP lines just inside the box so canvas-vs-DOM
+  // rounding never makes the browser wrap a line that justify then can’t fill.
+  const lines = await breakIntoLines(
+    runs,
+    width - 6,
+    lang,
+    pretextMeasure(letterSpacing),
+  );
+  // The DOM may have been replaced while the patterns loaded (language switch).
+  if (lang !== currentLang || !p.isConnected || !lines) return;
+  renderLines(p, lines, runs);
+}
+
+/** The paragraphs this path typesets: About’s, and an article’s body. */
+function justifiedParagraphs(): HTMLParagraphElement[] {
+  if (!app) return [];
+  return [
+    ...app.querySelectorAll<HTMLParagraphElement>("p.kp"),
+    ...app.querySelectorAll<HTMLParagraphElement>(".post__body > p"),
+  ];
+}
+
+let kpObserver: IntersectionObserver | null = null;
+
+/**
+ * Compose each paragraph shortly before it reaches the reader.
+ *
+ * Three paragraphs in About, forty in a long article: typesetting all of them
+ * at load would hold the main thread and shift the page under whoever is
+ * already reading. One screen of `rootMargin` is the compromise—composition
+ * finishes before the paragraph is visible, so the measured layout shift stays
+ * nil, and a reader who never scrolls never pays for the rest.
+ */
+function enhanceJustified(): void {
+  if (!app || currentLang.startsWith("zh")) return;
+  kpObserver?.disconnect();
+  kpObserver = null;
+
+  const paragraphs = justifiedParagraphs();
+  if (paragraphs.length === 0) return;
+
+  if (!("IntersectionObserver" in globalThis)) {
+    for (const p of paragraphs) void justifyParagraph(p);
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      observer.unobserve(entry.target);
+      void justifyParagraph(entry.target as HTMLParagraphElement);
     }
+  }, { rootMargin: "100% 0px" });
 
-    // Small safety margin: keep KP lines just inside the box so canvas-vs-DOM
-    // rounding never makes the browser wrap a line that justify then can’t fill.
-    const lines = await breakIntoLines(
-      text,
-      font,
-      width - 6,
-      lang,
-      pretextMeasure(letterSpacing),
-    );
-    // The DOM may have been replaced while the patterns loaded (language switch).
-    if (lang !== currentLang || !p.isConnected) return;
-    if (!lines) {
-      p.textContent = text;
-      continue;
-    }
-    p.innerHTML = lines.map((line) =>
-      `<span class="kp-line">${escapeHtml(line)}</span>`
-    ).join("");
+  for (const p of paragraphs) observer.observe(p);
+  kpObserver = observer;
+}
+
+/**
+ * A resize recomposes only what has already been composed—`data-rich` is the
+ * marker. The rest is still queued at the observer and will be measured at the
+ * new width when it gets there.
+ */
+function rejustifyComposed(): void {
+  if (!app || currentLang.startsWith("zh")) return;
+  for (const p of justifiedParagraphs()) {
+    if (p.dataset.rich !== undefined) void justifyParagraph(p);
   }
 }
 
@@ -607,7 +662,7 @@ function afterPaint(): void {
     applyMeasuredLayout();
     restoreChatWidth();
     enhanceChat();
-    void enhanceAboutKp();
+    enhanceJustified();
   });
 }
 
@@ -697,7 +752,7 @@ function init(): void {
     debounce(() => {
       applyMeasuredLayout();
       enhanceChat();
-      void enhanceAboutKp();
+      rejustifyComposed();
     }, 150),
     { passive: true },
   );

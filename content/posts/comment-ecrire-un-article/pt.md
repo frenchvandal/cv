@@ -32,10 +32,10 @@ morta. Este artigo, esse, existe nas sete.
 
 A renderização é a do `Bun.markdown`, o motor GFM nativo: o blogue não
 acrescenta nenhuma dependência de renderização a um projecto que tem duas ao
-todo. Dois tempos — `Bun.markdown.html()` produz o HTML, depois o
-`HTMLRewriter` acrescenta o que ele não faz: âncoras de títulos, `rel` nas
-ligações externas, tabelas deslizáveis, imagens preguiçosas, marcação `lang` das
-passagens chinesas.
+todo. Dois tempos — `Bun.markdown.html()` produz o HTML, depois o `HTMLRewriter`
+acrescenta o que ele não faz: âncoras de títulos, `rel` nas ligações externas,
+tabelas deslizáveis, imagens preguiçosas, marcação `lang` das passagens
+chinesas.
 
 ## O inglês na raiz
 
