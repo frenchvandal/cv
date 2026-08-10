@@ -21,7 +21,7 @@ import {
   SITEMAP_CSS_FILE,
   SITEMAP_XSL_FILE,
 } from "./sitemap.ts";
-import { entryPublished, FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
+import { FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
 
@@ -340,20 +340,18 @@ test(
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
       .toContain(`Sitemap: ${SITE}/sitemap.xml`);
 
-    // One JSON Feed per language, discoverable from its own page and dated
-    // from git—the same source the sitemap's <lastmod> comes from, so a
-    // checkout without history yields no date rather than a wrong one.
-    const published = await entryPublished(translations.en);
-    // Independent truth: the expected item count is derived from the
-    // translation data, not from the code under test—so with history a git
-    // lookup that silently answers nothing (reformatted literal, broken
-    // pickaxe) fails here instead of passing as `0 === 0` below.
-    if (hasHistory) {
-      const en = translations.en;
-      const itemCount = Object.keys(en.experience).length +
-        Object.keys(en.education).length + 1;
-      expect(published.size).toBe(itemCount);
-    }
+    /*
+     * One JSON Feed per language, discoverable from its own page. The items
+     * are the articles, dated from their own frontmatter — explicit and
+     * author-chosen, so unlike the git lookup this replaced, the depth of the
+     * clone cannot empty them.
+     *
+     * A language with no article gets an empty feed, which is valid and
+     * honest: it says there is nothing rather than pointing at another
+     * language's writing. The corpus is empty in this checkout, so that is the
+     * shape asserted here; the assertion still catches a feed that invented
+     * items from somewhere.
+     */
     for (const lang of LANGS) {
       const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
       expect(feed.version).toBe(FEED_VERSION);
@@ -363,10 +361,16 @@ test(
       expect(feed.home_page_url).toBe(
         lang === "en" ? `${SITE}/` : `${SITE}/${lang}/`,
       );
-      expect(feed.items.length).toBeGreaterThan(0);
-      expect(
-        feed.items.filter((i: { date_published?: string }) => i.date_published),
-      ).toHaveLength(published.size);
+      expect(Array.isArray(feed.items)).toBe(true);
+      // Every item carries a date, and it is the article's own — never
+      // synthesized, never absent.
+      for (const item of feed.items) {
+        expect(item.date_published).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00Z$/);
+        expect(item.id).toBe(item.url);
+      }
+      // Nothing from the CV survives in the feed: a subscriber wants the
+      // writing, not a republished career record.
+      expect(JSON.stringify(feed)).not.toContain("Kapia");
       // The bundler emits a hashed favicon; the feed must point at that asset,
       // not at the source path the shell references.
       expect(feed.favicon).toMatch(

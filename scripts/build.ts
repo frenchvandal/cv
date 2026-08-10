@@ -40,13 +40,7 @@ import {
   sitemapXml,
 } from "./sitemap.ts";
 import { sitemapCss, sitemapXsl } from "./sitemap-style.ts";
-import {
-  entryPublished,
-  FEED_MIME,
-  feedFile,
-  feedJson,
-  jsonFeed,
-} from "./feed.ts";
+import { FEED_MIME, feedFile, feedJson, jsonFeed } from "./feed.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
 import { THEME_COLOR } from "../src/config.ts";
 import {
@@ -179,9 +173,6 @@ await Bun.write(`${OUT}/${OG_IMAGE}`, Bun.file(`public/${OG_IMAGE}`));
 
 const shell = await Bun.file(`${OUT}/index.html`).text();
 const faviconAsset = assets.find((name) => name.startsWith("favicon-"));
-const published = SITE
-  ? await entryPublished(translations.en)
-  : new Map<string, string>();
 
 /** Home, CV and blog index for one language, then one page per article it has. */
 function pagesFor(lang: Lang): { ref: PageRef; page: Page }[] {
@@ -335,10 +326,12 @@ for (const lang of LANGS) {
       feedJson(jsonFeed({
         lang,
         t,
+        posts,
         homePageUrl: pageUrl({ kind: "home", lang }),
         feedUrl: `${SITE}/${feedFile(lang)}`,
         ...(faviconAsset ? { favicon: `${SITE}/assets/${faviconAsset}` } : {}),
-        published,
+        postUrl: (post) =>
+          pageUrl({ kind: "post", lang: post.lang, slug: post.slug }),
       })),
     );
     console.log(`  ${file}  (${lang})`);
