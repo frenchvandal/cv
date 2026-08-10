@@ -23,10 +23,10 @@ que vous lisez ; `en.md` à côté, sa version anglaise. Ni table de corresponda
 ni registre : traduire, c’est déposer un fichier à côté ; retirer une langue,
 c’est le supprimer. La règle — un article existe en une à n langues, chaque
 index ne liste que ce qui existe dans la sienne — ne peut pas être violée par
-oubli. Cet article en est la démonstration : il n’existe qu’en français et en
-anglais — un lecteur espagnol ne le verra pas dans son index, et le sélecteur
-mène à la traduction quand elle existe, sinon à l’index de la langue choisie,
-jamais à un lien mort.
+oubli. `shanghai-note` en est la démonstration : il n’existe qu’en chinois, si
+bien qu’un lecteur espagnol ne le voit jamais dans son index, et depuis la page
+chinoise le sélecteur mène à l’index de chaque autre langue plutôt qu’à un lien
+mort. Le présent article, lui, existe dans les sept.
 
 ## Rendre sans dépendance
 
@@ -71,9 +71,10 @@ qu’ils désignent déjà un fichier du site : `assets`, `blog`, `cv`, `index`,
 `404`, `robots`, `sitemap`, `feed`, `og-image`, et les codes de langue — un
 article nommé `fr` écraserait le dossier de la langue.
 
-Le frontmatter est une micro-grammaire stricte, pas du YAML : `title` et `date`
-requis, le reste optionnel, toute clé inconnue ou dupliquée refusée en nommant
-le fichier :
+Le frontmatter est du YAML, et c’est `Bun.YAML.parse` qui le lit — la grammaire
+est celle de Bun, vous écrivez donc ce que vous écrivez déjà ailleurs. Ce que le
+build tient, c’est le contrat : `title` et `date` requis, le reste optionnel,
+toute clé inconnue ou dupliquée refusée en nommant le fichier :
 
 ```text
 ---

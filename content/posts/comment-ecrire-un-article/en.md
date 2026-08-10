@@ -69,9 +69,10 @@ they already name a site file or folder: `assets`, `blog`, `cv`, `index`, `404`,
 `robots`, `sitemap`, `feed`, `og-image`, plus the language codes. A post called
 `fr` would shadow the language folder.
 
-The frontmatter is a strict micro-grammar, not YAML: `title` and `date`
-required, the rest optional, any unknown or duplicated key rejected with the
-file’s name. A complete example:
+The frontmatter is YAML, and it is `Bun.YAML.parse` that reads it — the grammar
+is Bun’s, so you write what you already write everywhere else. What the build
+owns is the contract: `title` and `date` required, the rest optional, any
+unknown or duplicated key rejected with the file’s name. A complete example:
 
 ```text
 ---
