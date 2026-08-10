@@ -7,14 +7,30 @@
  */
 
 import {
+  type Lang,
   LANG_LABEL,
   LANG_NAME,
   SWITCHER_LANGS,
   translations,
 } from "../src/translations.ts";
+import { loadPosts } from "./content.ts";
 
-/** Files whose string literals can reach the page in the Latin-script languages. */
-const LATIN_SOURCES = ["src/translations.ts", "src/render.ts"];
+/*
+ * Files whose string literals can reach the page in the Latin-script languages.
+ *
+ * The renderer used to be one file; splitting it (src/render/) moved every
+ * user-visible literal out of the facade, so scanning `src/render.ts` alone
+ * would now cover nothing. The whole folder is listed instead, and it is the
+ * kind of list that rots silently: nothing fails when a file is missing from
+ * it — a glyph simply falls back to a system font mid-line.
+ */
+const LATIN_SOURCES = [
+  "src/translations.ts",
+  "src/render.ts",
+  "src/render/shell.ts",
+  "src/render/cv.ts",
+  "src/render/blog.ts",
+];
 
 function unique(
   text: string,
@@ -51,12 +67,12 @@ const switcher = SWITCHER_LANGS.map((lang) =>
 
 /**
  * The exact character set each face must carry. Latin glyphs are scanned from
- * every source file that contains user-visible literals—translations.ts AND
- * render.ts, since the markup carries text of its own (the `@handle` in
- * contact) that never passes through a translation object. The two Chinese
- * sets are extracted per language (from the imported translation objects, not
- * the raw file): Simplified and Traditional pages each ship only their own
- * script.
+ * every source file that contains user-visible literals—the translations AND
+ * the renderer modules, since the markup carries text of its own (the
+ * `@handle` in contact) that never passes through a translation object—plus
+ * the articles' rendered text. The two Chinese sets are extracted per language
+ * (from the imported translation objects, not the raw file): Simplified and
+ * Traditional pages each ship only their own script.
  *
  * The theme-toggle glyphs ☾ ☀ (U+263E, U+2600) are the one deliberate
  * exclusion, and `isLatin` stopping at U+024F is what enforces it: Noto Sans
@@ -77,13 +93,40 @@ export async function glyphSets(): Promise<
       LATIN_SOURCES.map((path) => Bun.file(`${root}/${path}`).text()),
     )
   ).join("");
+
+  /*
+   * Articles too, from the rendered plain text rather than the Markdown
+   * source: `#`, `*` and `|` are syntax, never drawn on the page, and a
+   * character that is never drawn has no business enlarging a font subset.
+   * Each language contributes to its own face — a Chinese article grows only
+   * the Chinese subset a Chinese reader downloads.
+   */
+  const posts = await loadPosts();
+  const textIn = (langs: readonly Lang[]) =>
+    posts
+      .filter((post) => langs.includes(post.lang))
+      .map((post) => `${post.title}${post.summary}${post.text}`)
+      .join("");
+
   return {
-    latin: unique(sources, (cp) => isLatin(cp)),
-    sc: unique(JSON.stringify(translations.zh) + switcher, isCjk),
-    tc: unique(JSON.stringify(translations["zh-hant"]) + switcher, isCjk),
+    latin: unique(
+      sources + textIn(["en", "fr", "pt", "es"]),
+      (cp) => isLatin(cp),
+    ),
+    sc: unique(
+      JSON.stringify(translations.zh) + switcher + textIn(["zh"]),
+      isCjk,
+    ),
+    tc: unique(
+      JSON.stringify(translations["zh-hant"]) + switcher + textIn(["zh-hant"]),
+      isCjk,
+    ),
     // Hong Kong shares Taiwan's script but not all its glyph FORMS (骨, 過, 溫
     // are drawn to a different standard), so it gets its own subset rather than
     // reusing the TC one—and its own vocabulary means its own character set.
-    hk: unique(JSON.stringify(translations["zh-hk"]) + switcher, isCjk),
+    hk: unique(
+      JSON.stringify(translations["zh-hk"]) + switcher + textIn(["zh-hk"]),
+      isCjk,
+    ),
   };
 }
