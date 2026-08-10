@@ -20,8 +20,14 @@
 export interface DeployConfig {
   bucket: string;
   region: string;
-  roleArn: string;
-  providerArn: string;
+  /**
+   * The role to assume and the provider that vouches for the token — required
+   * by the OIDC path and by nothing else, so they are optional here and
+   * demanded where they are used. A local round trip against a bucket has no
+   * business inventing two ARNs to satisfy a reader.
+   */
+  roleArn: string | undefined;
+  providerArn: string | undefined;
   /** Optional key prefix, so one bucket can host more than one site. */
   prefix: string;
   /** Optional: the CDN domain to purge. Absent means no purge, not an error. */
@@ -39,8 +45,6 @@ export function readConfig(
   const required = {
     OSS_BUCKET: env.OSS_BUCKET,
     OSS_REGION: env.OSS_REGION,
-    OSS_ROLE_ARN: env.OSS_ROLE_ARN,
-    OSS_OIDC_PROVIDER_ARN: env.OSS_OIDC_PROVIDER_ARN,
   };
   const missing = Object.entries(required)
     .filter(([, value]) => !value?.trim())
@@ -59,8 +63,8 @@ export function readConfig(
   return {
     bucket: required.OSS_BUCKET!,
     region: required.OSS_REGION!,
-    roleArn: required.OSS_ROLE_ARN!,
-    providerArn: required.OSS_OIDC_PROVIDER_ARN!,
+    roleArn: env.OSS_ROLE_ARN?.trim() || undefined,
+    providerArn: env.OSS_OIDC_PROVIDER_ARN?.trim() || undefined,
     prefix: prefix ? `${prefix}/` : "",
     cdnDomain: env.CDN_DOMAIN?.trim() || undefined,
   };
@@ -181,6 +185,12 @@ export async function resolveCredentials(
   env: Record<string, string | undefined> = process.env,
 ): Promise<Credentials> {
   if (env.ACTIONS_ID_TOKEN_REQUEST_URL) {
+    if (!config.roleArn || !config.providerArn) {
+      throw new Error(
+        "deploy: the OIDC path needs OSS_ROLE_ARN and OSS_OIDC_PROVIDER_ARN. " +
+          "They are the only two settings a local round trip does not use.",
+      );
+    }
     return await assumeRole(config, await githubIdToken(AUDIENCE, env));
   }
 
@@ -229,8 +239,8 @@ export async function assumeRole(
       Action: "AssumeRoleWithOIDC",
       Format: "JSON",
       Version: "2015-04-01",
-      RoleArn: config.roleArn,
-      OIDCProviderArn: config.providerArn,
+      RoleArn: config.roleArn!,
+      OIDCProviderArn: config.providerArn!,
       OIDCToken: idToken,
       RoleSessionName: sessionName,
       DurationSeconds: "3600",

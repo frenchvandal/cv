@@ -27,13 +27,24 @@ test("a complete environment yields the config, prefix normalized away", () => {
 });
 
 /*
+ * The bucket and its region are all a round trip needs. The two ARNs belong to
+ * the OIDC hop, and demanding them here would have forced anyone testing
+ * against a real bucket to invent a role that is never assumed.
+ */
+test("the ARNs are not required to talk to a bucket", () => {
+  const config = readConfig({ OSS_BUCKET: "b", OSS_REGION: "eu-central-1" });
+
+  expect(config.bucket).toBe("b");
+  expect(config.roleArn).toBeUndefined();
+  expect(config.providerArn).toBeUndefined();
+});
+
+/*
  * One error naming every missing variable, not the first one: a deploy that
- * fails four times in a row over four settings wastes four runs.
+ * fails twice in a row over two settings wastes two runs.
  */
 test("every missing variable is named at once", () => {
-  expect(() => readConfig({ OSS_BUCKET: "b" })).toThrow(
-    /OSS_REGION, OSS_ROLE_ARN, OSS_OIDC_PROVIDER_ARN/,
-  );
+  expect(() => readConfig({})).toThrow(/OSS_BUCKET, OSS_REGION/);
 });
 
 test("a blank value counts as missing", () => {
