@@ -15,6 +15,8 @@
  * live custom property first and falls back to these only when the stylesheet
  * hasn’t applied.
  */
+import type { Lang } from "./translations.ts";
+
 export const THEME_COLOR = {
   dark: "#000000",
   light: "#ffffff",
@@ -107,3 +109,30 @@ export const CHAT_WIDTH = {
  * the new content. Keep the two in sync.
  */
 export const PAGE_SWAP_MS = 220;
+
+/**
+ * The CJK family each language names in its `--font` stack
+ * ([src/styles.css](src/styles.css)).
+ *
+ * Three places have to agree on this map and none of them can see the other
+ * two: the stylesheet that names the family, the build that emits the matching
+ * `@font-face`, and the runtime that has to add one when the CV changes
+ * language in place. It lives here so the agreement is a shared constant
+ * rather than three copies, and [src/styles.test.ts](src/styles.test.ts) holds
+ * the stylesheet to it.
+ *
+ * The Latin scripts do NOT name Noto Sans SC: they name the small subset
+ * carrying the twenty Chinese characters they actually render. Naming SC there
+ * cost an English reader 342 KB of font, measured.
+ */
+export const INLINE_CJK_FAMILY = "Noto Sans CJK Inline";
+
+export const CJK_FAMILY = {
+  en: INLINE_CJK_FAMILY,
+  fr: INLINE_CJK_FAMILY,
+  pt: INLINE_CJK_FAMILY,
+  es: INLINE_CJK_FAMILY,
+  zh: "Noto Sans SC",
+  "zh-hant": "Noto Sans TC",
+  "zh-hk": "Noto Sans HK",
+} as const satisfies Record<Lang, string>;

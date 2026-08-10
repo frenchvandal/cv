@@ -48,8 +48,8 @@ import {
 import { sitemapCss } from "./sitemap-style.ts";
 import { FEED_MIME, feedFile, feedJson, jsonFeed } from "./feed.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
-import { INLINE_CJK_FAMILY, missingGlyphs } from "./glyphs.ts";
-import { THEME_COLOR } from "../src/config.ts";
+import { missingGlyphs } from "./glyphs.ts";
+import { CJK_FAMILY, THEME_COLOR } from "../src/config.ts";
 import {
   HTML_LANG,
   type Lang,
@@ -186,21 +186,6 @@ function fontAssetName(sourceUrl: string): string {
 }
 
 /**
- * The CJK family each language’s `--font` names, from
- * [src/styles.css](../src/styles.css). One family per page, and the Latin
- * scripts get the small inline subset rather than the whole of Simplified.
- */
-const CJK_FAMILY: Record<Lang, string> = {
-  en: INLINE_CJK_FAMILY,
-  fr: INLINE_CJK_FAMILY,
-  pt: INLINE_CJK_FAMILY,
-  es: INLINE_CJK_FAMILY,
-  zh: "Noto Sans SC",
-  "zh-hant": "Noto Sans TC",
-  "zh-hk": "Noto Sans HK",
-};
-
-/**
  * The @font-face rules a page can actually use, and the preload for the two it
  * is certain to need.
  *
@@ -215,23 +200,19 @@ const CJK_FAMILY: Record<Lang, string> = {
  * batch 1 carries the switcher endonyms every page renders — without it that
  * file waits for the CSS to parse, one round trip behind.
  */
-function fontHead(prefix: string, lang: Lang, kind: Page["kind"]): {
+function fontHead(prefix: string, lang: Lang): {
   preload: string;
   style: string;
 } {
   /*
-   * The CV is the one page that changes language WITHOUT a navigation: the
-   * client re-renders it in place, and the `--font` stack changes with the
-   * `data-lang` attribute. A CV that declared only its own family would ask
-   * for `Noto Sans SC` after a switch to Chinese and find no `@font-face` to
-   * match — measured in Chrome: no Chinese subset fetched at all, the text
-   * falling back to whatever the system has, and pretext measuring a family
-   * that never loaded. So the CV declares every family it can become. The
-   * blog pages navigate, so each gets its own and nothing more.
+   * One CJK family per page, including the CV. The CV changes language
+   * WITHOUT navigating, so it will need another family the moment someone
+   * switches — but declaring all four here made Chrome speculatively fetch
+   * two of them (tc-1 and hk-1, ~340 KB) that `document.fonts` then reported
+   * as never loaded. The runtime adds the one family a switch actually needs,
+   * when it needs it (`ensureCjkFace` in [src/main.ts](../src/main.ts)).
    */
-  const wanted = kind === "cv"
-    ? new Set(["Noto Sans", ...Object.values(CJK_FAMILY)])
-    : new Set(["Noto Sans", CJK_FAMILY[lang]]);
+  const wanted = new Set<string>(["Noto Sans", CJK_FAMILY[lang]]);
   const faces = FONT_FACES
     .filter((face) => wanted.has(face.family))
     .map((face) => ({
@@ -416,11 +397,7 @@ for (const lang of LANGS) {
      * they were never going to see. Charset stays first, since it has to be
      * inside the first 1024 bytes.
      */
-    const { preload: fontPreload, style: fontsStyle } = fontHead(
-      prefix,
-      lang,
-      page.kind,
-    );
+    const { preload: fontPreload, style: fontsStyle } = fontHead(prefix, lang);
     const negotiates = ref.kind === "home" && lang === "en";
     const head = `
     ${fontPreload}

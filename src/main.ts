@@ -1,8 +1,9 @@
 import { feature } from "bun:bundle";
-import { FONT_FACES } from "./fonts.ts";
+import { FONT_FACES, fontFaceCss } from "./fonts.ts";
 import "./styles.css";
 import {
   CHAT_WIDTH,
+  CJK_FAMILY,
   DISPLAY_FONT,
   HERO_FIT,
   NAV_FIT,
@@ -56,10 +57,47 @@ const app = document.getElementById("app");
 let currentLang: Lang = "en";
 let theme: Theme = "light";
 
+/**
+ * Add the `@font-face` rules for a language the page did not ship with.
+ *
+ * Every page declares exactly the family its own `--font` stack names, which
+ * is what keeps an English reader from downloading the Simplified subsets. The
+ * CV is the one page that changes language without navigating, so a switch to
+ * Chinese asks for a family the head never declared — and a stack whose
+ * families are all undeclared falls to `system-ui`, which pretext then
+ * measures instead of the font on screen.
+ *
+ * Declaring all four families up front was the other way, and it was worse:
+ * measured in Chrome, the browser speculatively fetched tc-1 and hk-1 (~340 KB)
+ * that `document.fonts` then reported as never loaded. Adding one family at the
+ * moment it is asked for costs nothing until someone switches.
+ *
+ * The rules go in their own `<style>`; the build-injected one is left alone.
+ */
+function ensureCjkFace(lang: Lang): void {
+  const family = CJK_FAMILY[lang];
+  const id = `fonts-${family.replace(/\W+/g, "-")}`;
+  if (document.getElementById(id)) return;
+  if (
+    document.querySelector(`style[data-fonts]`)?.textContent?.includes(family)
+  ) {
+    return;
+  }
+
+  const style = document.createElement("style");
+  style.id = id;
+  style.dataset.fonts = "switch";
+  style.textContent = fontFaceCss(
+    FONT_FACES.filter((face) => face.family === family),
+  );
+  document.head.appendChild(style);
+}
+
 function setLang(next: Lang): void {
   currentLang = next;
   root.lang = HTML_LANG[next];
   root.dataset.lang = next;
+  ensureCjkFace(next);
 }
 
 /**
