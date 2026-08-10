@@ -71,7 +71,7 @@ jobs:
           # Upload static build output
           path: "./dist"
 
-  # Single deploy job since we're just deploying
+  # Single deploy job since we’re just deploying
   deploy:
     needs: build
     environment:

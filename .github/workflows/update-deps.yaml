@@ -40,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          # Full history: this job's `bun test` is the only gate between a
+          # Full history: this job’s `bun test` is the only gate between a
           # dependency bump and main, and the feed/sitemap date assertions in
           # build.test.ts pass vacuously in a shallow clone.
           fetch-depth: 0

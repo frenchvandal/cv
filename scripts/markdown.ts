@@ -1,48 +1,48 @@
 /*
- * Markdown → HTML, en deux temps.
+ * Markdown → HTML, in two movements.
  *
- * 1. `Bun.markdown.html()` fait le rendu GFM. Il est natif, donc le blog n’a
- *    aucune dépendance de rendu — mais il laisse passer le HTML brut, d’où le
- *    garde-fou ci-dessous.
- * 2. Une passe `HTMLRewriter` applique ce que le rendu ne fait pas : ancres de
- *    titres, `rel` sur les liens externes, tables défilables, images
- *    paresseuses, et le marquage RGAA des runs chinois.
+ * 1. `Bun.markdown.html()` does the GFM rendering. It is native, so the blog
+ *    carries no rendering dependency—but it lets raw HTML through, hence the
+ *    guard below.
+ * 2. An `HTMLRewriter` pass applies what the renderer does not: heading
+ *    anchors, `rel` on external links, scrollable tables, lazy images, and
+ *    the RGAA marking of Chinese runs.
  *
- * Le marquage CJK passe ici par le gestionnaire de nœuds texte, et non par une
- * expression régulière sur une chaîne échappée comme dans src/render.ts : il ne
- * peut donc structurellement pas atteindre un attribut ou un nom de balise.
+ * The CJK marking goes through the text-node handler here, not through a
+ * regular expression over an escaped string as in src/render.ts: it therefore
+ * cannot structurally reach an attribute or a tag name.
  *
- * LIENS INTERNES : aucune réécriture, et c’est un choix mesuré. Les articles
- * vivent à `blog/x.html` en anglais et `<lang>/blog/x.html` ailleurs, donc la
- * même écriture relative résout juste aux deux profondeurs :
+ * INTERNAL LINKS: no rewriting, and that is a measured choice. Articles live
+ * at `blog/x.html` in English and `<lang>/blog/x.html` elsewhere, so the same
+ * relative spelling resolves correctly at both depths:
  *
- *   ./autre.html   → l’article voisin        (blog/autre.html, fr/blog/autre.html)
- *   ../cv.html     → le CV de cette langue   (cv.html, fr/cv.html)
- *   ../            → l’accueil de la langue  (/, fr/)
- *   ./             → l’index du blog         (blog/, fr/blog/)
+ *   ./other.html   → the neighbouring article (blog/other.html, fr/blog/other.html)
+ *   ../cv.html     → this language’s CV       (cv.html, fr/cv.html)
+ *   ../            → this language’s home     (/, fr/)
+ *   ./             → the blog index           (blog/, fr/blog/)
  *
- * Le CV est toujours d’un cran au-dessus de `blog/`, dans chaque langue : c’est
- * ce qui rend la disposition auto-cohérente. Réécrire `./x` en « depuis la
- * racine du site » casserait au contraire le lien le plus naturel qu’un article
- * puisse porter, celui vers son voisin.
+ * The CV always sits one level above `blog/`, in every language: that is what
+ * makes the layout self-consistent. Rewriting `./x` as “from the site root”
+ * would instead break the most natural link an article can carry, the one to
+ * its neighbour.
  */
 
 import type { Lang } from "../src/translations.ts";
 
-/** CJK idéographique et ponctuation CJK — les runs qui doivent déclarer leur langue. */
+/** CJK ideographs and CJK punctuation—the runs that must declare their language. */
 const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
 
 /*
- * Mesuré, pas mémorisé : ensemble des balises que Bun.markdown.html() produit
- * pour toute la syntaxe GFM que ce dépôt exerce (titres h1-h6, emphase,
- * fort, barré, code en ligne et en bloc, citations, listes simples,
- * numérotées et de tâches, tables avec alignement, liens dont les autoliens,
- * images, règle horizontale, saut de ligne dur). Un round précédent
- * bloquait des balises connues une par une (`script`, `iframe`…) ; un audit
- * a trouvé sept vecteurs qui n’y figuraient pas (`form`, `button`, `svg`…).
- * Une liste noire de balises est ouverte par construction — il suffit d’un
- * huitième vecteur non prévu. Cette liste est fermée dans l’autre sens :
- * tout ce qui n’y figure pas est refusé, connu ou non.
+ * Measured, not remembered: the set of tags Bun.markdown.html() produces for
+ * all the GFM syntax this repository exercises (h1-h6 headings, emphasis,
+ * strong, strikethrough, inline and fenced code, block quotes, plain,
+ * numbered and task lists, tables with alignment, links including autolinks,
+ * images, thematic break, hard line break). An earlier round blocked known
+ * tags one by one (`script`, `iframe`…); an audit found seven vectors that
+ * were not on that list (`form`, `button`, `svg`…). A blacklist of tags is
+ * open by construction—one unforeseen eighth vector is enough. This list is
+ * closed the other way round: anything absent from it is refused, known or
+ * not.
  */
 const ALLOWED_TAGS = new Set([
   "a",
@@ -74,18 +74,18 @@ const ALLOWED_TAGS = new Set([
   "ul",
 ]);
 
-/** Attributs de navigation/chargement — les seuls où un schéma d’URI s’exécute. */
+/** Navigation and loading attributes—the only ones where a URI scheme runs. */
 const URI_ATTRIBUTES = new Set(["href", "src"]);
 
 /*
- * `href`/`src` fermés à leur tour : seuls http, https, mailto et le relatif
- * (pas de schéma) sont légitimes dans un article. Comme pour les balises,
- * fermer la liste évite de devoir connaître à l’avance chaque façon
- * d’écrire "javascript:" — entité HTML, tabulation, casse…
+ * `href`/`src` closed in their turn: only http, https, mailto and the
+ * relative form (no scheme) are legitimate in an article. As with the tags,
+ * closing the list avoids having to know in advance every way of writing
+ * `javascript:`—HTML entity, tab, letter case…
  */
 const ALLOWED_URI_SCHEMES = new Set(["http", "https", "mailto"]);
 
-/** HTMLRewriter normalise déjà les noms d’attribut en minuscules : un préfixe suffit. */
+/** HTMLRewriter already lowercases attribute names: a prefix test is enough. */
 function isEventAttribute(name: string): boolean {
   return name.startsWith("on");
 }
@@ -208,10 +208,10 @@ function isSchemeChar(ch: string): boolean {
 }
 
 /**
- * Le préfixe de schéma d’une URI (RFC 3986 §3.1) : une lettre puis
- * lettres/chiffres/+/-/. jusqu’au premier ':'. Ce qui n’a pas cette forme
- * n’est pas un schéma — "./a:b" a un ':' dans un chemin relatif, pas de
- * schéma. `null` veut dire "relatif", pas "à refuser".
+ * The scheme prefix of a URI (RFC 3986 §3.1): a letter, then
+ * letters/digits/`+`/`-`/`.` up to the first `:`. Anything not of that shape
+ * is no scheme at all—`./a:b` has a `:` inside a relative path. `null` means
+ * “relative”, not “refuse this”.
  */
 function schemeOf(value: string): string | null {
   const colon = value.indexOf(":");
@@ -280,9 +280,9 @@ function isAllowedUri(rawValue: string): boolean {
 export function assertSafeHtml(html: string, path: string): void {
   let violation: string | undefined;
 
-  // Les handlers HTMLRewriter de Bun s’exécutent de façon synchrone pour une
-  // entrée string (vérifié empiriquement) : pas de flux à consommer, donc
-  // `assertSafeHtml` reste une fonction synchrone comme son appelante.
+  // Bun’s HTMLRewriter handlers run synchronously for a string input (verified
+  // empirically): there is no stream to consume, so `assertSafeHtml` stays a
+  // synchronous function, like its caller.
   new HTMLRewriter().on("*", {
     element(el) {
       if (violation) return;
@@ -305,8 +305,8 @@ export function assertSafeHtml(html: string, path: string): void {
 
   if (violation) {
     throw new Error(
-      `${path}: HTML interdit dans une source d'article (${violation}). ` +
-        "Les articles sont du Markdown ; le HTML exécutable n'y a pas sa place.",
+      `${path}: forbidden HTML in an article source (${violation}). ` +
+        "Articles are Markdown; executable HTML has no place in them.",
     );
   }
 }
@@ -325,11 +325,10 @@ export function slugifyHeading(text: string): string {
 }
 
 /*
- * Un compteur par slug de base ne suffit pas : « Notes » répété deux fois
- * produit notes puis notes-2, mais un titre littéral « Notes 2 » slugifie
- * lui aussi en notes-2 — collision silencieuse, id dupliqué, ancre cassée.
- * Il faut donc suivre les ids réellement attribués, pas les bases qui y ont
- * mené.
+ * A counter per base slug is not enough: “Notes” repeated twice yields notes
+ * and then notes-2, but a literal heading “Notes 2” slugifies to notes-2 as
+ * well—a silent collision, a duplicate id, a broken anchor. What has to be
+ * tracked is the ids actually handed out, not the bases that led to them.
  */
 function uniqueId(base: string, used: Set<string>): string {
   if (!used.has(base)) {
@@ -346,28 +345,27 @@ function uniqueId(base: string, used: Set<string>): string {
 export async function renderMarkdown(
   body: string,
   lang: Lang,
-  // Optionnel et par défaut générique : la signature d’origine (body, lang)
-  // reste valable pour les appelants qui n’ont pas de chemin d’article (les
-  // tests). Un vrai appelant du pipeline de contenu peut fournir le chemin
-  // réel pour un message d’erreur exploitable.
+  // Optional, with a generic default: the original signature (body, lang)
+  // stays valid for callers that have no article path (the tests). A real
+  // caller from the content pipeline can supply the actual path and get an
+  // error message worth acting on.
   path = "<markdown>",
 ): Promise<string> {
   const rendered = Bun.markdown.html(body);
-  // Vérifie le HTML qu’on vient de produire, pas la source : assertSafeHtml
-  // n’a pas besoin de re-rendre (contrairement à assertSafeMarkdown, qui elle
-  // part de la source et n’a que ça).
+  // Checks the HTML just produced, not the source: assertSafeHtml has no need
+  // to render again (unlike assertSafeMarkdown, which starts from the source
+  // and has nothing else).
   assertSafeHtml(rendered, path);
 
-  // Le HTMLRewriter de Bun expose bien `el.onEndTag()`, mais contrairement à
-  // l’API Cloudflare dont le brief s’inspirait, l’appeler ne permet pas de
-  // poser un attribut a posteriori : la balise ouvrante est déjà sérialisée
-  // avant que le callback s’exécute (`setAttribute` dans `onEndTag` n’a alors
-  // aucun effet — vérifié empiriquement). Or l’id d’un titre dépend de tout
-  // son texte, connu seulement une fois la balise fermante atteinte. D’où les
-  // deux passes : la première recueille le texte de chaque titre dans l’ordre
-  // de rencontre (un tableau local, donc sûr sous Promise.all), la seconde
-  // pose les ids en s’appuyant sur cette collecte pendant que `element()` peut
-  // encore modifier la balise ouvrante.
+  // Bun’s HTMLRewriter does expose `el.onEndTag()`, but unlike the Cloudflare
+  // API the brief drew on, calling it does not allow an attribute to be set
+  // after the fact: the opening tag is already serialized by the time the
+  // callback runs (`setAttribute` inside `onEndTag` then has no effect—
+  // verified empirically). A heading’s id, however, depends on all of its
+  // text, which is known only once the closing tag is reached. Hence the two
+  // passes: the first collects each heading’s text in encounter order (a
+  // local array, so it stays safe under Promise.all), the second sets the ids
+  // from that collection while `element()` can still modify the opening tag.
   const headingTexts: string[] = [];
   await new HTMLRewriter()
     .on("h2, h3, h4", {
@@ -384,18 +382,17 @@ export async function renderMarkdown(
 
   const usedIds = new Set<string>();
   let headingIndex = 0;
-  // Vrai quand la page n’est PAS écrite en chinois : c’est alors qu’un run CJK
-  // est un changement de langue à déclarer (RGAA 8.7). Sur une page zh*, le
-  // chinois est la langue de la page elle-même, il n’y a rien à marquer.
+  // True when the page is NOT written in Chinese: only then is a CJK run a
+  // change of language to declare (RGAA 8.7). On a zh* page Chinese is the
+  // language of the page itself, and there is nothing to mark.
   const markCjk = !lang.startsWith("zh");
-  // Profondeur d’imbrication sous <code> ou <pre>. Le handler `text` d’un
-  // ancêtre (p, li…) reçoit aussi le texte de ses descendants, donc un
-  // <code> niché dans un <p> passerait par le marquage CJK au même titre que
-  // la prose — décision : du code n’est pas de la prose, ni en ligne ni en
-  // bloc, un lecteur d’écran n’a rien à gagner à un changement de langue sur
-  // un identifiant. `onEndTag` ne peut pas modifier SA PROPRE balise (voir
-  // plus haut) mais son callback se déclenche bien au bon moment dans le
-  // flux, avant le texte qui suit : suffisant pour un simple compteur.
+  // Nesting depth under <code> or <pre>. An ancestor’s `text` handler (p,
+  // li…) also receives the text of its descendants, so a <code> nested in a
+  // <p> would go through the CJK marking exactly like prose—decision: code is
+  // not prose, inline or block, and a screen reader has nothing to gain from
+  // a change of language on an identifier. `onEndTag` cannot modify ITS OWN
+  // tag (see above), but its callback does fire at the right point in the
+  // stream, before the text that follows: enough for a plain counter.
   let codeDepth = 0;
 
   return await new HTMLRewriter()

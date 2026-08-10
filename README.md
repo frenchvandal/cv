@@ -6,7 +6,7 @@ offered as a seventh button—pre-rendered to static HTML and progressively
 enhanced with pretext-driven typography. No framework.
 
 Articles are Markdown on disk; the CV is one page among them. An article exists
-in one or more languages, and each language's index lists only what exists in
+in one or more languages, and each language’s index lists only what exists in
 it—no dead links, no ghost translations.
 
 The regional variants are deliberate: Portuguese is European and follows the
@@ -33,10 +33,10 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
   a writing index for each of the seven languages, plus one page per article,
   with the content already in the HTML (SEO, link previews, works with JS off).
   English sits at the site root, every other language in its own folder; asset
-  paths are computed from each page's depth and stay relative, so `dist/`
+  paths are computed from each page’s depth and stay relative, so `dist/`
   deploys to any base path unchanged.
 - **A Hong Kong / Macau reading** of the Traditional pages, in local vocabulary
-  (軟件, 項目, 網絡…) and Noto Sans HK's character forms. It is a five-term
+  (軟件, 項目, 網絡…) and Noto Sans HK’s character forms. It is a five-term
   projection of the Taiwan page, not a seventh translation to maintain, and it
   has no button in the switcher: browsers asking for `zh-HK` or `zh-MO` are sent
   there, and `hreflang="zh-HK"` points search engines at it.
@@ -54,7 +54,7 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
   files; `unicode-range` and per-page font stacks keep each Chinese subset lazy.
   No web-font CDN, no runtime network dependency.
 - **Language negotiation**—a visitor landing on the site root is sent to the
-  page in their browser's language (English when none matches); a language they
+  page in their browser’s language (English when none matches); a language they
   pick by hand is remembered and outranks the browser from then on. URLs that
   name a language (`/fr/`) are never redirected, so shared links keep their
   language. The pre-blog URLs (`fr.html`) still answer, through `noindex` relay
@@ -70,7 +70,7 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
 
 Bun ≥ 1.3.14 is the only requirement to build, test and serve the site.
 [Deno](https://deno.com) is a second, **optional** prerequisite: it is the
-project's formatter and linter (`deno fmt` then `deno lint`, run from the root
+project’s formatter and linter (`deno fmt` then `deno lint`, run from the root
 at the end of a change—there is no config, the defaults are the contract), and
 `bun run fonts:update` shells out to `deno fmt` to normalize the file it
 generates. That call is `.nothrow()`, so without Deno the regeneration still
@@ -124,12 +124,12 @@ invisible to crawlers and to `parseSitemap`). It shows less than a table
 would—CSS cannot turn `<loc>` into a link, and no selector reads element text,
 so there is no language column. An XSLT stylesheet used to draw that table; it
 was removed rather than kept to its end date, since Chrome drops XSLT in 158 and
-it had already fallen out of step with the site's layout.
+it had already fallen out of step with the site’s layout.
 
 Each page also links a [JSON Feed 1.1](https://www.jsonfeed.org/version/1.1/)
 (`dist/feed.json` for English, `dist/feed.<lang>.json` otherwise). Its items are
-that language's articles, with `date_published` taken from the frontmatter—the
-author's own date, explicit, and nothing a shallow clone can empty. Which fields
+that language’s articles, with `date_published` taken from the frontmatter—the
+author’s own date, explicit, and nothing a shallow clone can empty. Which fields
 are emitted, and why the optional ones it leaves out are left out, is documented
 at the top of [scripts/feed.ts](scripts/feed.ts).
 
@@ -148,7 +148,7 @@ compile error, not a blank on the page.
 
 Articles are Markdown on disk, at `content/posts/<slug>/<lang>.md`: the folder
 name is the slug, the file name is the language. An article exists in one or
-more languages, and a language's index lists only what exists in it — the file
+more languages, and a language’s index lists only what exists in it — the file
 system carries the fact, so there is no table to keep in step. Writing
 `zh-hant.md` is enough for Hong Kong: the lexical projection derives it, and an
 explicit `zh-hk.md` wins if you want to write one.

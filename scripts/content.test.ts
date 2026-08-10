@@ -47,7 +47,7 @@ const article = (title: string, extra = "") =>
     .filter(Boolean)
     .join("\n");
 
-test("découvre un article par langue et rend son HTML", async () => {
+test("discovers one article per language and renders its HTML", async () => {
   const root = await corpus({
     "mesurer/fr.md": article("Mesurer"),
     "mesurer/en.md": article("Measuring"),
@@ -62,7 +62,7 @@ test("découvre un article par langue et rend son HTML", async () => {
   expect(posts.every((p) => p.text.includes("Le corps."))).toBe(true);
 });
 
-test("les brouillons sont exclus, sauf sous DRAFTS=1", async () => {
+test("drafts are excluded, except under DRAFTS=1", async () => {
   const root = await corpus({
     "publie/fr.md": article("Publié"),
     "brouillon/fr.md": article("Brouillon", "draft: true"),
@@ -79,7 +79,7 @@ test("les brouillons sont exclus, sauf sous DRAFTS=1", async () => {
   }
 });
 
-test("zh-hk est dérivé de zh-hant par projection lexicale", async () => {
+test("zh-hk is derived from zh-hant by lexical projection", async () => {
   const root = await corpus({
     "x/zh-hant.md": [
       "---",
@@ -100,7 +100,7 @@ test("zh-hk est dérivé de zh-hant par projection lexicale", async () => {
   expect(hk!.html).not.toContain("軟體");
 });
 
-test("un zh-hk explicite l'emporte sur la projection", async () => {
+test("an explicit zh-hk wins over the projection", async () => {
   const root = await corpus({
     "x/zh-hant.md": article("台灣版"),
     "x/zh-hk.md": article("香港版"),
@@ -110,7 +110,7 @@ test("un zh-hk explicite l'emporte sur la projection", async () => {
   expect(hk!.title).toBe("香港版");
 });
 
-test("un zh-hk sans zh-hant correspondant est chargé tel quel", async () => {
+test("a zh-hk with no matching zh-hant loads as it stands", async () => {
   // The projection is additive, not a requirement: a hand-written zh-hk
   // does not need a Taiwan sibling to be valid on its own.
   const root = await corpus({ "y/zh-hk.md": article("HK seul") });
@@ -122,7 +122,7 @@ test("un zh-hk sans zh-hant correspondant est chargé tel quel", async () => {
   expect(posts[0]!.title).toBe("HK seul");
 });
 
-test("le résumé vient du frontmatter, sinon du texte", async () => {
+test("the summary comes from the frontmatter, failing that from the text", async () => {
   const root = await corpus({
     "a/fr.md": article("A", "summary: Écrit à la main."),
     "b/fr.md": article("B"),
@@ -133,17 +133,17 @@ test("le résumé vient du frontmatter, sinon du texte", async () => {
   expect(posts.find((p) => p.slug === "b")!.summary).toBe("Le corps.");
 });
 
-test("un slug réservé casse le chargement", async () => {
+test("a reserved slug breaks the load", async () => {
   const root = await corpus({ "cv/fr.md": article("Collision") });
   expect(loadPosts(root)).rejects.toThrow("cv");
 });
 
-test("un nom de fichier qui n'est pas une langue casse le chargement", async () => {
+test("a file name that is not a language breaks the load", async () => {
   const root = await corpus({ "x/de.md": article("Deutsch") });
   expect(loadPosts(root)).rejects.toThrow("de");
 });
 
-test("du HTML dangereux casse le chargement, avec le chemin", async () => {
+test("dangerous HTML breaks the load, naming the path", async () => {
   const root = await corpus({
     "x/fr.md": [
       "---",
@@ -158,7 +158,7 @@ test("du HTML dangereux casse le chargement, avec le chemin", async () => {
   expect(loadPosts(root)).rejects.toThrow("x/fr.md");
 });
 
-test("l'ordre de sortie est déterministe, trié par slug puis par langue", async () => {
+test("the output order is deterministic, by slug and then by language", async () => {
   // Bun.Glob().scan() was measured (see task-5-report.md) to hand back
   // entries in an order that is neither insertion order nor lexicographic —
   // stable within one process, but not something a consumer should rely on.
@@ -178,7 +178,7 @@ test("l'ordre de sortie est déterministe, trié par slug puis par langue", asyn
   ]);
 });
 
-test("Post.text ne colle aucun mot à travers une frontière de bloc", async () => {
+test("Post.text glues no word across a block boundary", async () => {
   // Exercises the syntax this blog’s articles use: heading, paragraph,
   // bullet list, table, fenced code block. Measured (see task-5-report.md):
   // Bun.markdown.render() with no callbacks glues every block straight into
@@ -230,7 +230,7 @@ test("Post.text ne colle aucun mot à travers une frontière de bloc", async () 
   }
 });
 
-test("le résumé dérivé coupe en fin de première phrase, même sur un texte multi-paragraphe", async () => {
+test("a derived summary cuts at the end of the first sentence, multi-paragraph included", async () => {
   // This is the test that proves the dead branch in deriveSummary is
   // reachable again. Without a separator between blocks, the period at the
   // end of the first paragraph touches the next paragraph directly (no

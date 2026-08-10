@@ -41,12 +41,12 @@ jobs:
       - name: Build (includes type check)
         run: bun run build
 
-      # Deno is this repo's formatter and linter (there is no config file—both
+      # Deno is this repo’s formatter and linter (there is no config file—both
       # run on their defaults, from the root). Last on purpose: a stray blank
       # line failing the job before `bun test` ran would hide a real regression
       # behind the cheapest possible fix.
       # `@v2` is a *branch* on this action, not a tag—denoland/setup-deno
-      # publishes no floating major tag, so don't "fix" this to a tag ref
+      # publishes no floating major tag, so don’t "fix" this to a tag ref
       # without checking that one exists.
       - name: Setup Deno
         uses: denoland/setup-deno@v2

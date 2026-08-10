@@ -55,39 +55,39 @@ test("feedFile names the feeds, English unsuffixed", () => {
   expect(feedFile("zh-hant")).toBe("feed.zh-hant.json");
 });
 
-test("les items sont les articles de la langue, du plus récent au plus ancien", () => {
+test("the items are that language’s articles, newest first", () => {
   const feed = jsonFeed(options());
   expect(feed.items.map((i) => i.title)).toEqual(["Titre b", "Titre a"]);
 });
 
-test("un item porte le HTML de l'article, pas seulement son texte", () => {
+test("an item carries the article’s HTML, not only its text", () => {
   const feed = jsonFeed(options());
   expect(feed.items[0]!.content_html).toBe("<p>Le corps de b.</p>");
 });
 
-test("date_published vient du frontmatter, pas de git", () => {
+test("date_published comes from the frontmatter, not from git", () => {
   const feed = jsonFeed(options());
   expect(feed.items[0]!.date_published).toBe("2026-09-01T00:00:00Z");
 });
 
-test("date_modified n'existe qu'avec un champ updated", () => {
+test("date_modified exists only where an updated field does", () => {
   const feed = jsonFeed(options());
   expect(feed.items[0]!.date_modified).toBe("2026-09-12T00:00:00Z");
   expect(feed.items[1]!.date_modified).toBeUndefined();
 });
 
-test("l'id et l'url d'un item sont l'URL absolue de l'article", () => {
+test("an item’s id and url are both the article’s absolute URL", () => {
   const feed = jsonFeed(options());
   expect(feed.items[0]!.id).toBe("https://exemple.test/fr/blog/b.html");
   expect(feed.items[0]!.url).toBe("https://exemple.test/fr/blog/b.html");
 });
 
-test("aucune entrée du CV ne subsiste dans le feed", () => {
+test("no CV entry survives in the feed", () => {
   const feed = jsonFeed(options());
   expect(JSON.stringify(feed)).not.toContain("Kapia");
 });
 
-test("le feed d'une langue sans article est valide et vide", () => {
+test("the feed of a language with no article is valid and empty", () => {
   const feed = jsonFeed(options({ lang: "es", t: translations.es }));
   expect(feed.version).toBe(FEED_VERSION);
   expect(feed.items).toEqual([]);

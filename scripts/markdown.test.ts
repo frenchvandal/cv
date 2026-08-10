@@ -1,7 +1,7 @@
 /*
- * Le rendu Markdown est la seule porte par laquelle du HTML non écrit à la main
- * entre dans les pages. Ces tests tiennent les deux bouts : les réécritures que
- * la passe HTMLRewriter doit faire, et ce que le garde-fou doit refuser.
+ * Markdown rendering is the only door through which HTML nobody hand-wrote
+ * enters the pages. These tests hold both ends: the rewrites the HTMLRewriter
+ * pass has to perform, and what the guard has to refuse.
  */
 
 import { expect, test } from "bun:test";
@@ -12,22 +12,22 @@ import {
   slugifyHeading,
 } from "./markdown.ts";
 
-test("les titres reçoivent un id slugifié", async () => {
+test("headings are given a slugified id", async () => {
   const html = await renderMarkdown("## Mesurer le texte, sans reflow", "fr");
   expect(html).toContain('<h2 id="mesurer-le-texte-sans-reflow"');
 });
 
-test("un id de titre reste unique quand le texte se répète", async () => {
+test("a heading id stays unique when the text repeats", async () => {
   const html = await renderMarkdown("## Notes\n\ntexte\n\n## Notes", "fr");
   expect(html).toContain('id="notes"');
   expect(html).toContain('id="notes-2"');
 });
 
-test("un id dérivé n'écrase pas un id littéral déjà pris", async () => {
-  // "Notes" répété donne notes puis notes-2 par déduplication ; mais un
-  // troisième titre littéralement "Notes 2" slugifie lui aussi en notes-2.
-  // Le compteur par base doit céder la place à un suivi des ids réellement
-  // posés, sous peine de produire deux fois id="notes-2".
+test("a derived id does not overwrite a literal one already taken", async () => {
+  // “Notes” repeated gives notes and then notes-2 by deduplication; but a
+  // third heading reading literally “Notes 2” slugifies to notes-2 as well.
+  // The per-base counter has to give way to tracking the ids actually handed
+  // out, on pain of emitting id="notes-2" twice.
   const html = await renderMarkdown(
     "## Notes\n\n## Notes\n\n## Notes 2",
     "fr",
@@ -37,7 +37,7 @@ test("un id dérivé n'écrase pas un id littéral déjà pris", async () => {
   expect(new Set(ids).size).toBe(3);
 });
 
-test("les liens externes reçoivent rel, les internes non", async () => {
+test("external links are given rel, internal ones are not", async () => {
   const html = await renderMarkdown(
     "[dehors](https://exemple.test) et [dedans](../cv.html)",
     "fr",
@@ -46,41 +46,41 @@ test("les liens externes reçoivent rel, les internes non", async () => {
   expect(html.match(/rel="noopener noreferrer"/g)).toHaveLength(1);
 });
 
-test("une table est enveloppée dans un conteneur défilable", async () => {
+test("a table is wrapped in a scrollable container", async () => {
   const html = await renderMarkdown("| a | b |\n|---|---|\n| 1 | 2 |", "fr");
   expect(html).toContain('<div class="table-scroll">');
   expect(html.indexOf('<div class="table-scroll">'))
     .toBeLessThan(html.indexOf("<table>"));
 });
 
-test("les images sont paresseuses", async () => {
+test("images are lazy", async () => {
   const html = await renderMarkdown("![chat](a.png)", "fr");
   expect(html).toContain('loading="lazy"');
   expect(html).toContain('decoding="async"');
 });
 
-test("un run CJK dans une page latine est marqué (RGAA 8.7)", async () => {
+test("a CJK run inside a Latin page is marked (RGAA 8.7)", async () => {
   const html = await renderMarkdown("On dit 微辣 à Chengdu.", "fr");
   expect(html).toContain('<span lang="zh-Hans">微辣</span>');
 });
 
-test("une page chinoise ne marque rien : il n'y a pas de changement de langue", async () => {
+test("a Chinese page marks nothing: there is no change of language", async () => {
   const html = await renderMarkdown("成都的微辣。", "zh");
   expect(html).not.toContain('lang="zh-Hans"');
 });
 
-test("le marquage CJK n'entre pas dans du code inline", async () => {
-  // Décision : du code n’est pas de la prose, un lecteur d’écran n’a rien à
-  // gagner à un changement de langue sur un identifiant. Le handler `text` sur
-  // "p, li, td, th, h2, h3, h4, blockquote" reçoit quand même le texte des
-  // descendants (ici <code> imbriqué dans <p>) : le compteur de profondeur
-  // code/pre doit neutraliser le marquage malgré cette remontée.
+test("the CJK marking does not reach into inline code", async () => {
+  // Decision: code is not prose, and a screen reader has nothing to gain from
+  // a change of language on an identifier. The `text` handler on
+  // "p, li, td, th, h2, h3, h4, blockquote" still receives the text of its
+  // descendants (here a <code> nested in a <p>): the code/pre depth counter
+  // has to neutralize the marking in spite of that bubbling.
   const html = await renderMarkdown("Du texte avec `du code 微辣` ici.", "fr");
   expect(html).toContain("<code>du code 微辣</code>");
   expect(html).not.toContain('lang="zh-Hans"');
 });
 
-test("le marquage CJK n'entre pas non plus dans un bloc de code clôturé", async () => {
+test("nor does it reach into a fenced code block", async () => {
   const html = await renderMarkdown("```\n微辣\n```", "fr");
   expect(html).not.toContain('lang="zh-Hans"');
 });
@@ -90,12 +90,12 @@ test.each([
   ['<iframe src="x"></iframe>'],
   ['<img src=x onerror="alert(1)">'],
   ["<SCRIPT>alert(1)</SCRIPT>"],
-])("le garde-fou refuse %s", (source) => {
+])("the guard refuses %s", (source) => {
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
     .toThrow("content/posts/x/fr.md");
 });
 
-test("le garde-fou laisse passer du Markdown ordinaire", () => {
+test("the guard lets ordinary Markdown through", () => {
   expect(() =>
     assertSafeMarkdown("Du *texte* et `du code`.", "content/posts/x/fr.md")
   ).not.toThrow();
@@ -104,7 +104,7 @@ test("le garde-fou laisse passer du Markdown ordinaire", () => {
 test.each([
   ["[x](javascript:alert(1))"],
   ['<a href="javascript:alert(1)">'],
-])("le garde-fou refuse aussi %s", (source) => {
+])("the guard also refuses %s", (source) => {
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
     .toThrow("content/posts/x/fr.md");
 });
@@ -113,7 +113,7 @@ test.each([
   ["réglez online=true dans la config"],
   ["le paramètre oneshot=1"],
   ["passez onward=2"],
-])("le garde-fou n'est pas dupe d'un « on…= » hors balise : %s", (source) => {
+])("the guard is not fooled by an “on…=” outside a tag: %s", (source) => {
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
     .not.toThrow();
 });
@@ -122,13 +122,14 @@ test.each([
   ["<img/onerror=alert(1)>"],
   ["<svg/onload=alert(1)>"],
 ])(
-  "le garde-fou laisse passer %s : la barre oblique collée au nom de balise n'ouvre pas de balise en CommonMark",
+  "the guard lets %s through: a slash against the tag name opens no tag in CommonMark",
   (source) => {
-    // Mesuré : Bun.markdown.html() exige un espace avant un attribut (grammaire
-    // CommonMark des balises en ligne). Sans cet espace, "<img/onerror=…>" n’est
-    // reconnu comme balise par aucun parseur CommonMark ; il ressort en texte
-    // échappé — &lt;img/onerror=alert(1)&gt; — donc jamais comme noeud <img> réel.
-    // assertSafeHtml n’a rien à refuser : il n’y a rien à exécuter dans la page.
+    // Measured: Bun.markdown.html() requires a space before an attribute (the
+    // CommonMark grammar for inline tags). Without that space,
+    // "<img/onerror=…>" is recognized as a tag by no CommonMark parser; it
+    // comes back out as escaped text—&lt;img/onerror=alert(1)&gt;—so never as
+    // a real <img> node. assertSafeHtml has nothing to refuse: there is
+    // nothing to execute in the page.
     const html = Bun.markdown.html(source);
     expect(html).not.toContain("<img");
     expect(html).not.toContain("<svg");
@@ -137,24 +138,23 @@ test.each([
   },
 );
 
-test("le garde-fou refuse un <script> qu'un backtick échappé laisse passer (régression)", () => {
-  // `\`` est un backtick échappé : CommonMark n'ouvre donc aucun span de code,
-  // et Bun.markdown.html() laisse ressortir le <script> qui suit tel quel,
-  // exécutable. Une regex sur la source qui apparie ce backtick échappé avec
-  // le backtick réel plus loin le manquerait ; l’analyse porte sur le HTML
-  // rendu, où ce <script> est un noeud bien réel.
+test("the guard refuses a <script> an escaped backtick lets through (regression)", () => {
+  // `\`` is an escaped backtick: CommonMark therefore opens no code span, and
+  // Bun.markdown.html() lets the <script> that follows out as it stands,
+  // executable. A regex over the source that paired this escaped backtick
+  // with the real backtick further along would miss it; the analysis runs on
+  // the rendered HTML, where that <script> is a node in earnest.
   const source = "before \\` <script>alert(1)</script>` after";
   expect(Bun.markdown.html(source)).toContain("<script>");
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
     .toThrow("content/posts/x/fr.md");
 });
 
-test("le garde-fou laisse passer une fence à l'intérieur d'un blockquote", () => {
-  // FENCED_CODE exigeait la fence en début de ligne ; une fence indentée sous
-  // un ">" de citation la ratait — faux positif que l’analyse du HTML rendu
-  // corrige gratuitement, puisque Bun.markdown.html() sait déjà que c’est du
-  // <pre><code> à l’intérieur d’un <blockquote>, peu importe l’indentation
-  // source.
+test("the guard lets a fence inside a block quote through", () => {
+  // FENCED_CODE required the fence at the start of a line; a fence indented
+  // under a quote’s ">" missed it—a false positive that analysing the
+  // rendered HTML fixes for free, since Bun.markdown.html() already knows it
+  // is <pre><code> inside a <blockquote>, whatever the source indentation.
   const source = [
     "> Voici un exemple :",
     "> ```",
@@ -165,12 +165,12 @@ test("le garde-fou laisse passer une fence à l'intérieur d'un blockquote", () 
     .not.toThrow();
 });
 
-test("assertSafeHtml refuse un <script> qui apparaît tel quel dans du HTML déjà rendu", () => {
+test("assertSafeHtml refuses a <script> appearing as such in already-rendered HTML", () => {
   expect(() => assertSafeHtml("<script>alert(1)</script>", "x"))
     .toThrow("x");
 });
 
-test("assertSafeHtml laisse passer du <script> déjà échappé en texte", () => {
+test("assertSafeHtml lets a <script> already escaped into text through", () => {
   const escaped = Bun.markdown.html("`<script>alert(1)</script>`");
   expect(() => assertSafeHtml(escaped, "x")).not.toThrow();
 });
@@ -184,22 +184,21 @@ test.each([
   ['<svg><a xlink:href="javascript:alert(1)">e</a></svg>'],
   ['<meta http-equiv="refresh" content="0;url=javascript:alert(1)">'],
 ])(
-  "le garde-fou refuse les sept vecteurs de l'audit externe : %s",
+  "the guard refuses the seven vectors of the external audit: %s",
   (source) => {
-    // Chacun produit un noeud réel dans Bun.markdown.html() (measuré) et
-    // franchissait le garde-fou en liste noire du round précédent : aucun
-    // n’est <script>/<iframe>/<object>/<embed>, aucun n’a d’attribut on…=,
-    // et le schéma javascript: y est soit sur un attribut jamais examiné
-    // (action, formaction, xlink:href) soit déguisé (entité, tabulation,
-    // saut de ligne). La liste blanche d’éléments refuse form/button/svg/meta
-    // sans les avoir jamais nommés ; la normalisation d’URI démasque les
-    // trois déguisements sur <a href>.
+    // Each produces a real node in Bun.markdown.html() (measured) and got
+    // past the blacklist guard of the previous round: none is
+    // <script>/<iframe>/<object>/<embed>, none carries an on…= attribute, and
+    // the javascript: scheme sits either on an attribute never examined
+    // (action, formaction, xlink:href) or in disguise (entity, tab, newline).
+    // The element whitelist refuses form/button/svg/meta without ever having
+    // named them; URI normalization unmasks the three disguises on <a href>.
     expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
       .toThrow("content/posts/x/fr.md");
   },
 );
 
-test("le garde-fou refuse un élément hors liste blanche", () => {
+test("the guard refuses an element outside the whitelist", () => {
   expect(() =>
     assertSafeMarkdown("<marquee>x</marquee>", "content/posts/x/fr.md")
   ).toThrow("content/posts/x/fr.md");
@@ -211,20 +210,20 @@ test.each([
   ['<a href="java&NewLine;script:alert(1)">e</a>'],
   ['<a href="&#106avascript:alert(1)">e</a>'],
 ])(
-  "le garde-fou refuse les entités que le navigateur décode mais pas lui : %s",
+  "the guard refuses the entities the browser decodes and it does not: %s",
   (source) => {
-    // Le navigateur décode &colon;, &Tab;, &NewLine; (table HTML5 complète)
-    // et les références numériques sans point-virgule (&#106… → j). Le
-    // garde-fou ne reproduit pas la table : ce qu’il ne sait pas décoder
-    // est refusé, par défaut, comme tout le reste.
+    // The browser decodes &colon;, &Tab;, &NewLine; (the full HTML5 table)
+    // and numeric references without a semicolon (&#106… → j). The guard does
+    // not reproduce that table: what it cannot decode is refused, by default,
+    // like everything else.
     expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
       .toThrow("content/posts/x/fr.md");
   },
 );
 
-test("le garde-fou laisse passer une query string avec un « & » ordinaire", () => {
-  // « & » sans référence complète n’est pas une entité : le refus par défaut
-  // ne doit pas casser les URL de query ordinaires.
+test("the guard lets a query string with an ordinary “&” through", () => {
+  // An “&” with no complete reference behind it is not an entity: refusing by
+  // default must not break ordinary query URLs.
   expect(() =>
     assertSafeMarkdown(
       "[x](https://exemple.test/?a=1&b=2)",
@@ -233,7 +232,7 @@ test("le garde-fou laisse passer une query string avec un « & » ordinaire", ()
   ).not.toThrow();
 });
 
-test("le garde-fou laisse passer une ancre de commentaire derrière une query string", () => {
+test("the guard lets a comment anchor behind a query string through", () => {
   // "&#comment-42" is not a character reference: the browser only decodes
   // "&#" when digits follow (or x plus hex digits), which is exactly what
   // decodeNumericEntity consumes. UNRESOLVED_ENTITY used to accept letters
@@ -258,7 +257,7 @@ test.each([
   ['<a href="&#xFFFFFFFF;">e</a>'],
   ['<a href="&#4294967295;">e</a>'],
 ])(
-  "une référence numérique hors plage est refusée par le garde-fou, pas par une RangeError : %s",
+  "an out-of-range numeric reference is refused by the guard, not by a RangeError: %s",
   async (source) => {
     // String.fromCodePoint throws above U+10FFFF and nothing caught it: the
     // RangeError crossed the whole guard and killed the build on a generic
@@ -276,7 +275,7 @@ test.each([
   },
 );
 
-test("resserrer la classe numérique ne rouvre pas &#106avascript: (non-régression)", () => {
+test("tightening the numeric class does not reopen &#106avascript: (regression)", () => {
   // UNRESOLVED_ENTITY never caught this vector: decodeNumericEntity consumes
   // "&#106" (the browser decodes it without the trailing semicolon too), so
   // nothing entity-shaped is left when the regex runs — the scheme check is
@@ -302,18 +301,18 @@ test.each([
   ["[x](mailto:a@b.test)"],
   ["[x](../cv.html)"],
   ["[x](#ancre)"],
-])("le garde-fou laisse passer les schémas d'URI légitimes : %s", (source) => {
+])("the guard lets legitimate URI schemes through: %s", (source) => {
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
     .not.toThrow();
 });
 
-test("un caractère de contrôle C0 en tête de href est refusé, sur toute la plage U+0000-U+001F et sous ses trois écritures", () => {
-  // Chrome (headless, --dump-dom, mesuré) résout "&#1;javascript:alert(1)"
-  // en protocol: "javascript:" — le contrôle de tête disparaît au parsing
-  // WHATWG et ce qui reste commence par un schéma interdit. stripUrlControlChars
-  // ne retirait avant ce correctif que \t/\n/\r ; les 29 autres valeurs C0
-  // passaient le garde-fou intactes. Les trois écritures doivent toutes être
-  // fermées : décimale, hexadécimale, et l’octet brut directement dans le HTML.
+test("a leading C0 control in an href is refused, over the whole U+0000-U+001F range and in all three spellings", () => {
+  // Chrome (headless, --dump-dom, measured) resolves "&#1;javascript:alert(1)"
+  // to protocol: "javascript:" — the leading control disappears in WHATWG
+  // parsing and what remains starts with a forbidden scheme. Before this fix
+  // stripUrlControlChars removed only \t/\n/\r; the other 29 C0 values went
+  // through the guard intact. All three spellings have to be closed: decimal,
+  // hexadecimal, and the raw byte straight in the HTML.
   for (let code = 0; code <= 0x1f; code++) {
     const rawByte = String.fromCodePoint(code);
     const variants = [
@@ -329,7 +328,7 @@ test("un caractère de contrôle C0 en tête de href est refusé, sur toute la p
   }
 });
 
-test("le correctif C0 ne casse pas les URI légitimes déjà couvertes (non-régression)", () => {
+test("the C0 fix does not break the legitimate URIs already covered (regression)", () => {
   for (
     const source of [
       "[x](https://exemple.test)",
@@ -344,12 +343,12 @@ test("le correctif C0 ne casse pas les URI légitimes déjà couvertes (non-rég
   }
 });
 
-test("le garde-fou laisse passer toute la syntaxe GFM que le dépôt exerce", async () => {
-  // La preuve que la liste blanche n’est pas trop étroite : un article qui
-  // utilise chaque construction GFM listée dans la revue (titres, listes,
-  // listes de tâches, tables avec alignement, code en ligne et en bloc,
-  // citations, liens dont un autolien, images, emphase, barré, règle
-  // horizontale, saut de ligne dur) ne doit jamais être refusé.
+test("the guard lets through all the GFM syntax the repository exercises", async () => {
+  // The proof that the whitelist is not too narrow: an article using every
+  // GFM construct listed in the review (headings, lists, task lists, tables
+  // with alignment, inline and fenced code, block quotes, links including an
+  // autolink, images, emphasis, strikethrough, thematic break, hard line
+  // break) must never be refused.
   const source = [
     "# Titre niveau 1",
     "## Titre niveau 2",
@@ -398,7 +397,7 @@ test("le garde-fou laisse passer toute la syntaxe GFM que le dépôt exerce", as
   await expect(renderMarkdown(source, "fr")).resolves.toBeString();
 });
 
-test("le garde-fou laisse passer un exemple de code en span inline", () => {
+test("the guard lets a code example in an inline span through", () => {
   expect(() =>
     assertSafeMarkdown(
       "Utilisez `<script>` pour charger un module.",
@@ -407,7 +406,7 @@ test("le garde-fou laisse passer un exemple de code en span inline", () => {
   ).not.toThrow();
 });
 
-test("le garde-fou laisse passer un exemple de code en bloc clôturé", () => {
+test("the guard lets a code example in a fenced block through", () => {
   const source = [
     "Un exemple de charge malveillante :",
     "",
@@ -419,12 +418,12 @@ test("le garde-fou laisse passer un exemple de code en bloc clôturé", () => {
     .not.toThrow();
 });
 
-test("slugifyHeading translittère et ne laisse aucun caractère douteux", () => {
+test("slugifyHeading transliterates and leaves no doubtful character", () => {
   expect(slugifyHeading("Mesurer : le « texte » !")).toBe("mesurer-le-texte");
   expect(slugifyHeading("Déjà vu")).toBe("deja-vu");
 });
 
-test("deux rendus concurrents ne mélangent pas leurs ids de titres", async () => {
+test("two concurrent renders do not mix up their heading ids", async () => {
   const [a, b] = await Promise.all([
     renderMarkdown("## Alpha", "fr"),
     renderMarkdown("## Beta", "fr"),
