@@ -53,6 +53,23 @@ export interface Plan {
 }
 
 /**
+ * Whether the deletions in a plan look like a sync or like a mistake.
+ *
+ * Removing what a build no longer emits is the job. Removing more objects than
+ * the whole site contains is not: it means the bucket holds something this
+ * deploy does not know about — the wrong bucket, or the right bucket at the
+ * wrong prefix. That is not a hypothetical. `normcore-dev` held 358 objects of
+ * an earlier site when this deploy was first pointed at it, and a plan built
+ * at the bucket root would have removed every one of them to make room for 144.
+ *
+ * So the plan stops and says so, and `--prune` is how someone who has read the
+ * list says they meant it.
+ */
+export function deletesLookLikeAMistake(plan: Plan): boolean {
+  return plan.deletes.length > plan.uploads.length;
+}
+
+/**
  * `local` is every file under `dist/`; `remote` is every key already in the
  * bucket, both without the deployment prefix. Keys are compared verbatim: the
  * caller applies the prefix on both sides, or on neither.

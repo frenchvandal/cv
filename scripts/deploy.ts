@@ -31,7 +31,12 @@ import {
   readConfig,
   resolveCredentials,
 } from "./deploy/credentials.ts";
-import { cacheControl, type Plan, planUpload } from "./deploy/plan.ts";
+import {
+  cacheControl,
+  deletesLookLikeAMistake,
+  type Plan,
+  planUpload,
+} from "./deploy/plan.ts";
 
 const OUT = "dist";
 
@@ -205,6 +210,7 @@ function describe(plan: Plan): void {
 if (import.meta.main) {
   const dryRun = Bun.argv.includes("--dry-run");
   const smoke = Bun.argv.includes("--smoke");
+  const prune = Bun.argv.includes("--prune");
   const config = readConfig(process.env);
 
   if (!smoke && !(await Bun.file(`${OUT}/index.html`).exists())) {
@@ -245,6 +251,15 @@ if (import.meta.main) {
       client ? await remoteKeys(client, config.prefix) : [],
     );
     describe(plan);
+
+    if (!dryRun && deletesLookLikeAMistake(plan) && !prune) {
+      throw new Error(
+        `deploy: the plan removes ${plan.deletes.length} object(s) to upload ` +
+          `${plan.uploads.length} — more than the whole site. That usually ` +
+          "means the wrong bucket, or the right one at the wrong OSS_PREFIX. " +
+          "Read the list above; pass --prune if you meant it.",
+      );
+    }
 
     if (dryRun || !client) {
       console.log("\nDry run: nothing was written.");
