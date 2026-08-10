@@ -34,8 +34,10 @@ import {
 import {
   cacheControl,
   deletesLookLikeAMistake,
+  type LocalFile,
   type Plan,
   planUpload,
+  type RemoteObject,
 } from "./deploy/plan.ts";
 
 const OUT = "dist";
@@ -218,8 +220,8 @@ async function smokeTest(
 
 function describe(plan: Plan): void {
   console.log(
-    `${plan.uploads.length} to upload, ${plan.kept} hashed asset(s) already ` +
-      `there, ${plan.deletes.length} to remove`,
+    `${plan.uploads.length} to upload, ${plan.kept} already up to date, ` +
+      `${plan.deletes.length} to remove`,
   );
   for (const { key, cacheControl } of plan.uploads) {
     console.log(`  + ${key.padEnd(52)} ${cacheControl}`);
@@ -266,9 +268,9 @@ if (import.meta.main) {
     console.log(`Round trip against ${config.bucket}:`);
     await smokeTest(client, config);
   } else {
-    const plan = planUpload(
-      await localKeys(),
-      client ? await remoteKeys(client, config.prefix) : [],
+    const plan = await planUpload(
+      await localFiles(),
+      client ? await remoteObjects(client, config.prefix) : [],
     );
     describe(plan);
 
