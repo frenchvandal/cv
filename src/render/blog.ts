@@ -100,8 +100,15 @@ export function homeBody(
   const body = latest.length === 0
     ? emptyList(t)
     : postList({ kind: "home", lang }, latest);
+  /*
+   * The hero is the CV’s, and so are the two sections its buttons name. On the
+   * home page those sections are one page over, so the anchors have to carry
+   * the CV with them: `#contact` alone resolved to nothing here and the
+   * button did nothing at all when clicked.
+   */
+  const cv = hrefTo({ kind: "home", lang }, { kind: "cv", lang });
   return `
-        ${hero(t)}
+        ${hero(t, { primary: `${cv}#contact`, secondary: `${cv}#about` })}
         <section class="section" aria-labelledby="latest">
           <div class="wrap">
             <h2 class="section__title animate" id="latest">${

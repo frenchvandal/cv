@@ -17,7 +17,18 @@ import { ICON_MIC, ICON_PLUS } from "../icons.ts";
 import { CHAT_WIDTH } from "../config.ts";
 import { markChinese, phoneChrome, section } from "./shell.ts";
 
-export function hero(t: Translation): string {
+/**
+ * Where the hero’s two calls to action lead. On the CV they are in-page
+ * anchors; the home page carries the same hero but none of those sections, so
+ * its caller passes links to the CV instead—the hero cannot decide this for
+ * itself without rendering an anchor that resolves to nothing.
+ */
+export interface HeroActions {
+  primary: string;
+  secondary: string;
+}
+
+export function hero(t: Translation, actions: HeroActions): string {
   return `
     <section class="hero wrap" id="top" aria-label="${escapeHtml(t.ui.intro)}">
       <p class="hero__eyebrow animate">${escapeHtml(t.hero.greeting)}</p>
@@ -40,10 +51,12 @@ export function hero(t: Translation): string {
     escapeHtml(t.hero.location)
   }</p>
       <div class="hero__actions animate animate--delayed-5">
-        <a class="button" href="#contact">${escapeHtml(t.hero.ctaPrimary)}</a>
-        <a class="button button--plain" href="#about">${
-    escapeHtml(t.hero.ctaSecondary)
+        <a class="button" href="${escapeHtml(actions.primary)}">${
+    escapeHtml(t.hero.ctaPrimary)
   }</a>
+        <a class="button button--plain" href="${
+    escapeHtml(actions.secondary)
+  }">${escapeHtml(t.hero.ctaSecondary)}</a>
       </div>
     </section>
   `;

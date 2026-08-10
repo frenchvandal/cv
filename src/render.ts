@@ -215,7 +215,7 @@ export function pageTitle(t: Translation): string {
 /** The CV chapters, in reading order—the body of the `cv` page. */
 function cvBody(t: Translation, lang: Lang): string {
   return `
-        ${hero(t)}
+        ${hero(t, { primary: "#contact", secondary: "#about" })}
         ${about(t)}
         ${experience(t)}
         ${education(t)}
@@ -288,8 +288,10 @@ export function renderPage(page: Page, lang: Lang, theme: Theme): string {
       theme,
       langLinkFor(page, lang),
       navLinksFor(page, t, lang),
-      // `#top` is the hero’s id, and only the CV has a hero.
-      page.kind === "cv"
+      // `#top` is the hero’s id, and the hero is on the two pages that open
+      // with it—the CV and the home page. Elsewhere the name leads home,
+      // since there is no top of the document to jump to.
+      page.kind === "cv" || page.kind === "home"
         ? "#top"
         : hrefTo(pageRefOf(page, lang), { kind: "home", lang }),
     )
