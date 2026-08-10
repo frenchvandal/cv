@@ -1486,13 +1486,14 @@ a:hover {
   margin-top: var(--space-md);
 }
 
-/* Justified prose without hyphenation is the one combination that reliably
-   produces rivers: the browser's greedy breaker can only stretch the spaces of
-   the line it is on. The About paragraphs answer that with Knuth–Plass
-   (src/main.ts), which article bodies do not get; `hyphens: auto` is what keeps
-   the gaps honest here, and it costs nothing—the page already declares its
-   language, which is all the browser needs to hyphenate. It is a no-op on the
-   Chinese pages, which wrap per character. */
+/* The no-JS baseline. Knuth–Plass replaces these paragraphs with `.kp-line`
+   spans once the enhancement runs (src/main.ts), but until then—and for good,
+   with JS off—the browser does the breaking, and justified prose without
+   hyphenation is the one combination that reliably produces rivers: a greedy
+   breaker can only stretch the spaces of the line it is on. `hyphens: auto`
+   costs nothing, since the page already declares its language, which is all
+   the browser needs. It is a no-op on the Chinese pages, which wrap per
+   character. */
 .post__body p {
   text-align: justify;
   hyphens: auto;

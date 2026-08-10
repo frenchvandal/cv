@@ -372,30 +372,51 @@ later); this site targets modern browsers only, so don’t down-level.
   needs a browser—re-measure it when the name or the display font changes.
 - **Knuth–Plass.** [src/linebreak.ts](src/linebreak.ts) runs optimal, TeX-style
   line breaking over pretext-measured boxes and glue, with `hyphen` supplying
-  syllable break points. It is applied to one thing today: the About paragraphs
-  (`p.kp`), re-typeset by `enhanceAboutKp` in [src/main.ts](src/main.ts) as one
-  `.kp-line` span per line. Glue uses `shrink: 0` because CSS
+  syllable break points, over the About paragraphs (`p.kp`) and every article
+  paragraph (`.post__body > p`). Glue uses `shrink: 0` because CSS
   `text-align: justify` can only stretch spaces, never shrink them. Keep that
   invariant, and keep the small target-width margin, or lines will wrap. Below
-  `KP_MIN_WIDTH_PX` (280) the paragraph stays plain—narrower than that,
-  ragged-right really is more legible—and a resize back down undoes the spans
-  rather than leaving the last layout behind. Chinese pages get no Knuth–Plass
-  (no patterns, native justify is already near-optimal).
-- **Article bodies are not re-typeset here.** They ship as the browser lays them
-  out, `.post` giving them a 65ch measure. Extending Knuth–Plass to them means
-  measuring styled **runs** rather than flat text—a bold or monospace span is
-  wider than prose, so flat measurement overflows the computed line—and
-  scheduling the work per paragraph so a long article does not typeset all at
-  once. That work exists on the `philippe-wip` branch, not on this one: do not
-  document it here until it lands, and do not expect a `src/richtext.ts` to be
-  present.
+  `KP_MIN_WIDTH_PX` (280) the paragraph stays as the browser set it—narrower
+  than that, ragged-right really is more legible. The paragraph arrives as
+  styled **runs**, each box measured in its own font: a bold or monospace span
+  is wider than prose (+1.5%/+8.1% measured), and flat measurement overflows the
+  computed line. A run with `extraWidth` (inline code’s padding and borders) is
+  atomic—never split, never hyphenated, charged its full width. Chinese pages
+  get no Knuth–Plass (no patterns, native justify is already near-optimal), and
+  `breakIntoLinesFlat` is the one-run case the unit tests are written against.
+- **Rebuilding a line keeps the paragraph’s own elements.**
+  [src/richtext.ts](src/richtext.ts) reads the runs from the text nodes
+  (`runsFrom`) and rebuilds each line by **cloning the ancestor chain**
+  (`renderLines`), not by re-serializing a list of tag names. That is what keeps
+  `rel="noopener noreferrer"` on external links and `lang="zh-Hans"` on Chinese
+  runs—both put there by the Markdown pipeline, both silently lost by any
+  rebuild that only knows `<a href>`. It also means there is no allowlist to
+  keep in step, and nothing is escaped because nothing is serialized. A
+  paragraph holding an element with no text of its own (`<br>`, `<img>`) cannot
+  be rebuilt from text nodes, so `runsFrom` returns null and the browser’s own
+  justification is left alone: this file does not drop content to gain an even
+  measure.
+- **Composition is scheduled, not eager.** An `IntersectionObserver` with one
+  screen of `rootMargin` typesets each paragraph just before it reaches the
+  reader, so a forty-paragraph article neither blocks the main thread at load
+  nor shifts anything under someone already reading; a resize recomposes only
+  the paragraphs already composed (`data-rich` is the marker, and the source
+  markup every pass restarts from). Measured limitation, shared with the About
+  path since the beginning: find-in-page does not match a phrase spanning a
+  computed line break, because the spans are block-level.
+- **The DOM half has no unit tests, and that is deliberate**: `bun test` has no
+  document. `runsFrom`/`renderLines` are verified in a real browser
+  (playwright-core against system Chrome, over `bun run preview`)—that lines
+  appear, that `rel` and `lang` survive the rebuild, and that no line overflows
+  its column. Verify there when you touch them.
 
 ## 9. Rendering and Enhancement
 
 - **The enhancement inventory.** Each one runs after paint, and none is
   load-bearing: pretext-measured fitting of the hero name, the section titles,
   and the nav shortcuts ([src/measure.ts](src/measure.ts)); Knuth–Plass
-  re-typesetting of the About paragraphs ([src/linebreak.ts](src/linebreak.ts));
+  re-typesetting of the About paragraphs and the article bodies
+  ([src/linebreak.ts](src/linebreak.ts) + [src/richtext.ts](src/richtext.ts));
   tight-wrapped chat bubbles ([src/chat.ts](src/chat.ts)); reveal-on-scroll with
   stat counters; the theme toggle; and reload-free language switching (CV page
   only—the blog pages navigate). If any one fails, the pre-rendered content
