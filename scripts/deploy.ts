@@ -18,10 +18,17 @@
  * `response-content-type` query parameter, which overrides the type on a GET
  * and does not store one. The type has to be a header on the PUT.
  *
- * What is NOT verified here is the round trip: no bucket answers in a unit
- * test. `--dry-run` prints the plan, and the first real deploy is what proves
- * OSS accepts these signatures. If it does not, the fallback is the official
- * Aliyun SDK for the upload alone; nothing else in this file would move.
+ * All three were confirmed against a real bucket on 2026-08-10
+ * (`normcore-dev`, eu-central-1): PUT 200, GET 200, and both `Content-Type`
+ * and `Cache-Control` came back exactly as sent. `--smoke` is that check, kept
+ * so the next bucket can be asked the same question in thirty bytes.
+ *
+ * The sync is differential in both directions. OSS returns an ETag that is the
+ * MD5 of the object — measured on the same day, for a 13 KB page and a 209 KB
+ * font — so an unchanged file is not re-uploaded, and a second deploy of an
+ * unchanged site writes nothing at all. What the build no longer emits is
+ * removed, and `--prune` guards the case where that removal is really a wrong
+ * bucket (see `deletesLookLikeAMistake`).
  */
 
 import { S3Client } from "bun";
