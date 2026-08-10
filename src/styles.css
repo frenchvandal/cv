@@ -1449,6 +1449,16 @@ a:hover {
    Knuth–Plass: on a Chinese page that is already near-optimal, since a line
    can break between almost any two characters; on Latin text it is the
    documented interim (spec §6.3–6.5). */
+
+/* The site's column (--wrap, 48.5rem) was sized for a CV, whose longest run is
+   a bullet. Continuous prose wants a shorter measure — around 65 characters a
+   line, which is where the eye finds the next line without hunting. `ch` is
+   the width of "0" in the current font, so this tracks the type size instead
+   of freezing a pixel count. */
+.post {
+  max-width: 65ch;
+}
+
 .post__header {
   margin-bottom: var(--space-xl);
 }

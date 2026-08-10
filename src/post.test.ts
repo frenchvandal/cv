@@ -111,18 +111,22 @@ test("deriveSummary never cuts a surrogate pair in half", () => {
   expect(deriveSummary(withEmoji)).toContain("🎉");
 });
 
-test("deriveSummary does not preserve emoji sequences split by the cut — documented, not fixed", () => {
-  // A flag emoji is two regional-indicator code points, each its own
-  // correctly paired surrogate pair. Code-point slicing keeps each one
-  // intact on its own, but if the cut falls between the pair the flag
-  // itself still splits — no lone surrogate (the hard guarantee), but not
-  // the original glyph either. Grapheme-cluster integrity (flags, ZWJ
-  // families) is out of scope for this function.
-  const text = "x".repeat(199) + "🇫🇷" + "y".repeat(100);
-  const summary = deriveSummary(text);
-
-  expect(hasLoneSurrogate(summary)).toBe(false);
-  expect(summary).not.toContain("🇫🇷");
+test("deriveSummary keeps a multi-code-point cluster whole", () => {
+  /*
+   * A flag is two regional-indicator code points, each a correctly paired
+   * surrogate pair of its own. Slicing by code point keeps each one valid but
+   * splits the flag when the cut falls between them — measured: 🇫 survives,
+   * 🇷 is dropped, and the reader sees a lone letter F.
+   *
+   * This used to be documented as out of scope. `Intl.Segmenter` closes it
+   * with no dependency, so the gap is now a guarantee: what a reader calls a
+   * character is what gets counted and cut.
+   */
+  for (const cluster of ["🇫🇷", "👩‍👩‍👧", "é"]) {
+    const summary = deriveSummary("x".repeat(199) + cluster + "y".repeat(100));
+    expect(hasLoneSurrogate(summary)).toBe(false);
+    expect(summary).toContain(cluster);
+  }
 });
 
 test("byLang breaks same-date ties by slug, independent of input order", () => {

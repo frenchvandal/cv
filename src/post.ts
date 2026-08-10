@@ -65,19 +65,27 @@ export function langsOf(posts: readonly PostMeta[], slug: string): Lang[] {
 export function deriveSummary(text: string): string {
   const clean = text.replace(/\s+/g, " ").trim();
 
-  // Count and cut by code point, not by UTF-16 code unit: an astral
-  // character (CJK extension ideographs, most emoji) is one character but
-  // two UTF-16 units, so a raw `.slice(0, SUMMARY_MAX)` can land inside the
-  // pair and leave a lone surrogate behind — invalid UTF-16, which a browser
-  // renders as U+FFFD. This does not reassemble multi-code-point emoji
-  // sequences (flags, ZWJ-joined families): each code point survives whole,
-  // but a cut landing between two of them still splits the visual glyph.
-  // That is a known, accepted gap — this function guarantees valid UTF-16,
-  // not grapheme-cluster integrity.
-  const codePoints = Array.from(clean);
-  if (codePoints.length <= SUMMARY_MAX) return clean;
+  /*
+   * Count and cut by grapheme cluster — what a reader calls a character.
+   *
+   * Cutting by UTF-16 code unit can land inside a surrogate pair and leave
+   * half a character behind, which a browser draws as U+FFFD. Cutting by code
+   * point fixes that but still splits a cluster built from several of them:
+   * measured, `🇫🇷` truncated at a code-point boundary keeps 🇫 and drops 🇷,
+   * so the flag renders as a lone letter F.
+   *
+   * `Intl.Segmenter` is the platform's own answer and needs no dependency, so
+   * there is nothing to hand-roll here. No locale is passed: cluster
+   * boundaries are the same in every locale this site publishes, and naming
+   * one would suggest a dependence that does not exist.
+   */
+  const graphemes = [
+    ...new Intl.Segmenter(undefined, { granularity: "grapheme" })
+      .segment(clean),
+  ].map((entry) => entry.segment);
+  if (graphemes.length <= SUMMARY_MAX) return clean;
 
-  const head = codePoints.slice(0, SUMMARY_MAX).join("");
+  const head = graphemes.slice(0, SUMMARY_MAX).join("");
   const sentence = Math.max(
     head.lastIndexOf(". "),
     head.lastIndexOf("。"),

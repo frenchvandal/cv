@@ -166,22 +166,36 @@ export function postBody(
       post.tags.map(escapeHtml).join(", ")
     }</p>`
     : "";
+  /*
+   * `.wrap` is not decoration: it is the content column every other page uses
+   * (`max-width: var(--wrap)` plus horizontal padding). Without it an article
+   * ran the full width of the window — a line of prose the width of a desk,
+   * touching both edges — which is unreadable long before it is ugly.
+   *
+   * `.post` narrows it further. The site's column was sized for a CV, whose
+   * longest run is a bullet; an article is continuous prose, and prose wants
+   * roughly 65 characters a line, not 100.
+   */
   return `
-        <article class="post">
-          <header class="post__header">
-            <h1 class="post__title">${escapeHtml(post.title)}</h1>
-            <p class="post__meta">${escapeHtml(t.blog.published)}
-              <time datetime="${post.date}">${
+        <section class="section">
+          <div class="wrap">
+            <article class="post">
+              <header class="post__header">
+                <h1 class="post__title">${escapeHtml(post.title)}</h1>
+                <p class="post__meta">${escapeHtml(t.blog.published)}
+                  <time datetime="${post.date}">${
     escapeHtml(formatDate(post.date, lang))
   }</time>${updated}
-            </p>
-            ${tags}
-          </header>
-          <div class="post__body">${html}</div>
-          <p class="post__back"><a href="${back}">${
+                </p>
+                ${tags}
+              </header>
+              <div class="post__body">${html}</div>
+              <p class="post__back"><a href="${back}">${
     escapeHtml(t.blog.backToIndex)
   }</a></p>
-        </article>
+            </article>
+          </div>
+        </section>
       `;
 }
 
