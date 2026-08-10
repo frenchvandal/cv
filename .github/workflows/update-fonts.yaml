@@ -1,0 +1,104 @@
+# Re-subset the vendored Noto files when the text they have to cover changes.
+#
+# Writing an article should not mean remembering `bun run fonts:update`. This
+# job runs it for you, on exactly the inputs `glyphSets()` reads
+# (scripts/glyphs.ts): the corpus, the translations, and the render modules
+# whose string literals reach a page.
+#
+# What it does NOT do is run inside the deploy. The subsets are vendored and
+# committed on purpose: two builds of one commit must produce the same bytes,
+# and Google must never be on the critical path of publishing — a fonts:update
+# hit an ECONNRESET during development, and that must fail a job nobody is
+# waiting on rather than a deploy. So this workflow refreshes the files, tests
+# them, commits them, and only then asks deploy.yaml to run.
+#
+# Expect a red deploy before the green one when an article really does bring
+# new glyphs: the push triggers deploy.yaml too, and the build refuses a
+# `dist/` whose subsets do not cover the pages. That refusal is the gate doing
+# its job — the commit this workflow pushes is what fixes it, and the deploy it
+# dispatches is the one that ships.
+#
+# Pushes made with GITHUB_TOKEN do not trigger other workflows, which is why
+# the dispatch at the end is explicit.
+name: Update fonts
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "content/**"
+      - "src/translations.ts"
+      - "src/render.ts"
+      - "src/render/**"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Push the subset commit (contents) and dispatch deploy.yaml (actions).
+permissions:
+  contents: write
+  actions: write
+
+# Never two refreshes at once; a queued run waits for the in-progress one.
+concurrency:
+  group: "update-fonts"
+  cancel-in-progress: false
+
+jobs:
+  fonts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Full history: this job runs `bun test`, whose feed and sitemap date
+          # assertions pass vacuously in a shallow clone.
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Re-subset the fonts
+        run: bun run fonts:update
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet -- src/fonts.ts src/fonts; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "The subsets already cover the text."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/fonts.ts src/fonts
+          fi
+
+      - name: Test (includes type check and a full build)
+        if: steps.diff.outputs.changed == 'true'
+        run: bun test
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/fonts.ts src/fonts
+          git commit -m "chore: re-subset the fonts for the new text"
+          git push
+
+      - name: Deploy the site with the new subsets
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yaml --ref main

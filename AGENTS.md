@@ -92,8 +92,8 @@ rediscover.
   build imports it under `SITE_URL`); its header records which protocol fields
   are emitted and why the other two are not—read it before adding one.
   `<lastmod>` comes from `git log` over the paths that reach a visitor, so **all
-  three workflows** check out with `fetch-depth: 0`. Without history the field
-  is omitted rather than guessed, and the assertions in
+  four workflows** check out with `fetch-depth: 0`. Without history the field is
+  omitted rather than guessed, and the assertions in
   [scripts/build.test.ts](scripts/build.test.ts) that compare the build to that
   same lookup would pass on empty against empty. That is why the gates need the
   history too, not just the deploy.
@@ -133,8 +133,13 @@ rediscover.
   `DRAFTS=1`.
 - Raw HTML in a source is refused by the build’s allowlist guard
   ([scripts/markdown.ts](scripts/markdown.ts)): GFM only.
-- After writing: `bun run fonts:update` (new glyphs), then `bun run preview` to
-  read it at its real URL.
+- After writing: `bun run preview` to read it at its real URL. The fonts take
+  care of themselves — pushing to `main` runs
+  [update-fonts.yaml](.github/workflows/update-fonts.yaml), which re-subsets,
+  tests, commits the `.woff2` files and dispatches the deploy. Run
+  `bun run fonts:update` yourself only to see the article in its real type
+  before pushing; the build refuses a `dist/` the subsets do not cover either
+  way, so a forgotten refresh is a loud failure, never a silent tofu.
 
 ## 3. Code Style
 
