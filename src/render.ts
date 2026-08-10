@@ -241,8 +241,16 @@ function navLinksFor(page: Page, t: Translation, lang: Lang): NavLink[] {
   if (page.kind === "cv") {
     return NAV_LINKS.map((id) => ({ href: `#${id}`, label: t.nav[id] }));
   }
+  // On the writing index, the first of these two IS the page being read, and
+  // a navigation that does not say so leaves a screen-reader user to work it
+  // out from the heading. The switcher already marks its own current entry
+  // the same way.
   return [
-    { href: hrefTo(from, { kind: "blogIndex", lang }), label: t.nav.writing },
+    {
+      href: hrefTo(from, { kind: "blogIndex", lang }),
+      label: t.nav.writing,
+      ...(page.kind === "blogIndex" ? { current: true } : {}),
+    },
     { href: hrefTo(from, { kind: "cv", lang }), label: t.nav.cv },
   ];
 }

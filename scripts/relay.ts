@@ -18,7 +18,7 @@
 
 import { escapeHtml } from "../src/dom.ts";
 import { LANGS } from "../src/translations.ts";
-import { pagePath, type PageRef } from "../src/urls.ts";
+import { pageHref, type PageRef } from "../src/urls.ts";
 
 /**
  * One relay page. The target lands in three attributes and one link, so it is
@@ -66,5 +66,5 @@ export function relayPages(): { file: string; target: PageRef }[] {
  * page it points to, which is exactly the duplicate the relay exists to avoid.
  */
 export function relayTarget(target: PageRef): string {
-  return `./${pagePath(target).replace(/(^|\/)index\.html$/, "$1")}`;
+  return `./${pageHref(target)}`;
 }

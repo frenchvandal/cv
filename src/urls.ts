@@ -67,6 +67,17 @@ export function pagePath(ref: PageRef): string {
   }
 }
 
+/**
+ * The path a link should carry, which is not always the path of the file: an
+ * index is published as a directory (`fr/blog/`), the spelling its canonical
+ * uses and the one a reader can type. Linking to `fr/blog/index.html` gave the
+ * same page a second URL, one that every internal link pointed at and no
+ * canonical ever claimed.
+ */
+export function pageHref(ref: PageRef): string {
+  return pagePath(ref).replace(/(^|\/)index\.html$/, "$1");
+}
+
 /** How many folders sit between the page and the site root. */
 export function pageDepth(ref: PageRef): number {
   return pagePath(ref).split("/").length - 1;
@@ -74,5 +85,5 @@ export function pageDepth(ref: PageRef): number {
 
 /** A relative link from one page to another, valid under any prefix. */
 export function hrefTo(from: PageRef, to: PageRef): string {
-  return `${rel(pageDepth(from))}${pagePath(to)}`;
+  return `${rel(pageDepth(from))}${pageHref(to)}`;
 }

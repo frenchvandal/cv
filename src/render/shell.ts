@@ -51,6 +51,8 @@ export const NAV_LINKS: readonly (keyof Translation["nav"])[] = [
 export interface NavLink {
   href: string;
   label: string;
+  /** Set on the entry that leads to the page being read (`aria-current`). */
+  current?: boolean;
 }
 
 /**
@@ -78,7 +80,9 @@ export function nav(
 
   const links = navLinks.map(
     (link) =>
-      `<a class="nav__link" href="${link.href}">${escapeHtml(link.label)}</a>`,
+      `<a class="nav__link" href="${link.href}"${
+        link.current ? ` aria-current="page"` : ""
+      }>${escapeHtml(link.label)}</a>`,
   ).join("");
 
   /*

@@ -44,7 +44,7 @@ test.each([
 
 test("a cross-language link climbs and comes back down", () => {
   const from = { kind: "post", lang: "fr", slug: "mesurer" } as const;
-  expect(hrefTo(from, { kind: "home", lang: "en" })).toBe("../../index.html");
+  expect(hrefTo(from, { kind: "home", lang: "en" })).toBe("../../");
   expect(hrefTo(from, { kind: "cv", lang: "zh" })).toBe("../../zh/cv.html");
   expect(hrefTo(from, { kind: "post", lang: "en", slug: "mesurer" }))
     .toBe("../../blog/mesurer.html");
@@ -54,7 +54,7 @@ test("a link from the root stays local", () => {
   const from = { kind: "home", lang: "en" } as const;
   expect(hrefTo(from, { kind: "cv", lang: "en" })).toBe("./cv.html");
   expect(hrefTo(from, { kind: "blogIndex", lang: "fr" }))
-    .toBe("./fr/blog/index.html");
+    .toBe("./fr/blog/");
 });
 
 test.each([...RESERVED_SLUGS])("the reserved slug “%s” is refused", (slug) => {

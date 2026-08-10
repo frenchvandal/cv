@@ -103,7 +103,7 @@ test("otherwise it leads to that language’s index, with an audible note", () =
     "light",
   );
 
-  expect(html).toContain('href="../../blog/index.html"');
+  expect(html).toContain('href="../../blog/"');
   // The note must be readable text (.sr-only), not an aria-label: an
   // attribute carries no language, so a French reader’s screen reader would
   // read this Chinese-page fallback aloud in its own voice.
@@ -166,3 +166,35 @@ test.each(PAGES.map((page) => [page.kind, page] as const))(
     expect(new Set(ids).size).toBe(ids.length);
   },
 );
+
+/*
+ * A navigation that leads to the page being read has to say so, or a screen
+ * reader gives no way to tell it apart from the two links beside it. The
+ * language switcher has marked its own current entry from the start; the
+ * section shortcuts did not.
+ */
+test("the writing index marks itself current in the nav, and no other page does", () => {
+  const index = renderPage({ kind: "blogIndex", posts: POSTS }, "fr", "light");
+  expect(index).toContain(`href="../../fr/blog/" aria-current="page"`);
+
+  for (const page of PAGES.filter((p) => p.kind !== "blogIndex")) {
+    const html = renderPage(page, "fr", "light");
+    const marked = [...html.matchAll(/class="nav__link"[^>]*aria-current/g)];
+    expect([page.kind, marked.length]).toEqual([page.kind, 0]);
+  }
+});
+
+/*
+ * An index is published as a directory, and that is the spelling its canonical
+ * uses. Linking to its `index.html` gave the same page a second URL that every
+ * internal link pointed at and no canonical ever claimed.
+ */
+test("links to an index carry the directory URL, not the file", () => {
+  const html = renderPage(
+    { kind: "post", post: post("a", "fr"), html: "", posts: POSTS },
+    "fr",
+    "light",
+  );
+  expect(html).toContain(`href="../../fr/blog/"`);
+  expect(html).not.toContain("blog/index.html");
+});
