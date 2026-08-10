@@ -66,6 +66,9 @@ export function readConfig(
   };
 }
 
+/** The audience the Aliyun role’s trust policy checks. */
+export const AUDIENCE = "sts.aliyuncs.com";
+
 /** The endpoint OSS wants: the bucket lives in the host, not in the path. */
 export function ossEndpoint(bucket: string, region: string): string {
   return `https://${bucket}.oss-${region}.aliyuncs.com`;
@@ -109,9 +112,103 @@ export async function githubIdToken(
 export interface Credentials {
   accessKeyId: string;
   secretAccessKey: string;
-  sessionToken: string;
-  /** ISO 8601, as STS returns it — logged, never parsed for logic. */
+  /** Absent for a long-lived key; STS credentials always carry one. */
+  sessionToken?: string;
+  /** ISO 8601 from STS, or a note for a static key. Logged, never parsed. */
   expiration: string;
+}
+
+/** One entry of the Aliyun CLI credential file, as far as this needs it. */
+interface CliProfile {
+  name?: string;
+  mode?: string;
+  access_key_id?: string;
+  access_key_secret?: string;
+  sts_token?: string;
+}
+
+/**
+ * The credentials the Aliyun CLI already holds, at its own standard path.
+ *
+ * Reading `~/.aliyun/config.json` rather than asking for a key in a `.env`
+ * means the secret stays in the one place it already lives, is never copied,
+ * and cannot be pasted into a commit. `ALIBABA_CLOUD_PROFILE` picks a profile;
+ * without it, the one the CLI itself considers current.
+ *
+ * Only the two modes that carry usable credentials are honoured — `AK` and
+ * `StsToken`. The others (`RamRoleArn`, `EcsRamRole`, …) are indirections the
+ * CLI resolves at call time with its own signing code, and reimplementing that
+ * to save a developer one command is not a trade worth making.
+ */
+export async function cliCredentials(
+  profileName?: string,
+  home = process.env.HOME ?? "",
+): Promise<Credentials | null> {
+  const file = Bun.file(`${home}/.aliyun/config.json`);
+  if (!(await file.exists())) return null;
+
+  const config = await file.json() as {
+    current?: string;
+    profiles?: CliProfile[];
+  };
+  const wanted = profileName ?? config.current;
+  const profile = config.profiles?.find((p) => p.name === wanted);
+  if (!profile?.access_key_id || !profile.access_key_secret) return null;
+  if (profile.mode !== "AK" && profile.mode !== "StsToken") return null;
+
+  return {
+    accessKeyId: profile.access_key_id,
+    secretAccessKey: profile.access_key_secret,
+    ...(profile.sts_token ? { sessionToken: profile.sts_token } : {}),
+    expiration: `from the aliyun CLI profile “${wanted}”`,
+  };
+}
+
+/**
+ * Where the credentials come from, which is not a preference but a fact about
+ * where the process is running.
+ *
+ * In Actions, the OIDC hop: nothing is stored, and the identity is the run
+ * itself. On a laptop there is no such identity to present — GitHub mints its
+ * token for one workflow run and for nothing else, and no local runner can
+ * forge one — so a real round trip against a real bucket needs a long-lived
+ * key. It comes from the Aliyun CLI’s own file if there is one, and from the
+ * environment otherwise. Both are weaker credentials by design, which is why
+ * they are the fallback and why the run says so out loud.
+ */
+export async function resolveCredentials(
+  config: DeployConfig,
+  env: Record<string, string | undefined> = process.env,
+): Promise<Credentials> {
+  if (env.ACTIONS_ID_TOKEN_REQUEST_URL) {
+    return await assumeRole(config, await githubIdToken(AUDIENCE, env));
+  }
+
+  const accessKeyId = env.OSS_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = env.OSS_ACCESS_KEY_SECRET?.trim();
+  if (accessKeyId && secretAccessKey) {
+    console.warn(
+      "deploy: using a long-lived key from the environment — the local path. " +
+        "A deploy from Actions mints its credentials through OIDC.",
+    );
+    return { accessKeyId, secretAccessKey, expiration: "long-lived key (env)" };
+  }
+
+  const cli = await cliCredentials(env.ALIBABA_CLOUD_PROFILE);
+  if (cli) {
+    console.warn(
+      `deploy: using the aliyun CLI credentials — the local path. ` +
+        "A deploy from Actions mints its credentials through OIDC.",
+    );
+    return cli;
+  }
+
+  throw new Error(
+    "deploy: no credentials. Inside Actions the job needs " +
+      "`permissions: id-token: write`; locally, either `aliyun configure` " +
+      "(mode AK) or OSS_ACCESS_KEY_ID and OSS_ACCESS_KEY_SECRET in a " +
+      "gitignored .env.",
+  );
 }
 
 /**

@@ -26,19 +26,14 @@
 
 import { S3Client } from "bun";
 import {
-  assumeRole,
-  type Credentials,
   type DeployConfig,
-  githubIdToken,
   ossEndpoint,
   readConfig,
+  resolveCredentials,
 } from "./deploy/credentials.ts";
-import { type Plan, planUpload } from "./deploy/plan.ts";
+import { cacheControl, type Plan, planUpload } from "./deploy/plan.ts";
 
 const OUT = "dist";
-
-/** The audience the Aliyun role’s trust policy checks. */
-const AUDIENCE = "sts.aliyuncs.com";
 
 /** Long enough for a slow upload, short enough to be worthless if it leaks. */
 const PRESIGN_TTL_SECONDS = 600;
@@ -127,6 +122,75 @@ async function inBatches<T>(
   }
 }
 
+/**
+ * One object, all the way there and back — the round trip no unit test can do.
+ *
+ * This is the check the design calls for before anything else, and it answers
+ * the only real question: does OSS accept what `Bun.S3Client` signs? Four
+ * things have to hold, and each has its own way of failing:
+ *
+ *   - the PUT is accepted (SigV4 as Bun writes it, virtual-hosted style);
+ *   - the bytes come back;
+ *   - `Content-Type` and `Cache-Control` come back with them. They were sent
+ *     UNSIGNED, so this is where "signed headers: host" stops being a
+ *     measurement about Bun and becomes a fact about the bucket. If OSS
+ *     dropped them, the whole cache policy would need the SDK;
+ *   - the DELETE is accepted, so a deploy can remove what a build no longer
+ *     emits.
+ *
+ * It writes one 30-byte object under `.smoke-test` and removes it.
+ */
+async function smokeTest(
+  client: S3Client,
+  config: DeployConfig,
+): Promise<void> {
+  const key = `${config.prefix}.smoke-test`;
+  const body = `deploy smoke test ${new Date().toISOString()}`;
+  const headers = {
+    "Content-Type": "text/plain;charset=utf-8",
+    "Cache-Control": cacheControl("robots.txt"),
+  };
+
+  const putUrl = client.file(key).presign({
+    method: "PUT",
+    expiresIn: PRESIGN_TTL_SECONDS,
+  });
+  const put = await fetch(putUrl, { method: "PUT", body, headers });
+  console.log(`  PUT    ${put.status} ${put.statusText}`);
+  if (!put.ok) {
+    throw new Error(
+      `deploy: OSS refused the presigned PUT (HTTP ${put.status}). ` +
+        `Body: ${(await put.text()).slice(0, 400)}`,
+    );
+  }
+
+  const get = await fetch(
+    client.file(key).presign({ method: "GET", expiresIn: PRESIGN_TTL_SECONDS }),
+  );
+  const round = await get.text();
+  console.log(`  GET    ${get.status} ${get.statusText}`);
+  console.log(`  type   ${get.headers.get("content-type")}`);
+  console.log(`  cache  ${get.headers.get("cache-control")}`);
+
+  if (round !== body) {
+    throw new Error("deploy: the object came back with different bytes.");
+  }
+  for (const [name, sent] of Object.entries(headers)) {
+    const back = get.headers.get(name);
+    if (back !== sent) {
+      throw new Error(
+        `deploy: OSS did not keep ${name} — sent ${JSON.stringify(sent)}, ` +
+          `got ${JSON.stringify(back)}. The cache policy cannot be set ` +
+          "through an unsigned header on this bucket.",
+      );
+    }
+  }
+
+  await client.delete(key);
+  console.log("  DELETE ok");
+  console.log("\n✓ OSS accepts the signature, and keeps the unsigned headers.");
+}
+
 function describe(plan: Plan): void {
   console.log(
     `${plan.uploads.length} to upload, ${plan.kept} hashed asset(s) already ` +
@@ -140,9 +204,10 @@ function describe(plan: Plan): void {
 
 if (import.meta.main) {
   const dryRun = Bun.argv.includes("--dry-run");
+  const smoke = Bun.argv.includes("--smoke");
   const config = readConfig(process.env);
 
-  if (!(await Bun.file(`${OUT}/index.html`).exists())) {
+  if (!smoke && !(await Bun.file(`${OUT}/index.html`).exists())) {
     throw new Error(
       `deploy: no ${OUT}/index.html — run \`bun run build\` first.`,
     );
@@ -153,15 +218,16 @@ if (import.meta.main) {
    * laptop. It therefore compares against an empty bucket, which prints the
    * whole site as new — honest about what it does and does not know.
    */
-  let credentials: Credentials | undefined;
   let client: S3Client | undefined;
   if (!dryRun) {
-    credentials = await assumeRole(config, await githubIdToken(AUDIENCE));
-    console.log(`Credentials until ${credentials.expiration}`);
+    const credentials = await resolveCredentials(config);
+    console.log(`Credentials: ${credentials.expiration}`);
     client = new S3Client({
       accessKeyId: credentials.accessKeyId,
       secretAccessKey: credentials.secretAccessKey,
-      sessionToken: credentials.sessionToken,
+      ...(credentials.sessionToken
+        ? { sessionToken: credentials.sessionToken }
+        : {}),
       bucket: config.bucket,
       region: config.region,
       endpoint: ossEndpoint(config.bucket, config.region),
@@ -169,40 +235,46 @@ if (import.meta.main) {
     });
   }
 
-  const plan = planUpload(
-    await localKeys(),
-    client ? await remoteKeys(client, config.prefix) : [],
-  );
-  describe(plan);
-
-  if (dryRun || !client) {
-    console.log("\nDry run: nothing was written.");
+  if (smoke) {
+    if (!client) throw new Error("deploy: --smoke needs credentials.");
+    console.log(`Round trip against ${config.bucket}:`);
+    await smokeTest(client, config);
   } else {
-    // Assets first, then the pages that name them — `planUpload` has already
-    // put them in that order, so this loop must not reorder anything.
-    const assets = plan.uploads.filter((u) => u.key.startsWith("assets/"));
-    const rest = plan.uploads.filter((u) => !u.key.startsWith("assets/"));
-    for (const group of [assets, rest]) {
-      await inBatches(
-        group,
-        ({ key, cacheControl }) => put(client, config, key, cacheControl),
-      );
-    }
-
-    // Deletions last: a stale page goes only once its replacement is live.
-    await inBatches(plan.deletes, async (key) => {
-      await client.delete(`${config.prefix}${key}`);
-    });
-
-    console.log(
-      `\n✓ ${plan.uploads.length} object(s) written to ${config.bucket}`,
+    const plan = planUpload(
+      await localKeys(),
+      client ? await remoteKeys(client, config.prefix) : [],
     );
-    if (config.cdnDomain) {
+    describe(plan);
+
+    if (dryRun || !client) {
+      console.log("\nDry run: nothing was written.");
+    } else {
+      // Assets first, then the pages that name them — `planUpload` has already
+      // put them in that order, so this loop must not reorder anything.
+      const assets = plan.uploads.filter((u) => u.key.startsWith("assets/"));
+      const rest = plan.uploads.filter((u) => !u.key.startsWith("assets/"));
+      for (const group of [assets, rest]) {
+        await inBatches(
+          group,
+          ({ key, cacheControl }) => put(client, config, key, cacheControl),
+        );
+      }
+
+      // Deletions last: a stale page goes only once its replacement is live.
+      await inBatches(plan.deletes, async (key) => {
+        await client.delete(`${config.prefix}${key}`);
+      });
+
       console.log(
-        `  CDN purge of ${config.cdnDomain} is not implemented yet — the ` +
-          "hashed assets never need it, and the HTML is already " +
-          "must-revalidate.",
+        `\n✓ ${plan.uploads.length} object(s) written to ${config.bucket}`,
       );
+      if (config.cdnDomain) {
+        console.log(
+          `  CDN purge of ${config.cdnDomain} is not implemented yet — the ` +
+            "hashed assets never need it, and the HTML is already " +
+            "must-revalidate.",
+        );
+      }
     }
   }
 }
