@@ -16,7 +16,7 @@
  */
 
 import { rm } from "node:fs/promises";
-import { glyphSets } from "./glyphs.ts";
+import { glyphSets, INLINE_CJK_FAMILY } from "./glyphs.ts";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
@@ -38,10 +38,11 @@ async function fetchOk(url: string, what: string): Promise<Response> {
   return response;
 }
 
-const { latin, sc, tc, hk } = await glyphSets();
+const { latin, inline, sc, tc, hk } = await glyphSets();
 
 console.log(
-  `Glyphs — Latin: ${latin.length}, SC: ${sc.length}, TC: ${tc.length}, HK: ${hk.length}`,
+  `Glyphs — Latin: ${latin.length}, inline CJK: ${inline.length}, ` +
+    `SC: ${sc.length}, TC: ${tc.length}, HK: ${hk.length}`,
 );
 
 /*
@@ -97,9 +98,21 @@ async function subsets(
   }));
 }
 
-/** The four faces, each as one or more batched subsets. */
+/**
+ * The five faces, each as one or more batched subsets.
+ *
+ * `inline` is drawn from the Simplified source: it carries the switcher
+ * endonyms and the Chinese the Latin pages quote, and those pages already
+ * declare `lang="zh-Hans"` on those runs.
+ */
 const FAMILIES = [
   { family: "Noto Sans", api: "Noto+Sans", slug: "latin", text: latin },
+  {
+    family: INLINE_CJK_FAMILY,
+    api: "Noto+Sans+SC",
+    slug: "cjk-inline",
+    text: inline,
+  },
   { family: "Noto Sans SC", api: "Noto+Sans+SC", slug: "sc", text: sc },
   { family: "Noto Sans TC", api: "Noto+Sans+TC", slug: "tc", text: tc },
   { family: "Noto Sans HK", api: "Noto+Sans+HK", slug: "hk", text: hk },
@@ -112,11 +125,20 @@ const fetched = await Promise.all(
   })),
 );
 
-/** Every emitted file, in the order the generated module will import them. */
+/**
+ * Every emitted file, in the order the generated module will import them.
+ *
+ * The slug names a file, so it may carry a hyphen; the identifier is JavaScript
+ * and may not, which `cjk-inline1Url` proved by failing to parse. Camel-casing
+ * the slug keeps one source for both instead of a second list to maintain.
+ */
+const identOf = (slug: string, index: number): string =>
+  `${slug.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())}${index + 1}`;
+
 const files = fetched.flatMap((entry) =>
   entry.parts.map((part, index) => ({
     family: entry.family,
-    ident: `${entry.slug}${index + 1}`,
+    ident: identOf(entry.slug, index),
     path: `src/fonts/noto-sans-${entry.slug}-${index + 1}.woff2`,
     ...part,
   }))

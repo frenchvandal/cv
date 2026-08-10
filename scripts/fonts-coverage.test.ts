@@ -12,7 +12,12 @@ import { expect, test } from "bun:test";
 import { FONT_FACES } from "../src/fonts.ts";
 import { renderApp } from "../src/render.ts";
 import { LANGS } from "../src/translations.ts";
-import { glyphSets, rangesByFamily, uncovered } from "./glyphs.ts";
+import {
+  glyphSets,
+  INLINE_CJK_FAMILY,
+  rangesByFamily,
+  uncovered,
+} from "./glyphs.ts";
 
 // The range parser and the family join live with `glyphSets`, so the build’s
 // gate and this test cannot disagree about what "covered" means.
@@ -22,6 +27,7 @@ const sets = await glyphSets();
 test.each(
   [
     ["Noto Sans", sets.latin],
+    [INLINE_CJK_FAMILY, sets.inline],
     ["Noto Sans SC", sets.sc],
     ["Noto Sans TC", sets.tc],
     ["Noto Sans HK", sets.hk],

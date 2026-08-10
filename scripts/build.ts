@@ -42,7 +42,7 @@ import {
 import { sitemapCss } from "./sitemap-style.ts";
 import { FEED_MIME, feedFile, feedJson, jsonFeed } from "./feed.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
-import { missingGlyphs } from "./glyphs.ts";
+import { INLINE_CJK_FAMILY, missingGlyphs } from "./glyphs.ts";
 import { THEME_COLOR } from "../src/config.ts";
 import {
   HTML_LANG,
@@ -179,21 +179,62 @@ function fontAssetName(sourceUrl: string): string {
   return match;
 }
 
-/*
- * Only the Latin subset is preloaded: every page needs it, while the CJK
- * subsets stay lazy behind their unicode-range.
+/**
+ * The CJK family each language’s `--font` names, from
+ * [src/styles.css](../src/styles.css). One family per page, and the Latin
+ * scripts get the small inline subset rather than the whole of Simplified.
  */
-function fontHead(prefix: string): { preload: string; style: string } {
-  const faces = FONT_FACES.map((face) => ({
-    ...face,
-    url: `${prefix}assets/${fontAssetName(face.url)}`,
-  }));
-  const latin = faces.find((face) => face.family === "Noto Sans");
-  if (!latin) throw new Error('No emitted asset for the "Noto Sans" face');
+const CJK_FAMILY: Record<Lang, string> = {
+  en: INLINE_CJK_FAMILY,
+  fr: INLINE_CJK_FAMILY,
+  pt: INLINE_CJK_FAMILY,
+  es: INLINE_CJK_FAMILY,
+  zh: "Noto Sans SC",
+  "zh-hant": "Noto Sans TC",
+  "zh-hk": "Noto Sans HK",
+};
+
+/**
+ * The @font-face rules a page can actually use, and the preload for the two it
+ * is certain to need.
+ *
+ * Declaring all seven faces on every page cost 27.6 KB of head each — and
+ * worse, it was the `--font` stack, not the head, that decided what got
+ * fetched: naming Noto Sans SC as the Latin fallback had an English visitor
+ * download sc-1 and sc-2 in full. Emitting only the families the page names
+ * makes the head match the stack, and a face no stack names can no longer be
+ * fetched by accident.
+ *
+ * Both preloads earn their place: Latin is on every page, and the page’s CJK
+ * batch 1 carries the switcher endonyms every page renders — without it that
+ * file waits for the CSS to parse, one round trip behind.
+ */
+function fontHead(prefix: string, lang: Lang): {
+  preload: string;
+  style: string;
+} {
+  const wanted = new Set(["Noto Sans", CJK_FAMILY[lang]]);
+  const faces = FONT_FACES
+    .filter((face) => wanted.has(face.family))
+    .map((face) => ({
+      ...face,
+      url: `${prefix}assets/${fontAssetName(face.url)}`,
+    }));
+
+  const preloaded = [...wanted].map((family) => {
+    const first = faces.find((face) => face.family === family);
+    if (!first) throw new Error(`No emitted asset for the "${family}" face`);
+    return first.url;
+  });
+
   return {
-    preload: `<link rel="preload" href="${
-      escapeHtml(latin.url)
-    }" as="font" type="font/woff2" crossorigin />`,
+    preload: preloaded
+      .map((url) =>
+        `<link rel="preload" href="${
+          escapeHtml(url)
+        }" as="font" type="font/woff2" crossorigin />`
+      )
+      .join("\n    "),
     style: `<style data-fonts="ssg">${fontFaceCss(faces)}</style>`,
   };
 }
@@ -357,7 +398,7 @@ for (const lang of LANGS) {
      * they were never going to see. Charset stays first, since it has to be
      * inside the first 1024 bytes.
      */
-    const { preload: fontPreload, style: fontsStyle } = fontHead(prefix);
+    const { preload: fontPreload, style: fontsStyle } = fontHead(prefix, lang);
     const negotiates = ref.kind === "home" && lang === "en";
     const head = `
     ${fontPreload}

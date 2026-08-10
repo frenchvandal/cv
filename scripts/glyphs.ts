@@ -32,6 +32,15 @@ const LATIN_SOURCES = [
   "src/render/blog.ts",
 ];
 
+/**
+ * The family carrying the Chinese that a page written in another language
+ * still renders. Named here because three places have to agree on the string:
+ * the generator that fetches it, the coverage guard, and the `--font` stack in
+ * [src/styles.css](../src/styles.css) — which cannot import, and is held to it
+ * by [src/styles.test.ts](../src/styles.test.ts).
+ */
+export const INLINE_CJK_FAMILY = "Noto Sans CJK Inline";
+
 function unique(
   text: string,
   pred: (cp: number, ch: string) => boolean,
@@ -85,7 +94,7 @@ const switcher = SWITCHER_LANGS.map((lang) =>
  * does) is the only real fix, not a wider scan.
  */
 export async function glyphSets(): Promise<
-  { latin: string; sc: string; tc: string; hk: string }
+  { latin: string; inline: string; sc: string; tc: string; hk: string }
 > {
   const root = `${import.meta.dir}/..`;
   const sources = (
@@ -109,16 +118,19 @@ export async function glyphSets(): Promise<
       .join("");
 
   /*
-   * Chinese quoted inside a page written in another language — 微辣 in the
-   * French, English, Portuguese and Spanish CV, and anything an article
-   * quotes. `markChinese` declares those runs `lang="zh-Hans"`, so the
-   * Simplified subset is the one that has to carry them.
+   * The Chinese a page NOT written in Chinese still renders: the switcher’s
+   * own labels and endonyms (简 繁 简体中文 繁體中文, on every page in every
+   * language), 微辣 in the English, French, Portuguese and Spanish CV, and
+   * anything those languages’ articles quote. `markChinese` declares those
+   * runs `lang="zh-Hans"`.
    *
-   * Without this they belong to no set at all: `isLatin` rejects them, and the
-   * per-language article scan below only reaches Chinese articles. They ship
-   * today only because the same characters happen to appear on a Chinese page
-   * — an accident, not a guarantee, and the first quoted word that does not
-   * would render as tofu with every gate still green.
+   * This is its own family, and the reason is measured. It used to be folded
+   * into the Simplified subset, which meant an English reader downloaded
+   * 342 KB of Chinese font — sc-1 (154 KB) and sc-2 (188 KB), both of them —
+   * to draw these twenty characters, six of which sit in a `.sr-only` span.
+   * Measured in Chrome over `bun run preview`: 381 KB of font on the English
+   * home page, against 39 KB of Latin. A family of its own is a few KB and
+   * the CJK subsets stay where they belong, on the Chinese pages.
    */
   const latinPages = (["en", "fr", "pt", "es"] as const)
     .map((lang) => JSON.stringify(translations[lang]))
@@ -129,8 +141,9 @@ export async function glyphSets(): Promise<
       sources + textIn(["en", "fr", "pt", "es"]),
       (cp) => isLatin(cp),
     ),
+    inline: unique(switcher + latinPages, isCjk),
     sc: unique(
-      JSON.stringify(translations.zh) + switcher + textIn(["zh"]) + latinPages,
+      JSON.stringify(translations.zh) + switcher + textIn(["zh"]),
       isCjk,
     ),
     tc: unique(
@@ -208,6 +221,7 @@ export async function missingGlyphs(
 
   return ([
     ["Noto Sans", sets.latin],
+    [INLINE_CJK_FAMILY, sets.inline],
     ["Noto Sans SC", sets.sc],
     ["Noto Sans TC", sets.tc],
     ["Noto Sans HK", sets.hk],

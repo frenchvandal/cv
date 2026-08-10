@@ -50,8 +50,15 @@
   --fill: rgba(118, 118, 128, 0.12);
   --fill-strong: rgba(118, 118, 128, 0.2);
 
-  --font: 'Noto Sans', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  /* The Latin-script default. Its CJK family is NOT Noto Sans SC but the small
+     subset carrying only what a page in English, French, Portuguese or Spanish
+     actually renders in Chinese: the switcher endonyms, 微辣 in the dialogue,
+     whatever an article quotes — twenty characters. Naming SC here is what made
+     an English reader fetch 342 KB of Chinese font (sc-1 and sc-2, both,
+     measured in Chrome) to draw them. The Chinese pages name their own family
+     below and get the full subsets. */
+  --font: 'Noto Sans', 'Noto Sans CJK Inline', system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 
   /* Radii. Large values read as the continuous corners HIG asks for; the pill
      is Apple’s own button radius. */
@@ -79,6 +86,13 @@
 
   /* The system’s own deceleration curve—motion that settles rather than stops. */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* The Simplified Chinese page is the one that needs the whole SC subset: it is
+   written in it. */
+:root[data-lang='zh'] {
+  --font: 'Noto Sans', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
 /* The Traditional Chinese page uses Noto Sans TC: codepoints shared with Simplified
