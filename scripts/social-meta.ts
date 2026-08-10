@@ -23,6 +23,12 @@ export interface SocialTags {
   og: Record<string, string>;
   /** `<meta name="twitter:…">`—e.g., `card`, `image`. */
   twitter: Record<string, string>;
+  /**
+   * `<meta property="article:…">`—`published_time`, `modified_time`. Empty on
+   * every page that is not an article, which is how a caller tells the two
+   * apart without reading `og:type` first.
+   */
+  article: Record<string, string>;
   /** `<title>` text. */
   title: string;
   /** `<meta name="description">`. */
@@ -40,6 +46,7 @@ export interface SocialTags {
 export async function extractSocialTags(html: string): Promise<SocialTags> {
   const og: Record<string, string> = {};
   const twitter: Record<string, string> = {};
+  const article: Record<string, string> = {};
   let title = "";
   let description = "";
   let canonical = "";
@@ -59,6 +66,7 @@ export async function extractSocialTags(html: string): Promise<SocialTags> {
   await new HTMLRewriter()
     .on('meta[property^="og:"]', collect(og, "property", "og:"))
     .on('meta[name^="twitter:"]', collect(twitter, "name", "twitter:"))
+    .on('meta[property^="article:"]', collect(article, "property", "article:"))
     .on('meta[name="description"]', {
       element: (el) => void (description = el.getAttribute("content") ?? ""),
     })
@@ -71,7 +79,7 @@ export async function extractSocialTags(html: string): Promise<SocialTags> {
     .transform(new Response(html))
     .text();
 
-  return { og, twitter, title, description, canonical };
+  return { og, twitter, article, title, description, canonical };
 }
 
 /** What a scraper would show for the page. */

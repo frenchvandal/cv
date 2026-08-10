@@ -21,8 +21,12 @@ import { pageTitle } from "./render.ts";
 import { hrefTo } from "./urls.ts";
 import { type Lang, PROFILE, SAME_AS, translations } from "./translations.ts";
 
-/** Open Graph wants underscore locales, not BCP-47 tags. */
-const OG_LOCALE: Record<Lang, string> = {
+/**
+ * Open Graph wants underscore locales, not BCP-47 tags. Exported because the
+ * build also needs the locales of the OTHER languages a page exists in, for
+ * `og:locale:alternate`.
+ */
+export const OG_LOCALE: Record<Lang, string> = {
   en: "en_US",
   fr: "fr_FR",
   pt: "pt_PT",
@@ -44,7 +48,12 @@ export interface PageMeta {
   /** The page’s own public URL: canonical and `og:url` both. */
   url: string;
   ogLocale: string;
-  /** Serialized `Person`, safe to drop straight into a `<script>` block. */
+  /** The article facts, carried through so the build can emit `article:*`. */
+  article?: MetaOverride["article"];
+  /**
+   * Serialized structured data, safe to drop straight into a `<script>` block:
+   * a `Person`, or a `@graph` of the person and the post on an article page.
+   */
   jsonLd: string;
 }
 
@@ -63,6 +72,12 @@ export interface MetaOverride {
    * uses to judge whether a technical note is still current.
    */
   article?: {
+    /**
+     * The article’s own title, without the site-name suffix the tab title
+     * carries: Schema.org asks for the headline, not for what a browser tab
+     * shows.
+     */
+    headline: string;
     /** Frontmatter `date`, as `YYYY-MM-DD`. */
     published: string;
     /** Frontmatter `updated`, when the author dated a revision. */
@@ -131,7 +146,7 @@ export function pageMeta(
         { ...person, "@id": `${override?.homeUrl ?? url}#person` },
         {
           "@type": "BlogPosting",
-          headline: title,
+          headline: article.headline,
           description,
           url,
           mainEntityOfPage: url,

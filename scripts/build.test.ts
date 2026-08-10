@@ -279,6 +279,43 @@ test(
     expect(seen.locale.size).toBe(LANGS.length);
 
     /*
+     * An article page says three things the CV pages above cannot: that it IS
+     * an article, when it was published, and who wrote it. Each of the three
+     * was missing until an audit looked for it, which is the argument for
+     * asserting them here rather than trusting the template.
+     */
+    const somePost = byLang(await loadPosts(), "fr")[0]!;
+    const postHtml = await Bun.file(
+      `${ROOT}/dist/fr/blog/${somePost.slug}.html`,
+    ).text();
+    const postTags = await extractSocialTags(postHtml);
+
+    expect(postTags.og.type).toBe("article");
+    expect(postTags.og["locale:alternate"]).toBeDefined();
+    expect(postTags.article.published_time).toBe(
+      `${somePost.date}T00:00:00Z`,
+    );
+
+    const graph = JSON.parse(
+      await textOf(postHtml, 'script[type="application/ld+json"]'),
+    );
+    const posting = graph["@graph"].find(
+      (node: { "@type": string }) => node["@type"] === "BlogPosting",
+    );
+    const author = graph["@graph"].find(
+      (node: { "@type": string }) => node["@type"] === "Person",
+    );
+    // The headline is the article's own title, not the tab title, and the
+    // author is a reference to the Person node rather than a second copy of
+    // it — two copies are how the same fact ends up stated two ways.
+    expect(posting.headline).toBe(somePost.title);
+    expect(posting.datePublished).toBe(`${somePost.date}T00:00:00Z`);
+    expect(posting.inLanguage).toBe(HTML_LANG.fr);
+    expect(posting.author["@id"]).toBe(author["@id"]);
+    // The author's own URL is the site, not whichever post is being read.
+    expect(author.url).toBe(`${SITE}/fr/`);
+
+    /*
      * The sitemap lists every page that was written, once, at its canonical
      * URL — home, CV and blog index for each language, plus one entry per
      * article. 404.html is noindex and stays out. Indexes are published as

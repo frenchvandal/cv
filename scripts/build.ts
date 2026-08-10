@@ -25,7 +25,7 @@ import {
 } from "../src/render.ts";
 // The per-page <head>, shared with the runtime so a reload-free language
 // switch rewrites exactly what this file bakes in.
-import { pageMeta } from "../src/meta.ts";
+import { type MetaOverride, OG_LOCALE, pageMeta } from "../src/meta.ts";
 // The same escaper the renderer uses—one implementation, so the two can’t
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
@@ -250,7 +250,9 @@ const META_DESCRIPTION_MAX = 160;
 function metaFor(
   page: Page,
   t: (typeof translations)[Lang],
-): { title: string; description: string } | undefined {
+  lang: Lang,
+  homeUrl: string,
+): MetaOverride | undefined {
   switch (page.kind) {
     case "home":
       return undefined;
@@ -263,11 +265,19 @@ function metaFor(
       return {
         title: `${t.nav.writing} — ${t.name.display}`,
         description: t.blog.indexIntro,
+        homeUrl,
       };
     case "post":
       return {
         title: `${page.post.title} — ${t.name.display}`,
         description: page.post.summary,
+        homeUrl,
+        article: {
+          headline: page.post.title,
+          published: page.post.date,
+          ...(page.post.updated ? { updated: page.post.updated } : {}),
+          inLanguage: HTML_LANG[lang],
+        },
       };
   }
 }
@@ -279,7 +289,11 @@ for (const lang of LANGS) {
 
   for (const { ref, page } of pagesFor(lang)) {
     const prefix = rel(pageDepth(ref));
-    const meta = pageMeta(lang, pageUrl(ref), metaFor(page, t));
+    const meta = pageMeta(
+      lang,
+      pageUrl(ref),
+      metaFor(page, t, lang, pageUrl({ kind: "home", lang }, ref)),
+    );
     const { title, description } = meta;
     // Light is the no-JS default (see src/styles.css); the inline <head> script
     // switches to dark before first paint when the visitor or the OS asks.
@@ -301,6 +315,35 @@ for (const lang of LANGS) {
     const xDefault = page.kind === "post" && !alternateLangs.includes("en")
       ? pageUrl({ kind: "blogIndex", lang: "en" }, ref)
       : pageUrl(refIn(ref, "en"), ref);
+
+    /*
+     * The locales this page also exists in. Facebook reads og:locale:alternate
+     * to offer a reader the version in their own language; the hreflang links
+     * above say the same thing to a crawler, and neither audience reads the
+     * other one's tag.
+     */
+    const alternateLocales = alternateLangs
+      .filter((l) => l !== lang)
+      .map((l) =>
+        `    <meta property="og:locale:alternate" content="${
+          OG_LOCALE[l]
+        }" />\n`
+      )
+      .join("");
+
+    /*
+     * Article dates, for the scrapers that show them. The same facts reach a
+     * search engine through the BlogPosting in the JSON-LD; these are the Open
+     * Graph spelling of them, and both come from the frontmatter, never from a
+     * file date.
+     */
+    const articleTags = meta.article
+      ? `    <meta property="article:published_time" content="${meta.article.published}T00:00:00Z" />\n${
+        meta.article.updated
+          ? `    <meta property="article:modified_time" content="${meta.article.updated}T00:00:00Z" />\n`
+          : ""
+      }`
+      : "";
 
     // The negotiation script goes first so a redirect is not preceded by a font
     // preload we are about to abandon. Only the site root negotiates: a URL
@@ -329,7 +372,8 @@ for (const lang of LANGS) {
     <meta property="og:title" content="${escapeHtml(title)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:url" content="${escapeHtml(meta.url)}" />
-    <meta property="og:locale" content="${meta.ogLocale}" />${
+    <meta property="og:locale" content="${meta.ogLocale}" />
+${alternateLocales}${articleTags}${
       SITE
         ? `
     <meta property="og:image" content="${escapeHtml(`${SITE}/${OG_IMAGE}`)}" />
