@@ -12,7 +12,6 @@ import { expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { HTML_LANG, LANGS, translations } from "../src/translations.ts";
 import { escapeHtml } from "../src/dom.ts";
-import { pageTitle } from "../src/render.ts";
 import { headMeta, pageMeta } from "../src/meta.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
 import { contentLastmod, parseSitemap, SITEMAP_CSS_FILE } from "./sitemap.ts";
@@ -212,9 +211,16 @@ test(
       const url = `${SITE}/${file}`;
       const t = translations[lang];
 
-      // The card is this language's, and points at this language's page.
-      expect(card.title).toBe(escapeHtml(pageTitle(t)));
-      expect(card.description).toBe(escapeHtml(t.meta.description));
+      /*
+       * The card is this language's, and points at this language's page. The
+       * CV names itself rather than carrying the site title: the home, the CV
+       * and the writing index used to ship one identical title and
+       * description across all three, which is a duplicate in a search result
+       * and a writing index presenting itself as a CV.
+       */
+      expect(card.title).toBe(escapeHtml(`${t.nav.cv} — ${t.name.display}`));
+      expect(card.description).not.toBe(escapeHtml(t.meta.description));
+      expect(card.description.length).toBeGreaterThan(0);
       expect(card.url).toBe(url);
       expect(tags.canonical).toBe(url);
       expect(card.type).toBe("website");
@@ -253,12 +259,20 @@ test(
           .toEqual([selector, 1]);
       }
 
-      seen.title.add(card.title);
+      seen.title.add(card.description);
       seen.locale.add(card.locale ?? "");
     }
 
-    // Eight pages, eight distinct previews: a shared title or locale would mean
-    // a language fell back to another's metadata.
+    /*
+     * Seven pages, seven distinct previews: a shared description or locale
+     * would mean a language fell back to another's metadata.
+     *
+     * The check is on the description, not the title. Since the CV page names
+     * itself, its title is the word for "CV" plus the author's name — and that
+     * word is identical in English, French, Portuguese and Spanish, so four
+     * titles legitimately coincide. The description is prose, and prose is
+     * translated.
+     */
     expect(seen.title.size).toBe(LANGS.length);
     expect(seen.locale.size).toBe(LANGS.length);
 

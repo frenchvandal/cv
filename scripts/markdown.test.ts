@@ -39,7 +39,7 @@ test("un id dérivé n'écrase pas un id littéral déjà pris", async () => {
 
 test("les liens externes reçoivent rel, les internes non", async () => {
   const html = await renderMarkdown(
-    "[dehors](https://exemple.test) et [dedans](./cv.html)",
+    "[dehors](https://exemple.test) et [dedans](../cv.html)",
     "fr",
   );
   expect(html).toContain('rel="noopener noreferrer"');
@@ -300,7 +300,7 @@ test("resserrer la classe numérique ne rouvre pas &#106avascript: (non-régress
 test.each([
   ["[x](https://exemple.test)"],
   ["[x](mailto:a@b.test)"],
-  ["[x](./cv.html)"],
+  ["[x](../cv.html)"],
   ["[x](#ancre)"],
 ])("le garde-fou laisse passer les schémas d'URI légitimes : %s", (source) => {
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))
@@ -334,7 +334,7 @@ test("le correctif C0 ne casse pas les URI légitimes déjà couvertes (non-rég
     const source of [
       "[x](https://exemple.test)",
       "[x](mailto:a@b.test)",
-      "[x](./cv.html)",
+      "[x](../cv.html)",
       "[x](#ancre)",
       "[voir](https://exemple.test/article?ref=twitter&#comment-42)",
     ]
@@ -390,7 +390,7 @@ test("le garde-fou laisse passer toute la syntaxe GFM que le dépôt exerce", as
     "",
     "Autolien : <https://exemple.test/auto>",
     "",
-    "Texte avec un [lien interne](./cv.html) et une [ancre](#section) et un [mailto](mailto:a@b.test).",
+    "Texte avec un [lien interne](../cv.html) et une [ancre](#section) et un [mailto](mailto:a@b.test).",
   ].join("\n");
 
   expect(() => assertSafeMarkdown(source, "content/posts/x/fr.md"))

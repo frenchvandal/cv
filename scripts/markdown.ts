@@ -11,6 +11,20 @@
  * Le marquage CJK passe ici par le gestionnaire de nœuds texte, et non par une
  * expression régulière sur une chaîne échappée comme dans src/render.ts : il ne
  * peut donc structurellement pas atteindre un attribut ou un nom de balise.
+ *
+ * LIENS INTERNES : aucune réécriture, et c'est un choix mesuré. Les articles
+ * vivent à `blog/x.html` en anglais et `<lang>/blog/x.html` ailleurs, donc la
+ * même écriture relative résout juste aux deux profondeurs :
+ *
+ *   ./autre.html   → l'article voisin        (blog/autre.html, fr/blog/autre.html)
+ *   ../cv.html     → le CV de cette langue   (cv.html, fr/cv.html)
+ *   ../            → l'accueil de la langue  (/, fr/)
+ *   ./             → l'index du blog         (blog/, fr/blog/)
+ *
+ * Le CV est toujours d'un cran au-dessus de `blog/`, dans chaque langue : c'est
+ * ce qui rend la disposition auto-cohérente. Réécrire `./x` en « depuis la
+ * racine du site » casserait au contraire le lien le plus naturel qu'un article
+ * puisse porter, celui vers son voisin.
  */
 
 import type { Lang } from "../src/translations.ts";

@@ -113,9 +113,10 @@
     --fg-tertiary: #86868b; /* 5.6:1 */
     --accent: #0a84ff; /* 5.8:1 on --bg, so the focus ring keeps its bite */
     /* Deliberately not the brighter blue above: white on #0a84ff is 3.6:1, and
-       a filled button is text first. The light theme's fill still clears 4.5:1
-       against --bg here, so it reads as a control on black too. */
-    --accent-fill: #0071e3; /* 4.7:1 under --accent-fg, 4.5:1 on --bg */
+       a filled button is text first. Against --bg it measures 4.47:1, which is
+       what a filled surface has to clear (3:1, the non-text threshold) with
+       room to spare — the 4.5:1 that matters here is the white ON it. */
+    --accent-fill: #0071e3; /* 4.7:1 under --accent-fg, 4.47:1 on --bg */
     --accent-fill-hover: #005bb5; /* 6.6:1 under --accent-fg, 3.2:1 on --bg */
     --accent-fg: #ffffff;
     --link: #2997ff; /* 6.6:1 on --bg */

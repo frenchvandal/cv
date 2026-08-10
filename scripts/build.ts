@@ -220,6 +220,53 @@ function pagesFor(lang: Lang): { ref: PageRef; page: Page }[] {
   ];
 }
 
+/** The first sentence of a text, as a description a search result can show. */
+function firstSentence(text: string, max = 160): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const head = clean.slice(0, max);
+  const stop = Math.max(head.lastIndexOf(". "), head.lastIndexOf("。"));
+  return stop > max / 3 ? clean.slice(0, stop + 1).trim() : `${head.trim()}…`;
+}
+
+/**
+ * What a page says about itself in the `<head>`.
+ *
+ * Every page used to carry the CV's title and description — the site name for
+ * the home, the CV and the writing index alike, in all seven languages. Three
+ * different pages announcing themselves identically is a duplicate title in a
+ * search result and, worse, a writing index that presents itself as a CV.
+ *
+ * The home keeps the site's own title, because it IS the front door. The other
+ * three name themselves, and each takes a description from content it already
+ * owns rather than from a new translation string: the CV opens with `about.p1`,
+ * the index with its own intro, an article with its summary.
+ */
+function metaFor(
+  page: Page,
+  t: (typeof translations)[Lang],
+): { title: string; description: string } | undefined {
+  switch (page.kind) {
+    case "home":
+      return undefined;
+    case "cv":
+      return {
+        title: `${t.nav.cv} — ${t.name.display}`,
+        description: firstSentence(t.about.p1),
+      };
+    case "blogIndex":
+      return {
+        title: `${t.nav.writing} — ${t.name.display}`,
+        description: t.blog.indexIntro,
+      };
+    case "post":
+      return {
+        title: `${page.post.title} — ${t.name.display}`,
+        description: page.post.summary,
+      };
+  }
+}
+
 const written: PageRef[] = [];
 
 for (const lang of LANGS) {
@@ -227,19 +274,7 @@ for (const lang of LANGS) {
 
   for (const { ref, page } of pagesFor(lang)) {
     const prefix = rel(pageDepth(ref));
-    // An article announces itself, not the CV: its own title and summary, or
-    // the tab, the search result and the link preview would all read as the
-    // homepage.
-    const meta = pageMeta(
-      lang,
-      pageUrl(ref),
-      page.kind === "post"
-        ? {
-          title: `${page.post.title} — ${t.name.display}`,
-          description: page.post.summary,
-        }
-        : undefined,
-    );
+    const meta = pageMeta(lang, pageUrl(ref), metaFor(page, t));
     const { title, description } = meta;
     // Light is the no-JS default (see src/styles.css); the inline <head> script
     // switches to dark before first paint when the visitor or the OS asks.

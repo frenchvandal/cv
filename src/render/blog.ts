@@ -46,7 +46,7 @@ export function pageRefOf(page: Page, lang: Lang): PageRef {
 
 /*
  * The readable date, in the page's language. HTML_LANG already carries the
- * site's BCP-47 tags (pt-PT, es-ES, zh-Hant-HK…): reuse it rather than open a
+ * site's BCP-47 tags (pt-PT, es-ES, zh-Hant, zh-HK): reuse it rather than open a
  * second table that would drift. `timeZone: "UTC"` is required—without it a
  * bare date is read in the build machine's own zone and slips a day west of
  * Greenwich.

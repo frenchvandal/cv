@@ -81,9 +81,18 @@ export function nav(
       `<a class="nav__link" href="${link.href}">${escapeHtml(link.label)}</a>`,
   ).join("");
 
-  // zh-hk has no button of its own—it is Traditional Chinese, so the 繁 entry
-  // is the one that represents the page a Hong Kong reader is on.
+  /*
+   * Which entry represents the page being read. zh-hk has no button of its
+   * own—it is Traditional Chinese, so the 繁 entry stands for it.
+   *
+   * That is also why the marker is not always `aria-current="page"`, which
+   * asserts "this link IS the current page". On a Hong Kong page the 繁 link
+   * leads to the Taiwan page, so it represents the current language without
+   * being the current page: `aria-current="true"` says exactly that much and
+   * no more.
+   */
   const current = lang === "zh-hk" ? "zh-hant" : lang;
+  const currentKind = lang === "zh-hk" ? "true" : "page";
 
   // The endonym is the accessible name, but it cannot ride on an aria-label:
   // an attribute carries no language, so a French screen reader would read
@@ -101,7 +110,9 @@ export function nav(
     return `
         <a href="${link.href}" hreflang="${
       HTML_LANG[code]
-    }" data-lang="${code}"${current === code ? ' aria-current="page"' : ""}>
+    }" data-lang="${code}"${
+      current === code ? ` aria-current="${currentKind}"` : ""
+    }>
           <span lang="${HTML_LANG[code]}" aria-hidden="true">${
       LANG_LABEL[code]
     }</span>
