@@ -67,7 +67,7 @@ rediscover.
   2026-08-10, 800 glyphs still return one face carrying exactly those glyphs,
   while 900 return 101 faces—the endpoint has stopped subsetting and is serving
   the complete font split by unicode range, 13.5 MB across SC, TC and HK. A
-  family therefore spans several files (7 today, 1.1 MB), each with its own
+  family therefore spans several files (8 today, 1.1 MB), each with its own
   `unicode-range`, so the browser still fetches only what a page needs. Run it
   after changing copy in [src/translations.ts](src/translations.ts), the render
   modules, or any article. **You will rarely need to remember**: the build
@@ -337,15 +337,38 @@ later); this site targets modern browsers only, so don’t down-level.
   change, only re-run the cheap width and layout math; never re-prepare
   identical text.
 - **A named font is required.** pretext is inaccurate with `system-ui`, so the
-  site self-hosts four families—**Noto Sans / Noto Sans SC / Noto Sans TC / Noto
-  Sans HK** ([src/fonts.ts](src/fonts.ts))—and every measurement waits for
-  `document.fonts.ready`. A family may span several files: see `fonts:update` in
-  §2 for why, and never assume one family means one face.
+  site self-hosts five families—**Noto Sans**, **Noto Sans CJK Inline**, and
+  **Noto Sans SC / TC / HK** ([src/fonts.ts](src/fonts.ts))—and every
+  measurement waits for `document.fonts.ready`. A family may span several files:
+  see `fonts:update` in §2 for why, and never assume one family means one face.
+- **One CJK family per page, and the Latin pages get the small one.** The
+  `--font` stack decides what a visitor downloads, not the `@font-face` block: a
+  face whose family no stack names is never fetched, and a family a stack names
+  is fetched the moment one character lands in its range. English, French,
+  Portuguese and Spanish pages therefore name **Noto Sans CJK Inline**, an 8 KB
+  subset holding the twenty Chinese characters those pages actually render—the
+  switcher’s 简 繁 and its `.sr-only` endonyms, 微辣 in the dialogue, whatever
+  an article quotes. Naming Noto Sans SC there instead, which is what the site
+  did until 2026-08-10, had an English reader download **381 KB** of font where
+  47 KB was needed: sc-1 (154 KB) and sc-2 (188 KB) in full, for twenty glyphs,
+  six of them in a visually hidden span. Measured in Chrome over
+  `bun run preview`, before and after. The Chinese pages name their own family
+  and get the whole subset, as they should. [scripts/build.ts](scripts/build.ts)
+  mirrors the same map in `CJK_FAMILY` to emit only the faces a page can select
+  (27.6 KB of inline `@font-face` down to 1.2 KB on a Latin page, 9.7 KB on a
+  Chinese one) and to preload both of them; nothing but the assertion in
+  [src/styles.test.ts](src/styles.test.ts) keeps the CSS and that map in step.
+- **Batch order does not matter, measured.** Ordering the CJK batches by
+  frequency instead of by codepoint, so that batch 2 stays unfetched, was
+  modelled against the real corpus and refused: a Simplified page renders 201 to
+  440 distinct characters out of a 1171-character union, so 14 of 15 pages need
+  both batches whatever the order. At batch sizes 200 to 1200, by codepoint or
+  by how many pages a character appears on, the median page fetches the same 341
+  KB. Do not rediscover this.
 - **Fonts are imported, not CSS-`url()`’d.** Bun inlines CSS-referenced fonts as
   base64; importing the `.woff2` (file loader) emits a separate hashed asset and
-  keeps `unicode-range` lazy-loading, so an EN visitor never fetches the CJK
-  subset. The subset files are vendored—regenerate them only when the glyph set
-  changes.
+  keeps `unicode-range` lazy-loading. The subset files are vendored—regenerate
+  them only when the glyph set changes.
 - **Keep a safety margin** (`MEASURE_SAFETY`) on every fit, so rounding never
   causes overflow or clipping.
 - **The nav bar has no responsive slack.** It shares `--wrap` with the content,
