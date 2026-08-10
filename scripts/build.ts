@@ -32,6 +32,7 @@ import { escapeHtml } from "../src/dom.ts";
 import { byLang, langsOf } from "../src/post.ts";
 import { pageDepth, pagePath, type PageRef, rel } from "../src/urls.ts";
 import { loadPosts } from "./content.ts";
+import { relayHtml, relayPages, relayTarget } from "./relay.ts";
 import {
   contentLastmod,
   SITEMAP_CSS_FILE,
@@ -342,6 +343,19 @@ for (const lang of LANGS) {
     );
     console.log(`  ${file}  (${lang})`);
   }
+}
+
+/*
+ * Relay pages for the URLs the flat layout used to serve (`fr.html` → `fr/`,
+ * `en.html` → the root). Written after the real pages, so nothing here can
+ * shadow one — `relayPages` deliberately leaves the root out.
+ */
+for (const { file, target } of relayPages()) {
+  await Bun.write(
+    `${OUT}/${file}`,
+    relayHtml(relayTarget(target), PROFILE.fullName),
+  );
+  console.log(`  ${OUT}/${file}  (relay)`);
 }
 
 // Robots + sitemap (the sitemap needs absolute URLs, so it is SITE_URL-gated).

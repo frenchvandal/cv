@@ -134,6 +134,24 @@ test(
       expect(existsSync(`${ROOT}/dist/${blogIndexFile(lang)}`)).toBe(true);
     }
 
+    /*
+     * A relay stands at each URL the flat layout used to serve, so a link
+     * shared before the move still lands somewhere. It must not shadow the
+     * root, which is a real page — the one that negotiates.
+     */
+    for (const lang of LANGS) {
+      const relay = await Bun.file(`${ROOT}/dist/${lang}.html`).text();
+      expect(relay).toContain('name="robots" content="noindex"');
+      expect(relay).toContain(
+        `<link rel="canonical" href="${
+          lang === "en" ? "./" : `./${lang}/`
+        }" />`,
+      );
+      expect(relay).toContain('http-equiv="refresh"');
+    }
+    expect(await Bun.file(`${ROOT}/dist/index.html`).text())
+      .not.toContain('content="noindex"');
+
     // Only the site root negotiates the visitor's language: a URL that names a
     // language must always be honoured, or a shared link would change language
     // on the recipient.
@@ -276,10 +294,13 @@ test(
     const pages = new Bun.Glob("**/*.html");
     const canonicals = new Set<string>();
     for await (const page of pages.scan(`${ROOT}/dist`)) {
-      if (page === "404.html") continue;
-      const tags = await extractSocialTags(
-        await Bun.file(`${ROOT}/dist/${page}`).text(),
-      );
+      const html = await Bun.file(`${ROOT}/dist/${page}`).text();
+      // `noindex` is what separates a page from a relay or the 404: the
+      // sitemap lists what crawlers should index, and nothing else. Keyed on
+      // the marker rather than on file names, so a relay added later is
+      // excluded without this test having to learn its name.
+      if (html.includes('name="robots" content="noindex"')) continue;
+      const tags = await extractSocialTags(html);
       if (tags.canonical) canonicals.add(tags.canonical);
     }
     expect(new Set(entries.map((e) => e.loc))).toEqual(canonicals);
