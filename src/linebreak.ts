@@ -48,8 +48,19 @@ export interface Run {
   extraWidth?: number;
 }
 
-/** A laid-out line, as the styled pieces it is made of. `run` indexes the runs. */
-export type RichLine = { fragments: { text: string; run: number }[] };
+/**
+ * A laid-out line, as the styled pieces it is made of. `run` indexes the runs.
+ *
+ * `hyphenated` marks a line that ends mid-word, and the hyphen it needs is NOT
+ * in `fragments`: it is presentation, and putting it in the text put it in the
+ * clipboard. Measured in Chrome — copying three computed lines yielded
+ * "un do-\ncument traduit", a word no reader ever wrote. The renderer draws it
+ * from CSS instead, where a selection cannot reach it.
+ */
+export type RichLine = {
+  fragments: { text: string; run: number }[];
+  hyphenated?: boolean;
+};
 
 type BreakItem =
   | { type: "box"; width: number; text: string; run: number }
@@ -526,12 +537,12 @@ function toLines(items: BreakItem[], breaks: number[]): RichLine[] {
     }
 
     const breakItem = items[breakIndex]!;
-    if (breakItem.type === "penalty" && breakItem.flagged) {
-      const last = fragments[fragments.length - 1];
-      if (last) last.text += "-";
-    }
+    const hyphenated = breakItem.type === "penalty" && breakItem.flagged;
 
-    lines.push({ fragments: fragments.filter((f) => f.text !== "") });
+    lines.push({
+      fragments: fragments.filter((f) => f.text !== ""),
+      ...(hyphenated ? { hyphenated: true } : {}),
+    });
 
     start = breakIndex + 1;
     while (start < items.length && items[start]!.type === "glue") start++;
@@ -586,6 +597,9 @@ export async function breakIntoLinesFlat(
     lang,
     measure,
   );
-  return lines?.map((line) => line.fragments.map((f) => f.text).join("")) ??
-    null;
+  // The flat contract keeps the hyphen in the string: its caller has no CSS to
+  // draw one with, and the tests read better for it.
+  return lines?.map((line) =>
+    line.fragments.map((f) => f.text).join("") + (line.hyphenated ? "-" : "")
+  ) ?? null;
 }

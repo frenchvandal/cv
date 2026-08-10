@@ -25,7 +25,7 @@
  * trade this file is willing to make silently.
  */
 
-import type { Run } from "./linebreak.ts";
+import type { RichLine, Run } from "./linebreak.ts";
 
 /** A run as the breaker wants it, plus the elements the renderer must reopen. */
 export interface RichRun extends Run {
@@ -111,7 +111,7 @@ export function runsFrom(el: HTMLElement): RichRun[] | null {
  */
 export function renderLines(
   el: HTMLElement,
-  lines: readonly { fragments: { text: string; run: number }[] }[],
+  lines: readonly RichLine[],
   runs: readonly RichRun[],
 ): void {
   const doc = el.ownerDocument;
@@ -120,6 +120,10 @@ export function renderLines(
   for (const line of lines) {
     const lineEl = doc.createElement("span");
     lineEl.className = "kp-line";
+    // The hyphen of a mid-word break is drawn by CSS from this attribute, not
+    // written into the text: it belongs to the line, not to the word, and a
+    // reader copying the paragraph must get `document`, never `do-\ncument`.
+    if (line.hyphenated) lineEl.dataset.hyphen = "";
 
     // The chain currently open, as source elements and as their clones—the
     // first says what may be reused, the second is where text goes.
@@ -152,4 +156,42 @@ export function renderLines(
   }
 
   el.replaceChildren(out);
+}
+
+/**
+ * The paragraph as the author wrote it, from a selection over computed lines—
+ * or null when this selection is not one this function should touch.
+ *
+ * Composing a paragraph into one block per line changes what copying it
+ * yields: the browser puts a newline at every block boundary, so a reader
+ * quoting an article got it hard-wrapped, with words split across the breaks.
+ * Measured in Chrome before this existed: `un do\ncument traduit`. The line
+ * boundary is a fact about this column at this width, not about the text, and
+ * it has no business travelling to whoever is being quoted at.
+ *
+ * The rule is the one the breaker used: a line that ends mid-word rejoins the
+ * next with nothing between them, any other line with the space the breaker
+ * consumed. `null` means “not ours”—no computed line in the selection, or a
+ * selection that also covers text outside one—and the caller then leaves the
+ * clipboard alone rather than reassembling something it does not understand.
+ */
+export function copiedText(fragment: DocumentFragment): string | null {
+  const lines = [...fragment.querySelectorAll(".kp-line")];
+  if (lines.length === 0) return null;
+
+  const joined = lines
+    .map((line, i) => {
+      const text = line.textContent ?? "";
+      const previous = lines[i - 1];
+      if (!previous) return text;
+      return (previous.hasAttribute("data-hyphen") ? "" : " ") + text;
+    })
+    .join("");
+
+  // Anything selected outside the lines—a heading, a paragraph the observer
+  // has not reached—would be dropped by the join above, so refuse instead.
+  const inLines = lines.map((line) => line.textContent ?? "").join("");
+  const all = fragment.textContent ?? "";
+  const strip = (text: string) => text.replace(/\s+/gu, "");
+  return strip(all) === strip(inLines) ? joined : null;
 }

@@ -40,7 +40,7 @@ import {
   whenFontsReady,
 } from "./measure.ts";
 import { breakIntoLines, pretextMeasure } from "./linebreak.ts";
-import { renderLines, runsFrom } from "./richtext.ts";
+import { copiedText, renderLines, runsFrom } from "./richtext.ts";
 import { enhanceChat } from "./chat.ts";
 
 // Mark JS as available only now, when the app code actually runs: `.js .animate`
@@ -340,6 +340,24 @@ function enhanceJustified(): void {
 
   for (const p of paragraphs) observer.observe(p);
   kpObserver = observer;
+}
+
+/**
+ * Give the clipboard the paragraph rather than the column.
+ *
+ * Bound once, on the document, because a selection can span paragraphs and
+ * the handler has to see the whole of it. It only ever acts on a selection
+ * made entirely of computed lines; anything else is left to the browser.
+ */
+function repairCopy(event: ClipboardEvent): void {
+  const selection = getSelection();
+  if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+
+  const text = copiedText(selection.getRangeAt(0).cloneContents());
+  if (text === null) return;
+
+  event.clipboardData?.setData("text/plain", text);
+  event.preventDefault();
 }
 
 /**
@@ -754,6 +772,7 @@ function init(): void {
   });
 
   globalThis.addEventListener("popstate", onPopState);
+  document.addEventListener("copy", repairCopy);
   globalThis.addEventListener(
     "resize",
     debounce(() => {

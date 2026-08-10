@@ -639,6 +639,16 @@ a:hover {
   text-align-last: left;
 }
 
+/* The hyphen of a mid-word break, drawn rather than written. Generated content
+   is not part of the document text, so a reader selecting the paragraph copies
+   the word whole — measured in Chrome, where the hyphen used to come along and
+   paste as "do-" plus a newline. A screen reader reads the text nodes, which
+   never held it either. U+2010 is the hyphen proper, not the ASCII
+   hyphen-minus. */
+.kp-line[data-hyphen]::after {
+  content: "\2010";
+}
+
 /* ------------------------------------------------------------------ *
  * Cards—a raised surface, no border and no shadow
  * ------------------------------------------------------------------ */
