@@ -170,7 +170,7 @@ export async function loadPosts(root = DEFAULT_ROOT): Promise<Post[]> {
     assertSlug(slug, sourcePath);
     if (!isLang(lang)) {
       throw new Error(
-        `${sourcePath}: « ${lang} » n'est pas une langue du site`,
+        `${sourcePath}: “${lang}” is not a language of the site`,
       );
     }
     found.push({ sourcePath, lang, slug });

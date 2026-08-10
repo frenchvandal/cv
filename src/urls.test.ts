@@ -1,7 +1,7 @@
 /*
- * La disposition met l’anglais à la racine et chaque autre langue dans son
- * dossier. La profondeur cesse donc d’être uniforme, et tout chemin d’asset ou
- * de lien se calcule. Ces tests sont ce qui empêche un `../` de trop.
+ * The layout puts English at the root and every other language in a folder of
+ * its own. Depth therefore stops being uniform, and every asset path and every
+ * link has to be computed. These tests are what stops one `../` too many.
  */
 
 import { expect, test } from "bun:test";
@@ -14,7 +14,7 @@ import {
   RESERVED_SLUGS,
 } from "./urls.ts";
 
-test("rel(depth) remonte à la racine du site", () => {
+test("rel(depth) climbs back to the site root", () => {
   expect(rel(0)).toBe("./");
   expect(rel(1)).toBe("../");
   expect(rel(2)).toBe("../../");
@@ -42,7 +42,7 @@ test.each([
   expect(pageDepth(ref)).toBe(depth);
 });
 
-test("un lien croisé remonte puis redescend", () => {
+test("a cross-language link climbs and comes back down", () => {
   const from = { kind: "post", lang: "fr", slug: "mesurer" } as const;
   expect(hrefTo(from, { kind: "home", lang: "en" })).toBe("../../index.html");
   expect(hrefTo(from, { kind: "cv", lang: "zh" })).toBe("../../zh/cv.html");
@@ -50,28 +50,28 @@ test("un lien croisé remonte puis redescend", () => {
     .toBe("../../blog/mesurer.html");
 });
 
-test("un lien depuis la racine reste local", () => {
+test("a link from the root stays local", () => {
   const from = { kind: "home", lang: "en" } as const;
   expect(hrefTo(from, { kind: "cv", lang: "en" })).toBe("./cv.html");
   expect(hrefTo(from, { kind: "blogIndex", lang: "fr" }))
     .toBe("./fr/blog/index.html");
 });
 
-test.each([...RESERVED_SLUGS])("le slug réservé « %s » est refusé", (slug) => {
+test.each([...RESERVED_SLUGS])("the reserved slug “%s” is refused", (slug) => {
   expect(() => assertSlug(slug, `content/posts/${slug}/fr.md`)).toThrow(slug);
 });
 
-test("les codes de langue sont réservés", () => {
+test("the language codes are reserved", () => {
   expect(() => assertSlug("zh-hant", "p")).toThrow();
 });
 
 test.each(["Mesurer", "mon article", "a/b", "", "é"])(
-  "un slug hors [a-z0-9-] est refusé : %s",
+  "a slug outside [a-z0-9-] is refused: %s",
   (slug) => {
     expect(() => assertSlug(slug, "p")).toThrow();
   },
 );
 
-test("un slug ordinaire passe", () => {
+test("an ordinary slug passes", () => {
   expect(() => assertSlug("mesurer-le-texte", "p")).not.toThrow();
 });

@@ -1,11 +1,11 @@
 /*
- * Où vit chaque page, et comment on va de l’une à l’autre.
+ * Where each page lives, and how one gets from one to another.
  *
- * L’anglais est à la racine — ce que `langUrl` encodait déjà — et chaque autre
- * langue prend un dossier. La profondeur n’est donc plus uniforme, et tous les
- * chemins d’assets comme les liens inter-pages passent par `rel(depth)`. Ils
- * restent relatifs, donc le `dist/` se dépose à n’importe quel préfixe de
- * bucket : c’est l’invariant que le repo tient depuis le début.
+ * English sits at the root—which is what `langUrl` already encoded—and every
+ * other language takes a folder of its own. Depth is therefore no longer
+ * uniform, so asset paths and page-to-page links alike go through
+ * `rel(depth)`. They stay relative, which is how `dist/` drops under any
+ * bucket prefix: the invariant this repo has held from the start.
  */
 
 import type { Lang } from "./translations.ts";
@@ -18,9 +18,9 @@ export type PageRef =
   | { kind: "post"; lang: Lang; slug: string };
 
 /**
- * Les noms qu’un slug ne peut pas prendre : ils désignent déjà un fichier ou un
- * dossier du site. Les codes de langue en font partie — un article « fr »
- * écraserait le dossier de la langue.
+ * The names a slug may not take: each already denotes a file or a folder of the
+ * site. The language codes are among them—an article slugged “fr” would
+ * overwrite that language’s folder.
  */
 export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "assets",
@@ -39,11 +39,11 @@ const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export function assertSlug(slug: string, path: string): void {
   if (RESERVED_SLUGS.has(slug)) {
-    throw new Error(`${path}: « ${slug} » est un nom réservé du site`);
+    throw new Error(`${path}: “${slug}” is a name the site reserves`);
   }
   if (!SLUG.test(slug)) {
     throw new Error(
-      `${path}: slug invalide « ${slug} » — attendu [a-z0-9] séparés par des tirets`,
+      `${path}: invalid slug “${slug}”—expected [a-z0-9] groups joined by hyphens`,
     );
   }
 }
@@ -52,7 +52,7 @@ export function rel(depth: number): string {
   return depth === 0 ? "./" : "../".repeat(depth);
 }
 
-/** Le chemin du fichier dans `dist/`, sans barre oblique de tête. */
+/** The file’s path inside `dist/`, with no leading slash. */
 export function pagePath(ref: PageRef): string {
   const prefix = ref.lang === "en" ? "" : `${ref.lang}/`;
   switch (ref.kind) {
@@ -67,12 +67,12 @@ export function pagePath(ref: PageRef): string {
   }
 }
 
-/** Le nombre de dossiers entre la page et la racine du site. */
+/** How many folders sit between the page and the site root. */
 export function pageDepth(ref: PageRef): number {
   return pagePath(ref).split("/").length - 1;
 }
 
-/** Un lien relatif d’une page vers une autre, valable à n’importe quel préfixe. */
+/** A relative link from one page to another, valid under any prefix. */
 export function hrefTo(from: PageRef, to: PageRef): string {
   return `${rel(pageDepth(from))}${pagePath(to)}`;
 }
