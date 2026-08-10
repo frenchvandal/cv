@@ -56,6 +56,32 @@ export interface PageMeta {
 export interface MetaOverride {
   title: string;
   description: string;
+  /**
+   * The article facts, on an article page and nowhere else. They are what
+   * turns the page’s structured data from “a person” into “a person who wrote
+   * this, on this date”—the dates a search result shows, and the ones a reader
+   * uses to judge whether a technical note is still current.
+   */
+  article?: {
+    /** Frontmatter `date`, as `YYYY-MM-DD`. */
+    published: string;
+    /** Frontmatter `updated`, when the author dated a revision. */
+    updated?: string;
+    /** BCP-47 tag of the page, for `inLanguage`. */
+    inLanguage: string;
+  };
+  /**
+   * The site’s own home, for `Person.url`. Absent, the page URL stands in—
+   * which is right for the CV, the page that IS about the person, and wrong
+   * for an article, where it would claim the author’s canonical address is
+   * whatever post you happen to be reading.
+   */
+  homeUrl?: string;
+}
+
+/** ISO 8601 with a timezone, which is what Schema.org and Open Graph want. */
+function asDateTime(date: string): string {
+  return `${date}T00:00:00Z`;
 }
 
 /**
@@ -72,29 +98,64 @@ export function pageMeta(
   override?: MetaOverride,
 ): PageMeta {
   const t = translations[lang];
+  const title = override?.title ?? pageTitle(t);
+  const description = override?.description ?? t.meta.description;
+  const article = override?.article;
+
+  const person = {
+    "@type": "Person",
+    name: PROFILE.fullName,
+    alternateName: PROFILE.chineseName,
+    jobTitle: t.hero.title,
+    url: override?.homeUrl ?? url,
+    sameAs: SAME_AS,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: PROFILE.address.locality,
+      addressCountry: PROFILE.address.country,
+    },
+    knowsLanguage: PROFILE.knowsLanguage,
+  };
+
+  /*
+   * One `@graph` on an article, so the post and its author are two nodes of
+   * one description rather than two documents that happen to share a page.
+   * The author is given as a reference to the Person node instead of a second
+   * copy of it—the same fact stated twice is the fastest way to have it stated
+   * two different ways later.
+   */
+  const graph = article
+    ? {
+      "@context": "https://schema.org",
+      "@graph": [
+        { ...person, "@id": `${override?.homeUrl ?? url}#person` },
+        {
+          "@type": "BlogPosting",
+          headline: title,
+          description,
+          url,
+          mainEntityOfPage: url,
+          inLanguage: article.inLanguage,
+          datePublished: asDateTime(article.published),
+          ...(article.updated
+            ? { dateModified: asDateTime(article.updated) }
+            : {}),
+          author: { "@id": `${override?.homeUrl ?? url}#person` },
+        },
+      ],
+    }
+    : { "@context": "https://schema.org", ...person };
+
   return {
-    title: override?.title ?? pageTitle(t),
-    description: override?.description ?? t.meta.description,
+    title,
+    description,
     url,
     ogLocale: OG_LOCALE[lang],
-    jsonLd: JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Person",
-      name: PROFILE.fullName,
-      alternateName: PROFILE.chineseName,
-      jobTitle: t.hero.title,
-      url,
-      sameAs: SAME_AS,
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: PROFILE.address.locality,
-        addressCountry: PROFILE.address.country,
-      },
-      knowsLanguage: PROFILE.knowsLanguage,
-      // A raw `<` in any translation would close the surrounding <script> early
-      // and spill the rest of the object onto the page as markup. Escaped as a
-      // JSON string escape, so a parser still reads the character.
-    }).replace(/</g, "\\u003C"),
+    ...(article ? { article } : {}),
+    // A raw `<` in any translation would close the surrounding <script> early
+    // and spill the rest of the object onto the page as markup. Escaped as a
+    // JSON string escape, so a parser still reads the character.
+    jsonLd: JSON.stringify(graph).replace(/</g, "\\u003C"),
   };
 }
 
