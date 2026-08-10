@@ -8,7 +8,7 @@
 import { expect, test } from "bun:test";
 import { escapeHtml } from "../dom.ts";
 import type { PostMeta } from "../post.ts";
-import { renderPage } from "../render.ts";
+import { type Page, renderPage } from "../render.ts";
 import { translations } from "../translations.ts";
 
 const post = (
@@ -128,3 +128,41 @@ test("an article's body is never escaped, its title always is", () => {
   expect(html).toContain("<em>vrai</em>");
   expect(html).toContain("5 &lt; 6 &amp;");
 });
+
+/*
+ * The CV used to be the only page tested for this, and it was the only page
+ * that could pass: the home page renders the CV’s hero, whose two buttons
+ * named `#contact` and `#about`—sections that exist on the CV and nowhere
+ * else. Both shipped as dead anchors on every language’s home page. The check
+ * belongs to every kind of page, not to the one that happened to satisfy it.
+ */
+const PAGES: Page[] = [
+  { kind: "home", posts: POSTS },
+  { kind: "cv" },
+  { kind: "blogIndex", posts: POSTS },
+  { kind: "post", post: post("a", "fr"), html: "<p>x</p>", posts: POSTS },
+];
+
+test.each(PAGES.map((page) => [page.kind, page] as const))(
+  "%s: every hash anchor resolves to an id on the same page",
+  (_kind, page) => {
+    const html = renderPage(page, "fr", "light");
+    const ids = new Set([...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]!));
+    // Same-page anchors only: `cv.html#about` is a link to another document,
+    // and its target is that document’s business.
+    const hashes = [...html.matchAll(/ href="#([^"]+)"/g)].map((m) => m[1]!);
+
+    expect(hashes.length).toBeGreaterThan(0);
+    for (const hash of hashes) expect(ids.has(hash)).toBe(true);
+  },
+);
+
+test.each(PAGES.map((page) => [page.kind, page] as const))(
+  "%s: no id is used twice",
+  (_kind, page) => {
+    const ids = [...renderPage(page, "fr", "light").matchAll(/ id="([^"]+)"/g)]
+      .map((m) => m[1]!);
+
+    expect(new Set(ids).size).toBe(ids.length);
+  },
+);

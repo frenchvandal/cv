@@ -22,6 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PROFILE, translations } from "../src/translations.ts";
 import { escapeHtml } from "../src/dom.ts";
+import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
 
 /** Baked into every page as og:image:width / og:image:height. Keep in step. */
 export const OG_SIZE = { width: 1200, height: 630 } as const;
@@ -61,7 +62,7 @@ body {
   /* A single hairline of colour, the way the page uses its accent: as a mark,
      never as a field. */
   border-top: 10px solid var(--accent);
-  font-family: 'Noto Sans', system-ui, sans-serif;
+  font-family: 'Noto Sans', 'Noto Sans SC', system-ui, sans-serif;
   color: var(--fg);
   -webkit-font-smoothing: antialiased;
 }
@@ -114,24 +115,40 @@ body {
 }
 
 /**
+ * The families the card draws with: Latin for the name and the title, SC for
+ * 李北洛. TC and HK carry the same characters in other forms and no page of the
+ * card is written in them, so they would only make the temporary page heavier.
+ */
+const CARD_FAMILIES = new Set(["Noto Sans", "Noto Sans SC"]);
+
+/**
  * @font-face rules with the subsets inlined as data URIs. The card is rendered
  * from a temporary file:// page, where a linked font is a cross-origin request
  * Chrome refuses—inlining sidesteps that, and costs nothing in a throwaway
- * page. No unicode-range: with only two families there is nothing to route,
- * and the Chinese name has to fall through to the second one.
+ * page.
+ *
+ * The faces come from FONT_FACES rather than from names spelled out here, and
+ * that is the whole point: this function used to name `noto-sans-latin.woff2`
+ * and `noto-sans-sc.woff2`, which stopped existing the day the generator
+ * started asking Google in batches (`-1`, `-2`…). It failed on ENOENT while
+ * every test still passed, since the test renders the card without fonts.
+ * FONT_FACES is regenerated with the files themselves, so it cannot fall out
+ * of step with them.
  */
 async function inlineFontCss(): Promise<string> {
-  const files = [
-    "src/fonts/noto-sans-latin.woff2",
-    "src/fonts/noto-sans-sc.woff2",
-  ];
-  const rules = await Promise.all(files.map(async (path) => {
-    const b64 = Buffer.from(await Bun.file(path).arrayBuffer()).toString(
-      "base64",
-    );
-    return `@font-face{font-family:'Noto Sans';font-style:normal;font-weight:400 800;src:url(data:font/woff2;base64,${b64}) format('woff2');}`;
-  }));
-  return rules.join("\n");
+  const faces = FONT_FACES.filter((face) => CARD_FAMILIES.has(face.family));
+  const inlined = await Promise.all(faces.map(async (face) => ({
+    ...face,
+    // In the Bun runtime a `.woff2` import resolves to the file’s own path,
+    // which is what makes reading it here possible at all.
+    url: `data:font/woff2;base64,${
+      Buffer.from(await Bun.file(face.url).arrayBuffer()).toString("base64")
+    }`,
+  })));
+  // The same generator the pages use: one `unicode-range` per batch, so the
+  // Chinese name is routed to the SC face that actually carries it instead of
+  // relying on a fallthrough between two faces of one family.
+  return fontFaceCss(inlined);
 }
 
 if (import.meta.main) {

@@ -124,10 +124,13 @@ rediscover.
   name IS the language. An article exists in 1..n languages; an index lists only
   what exists in it. `zh-hk` needs no file—writing `zh-hant.md` is enough, the
   projection derives it; an explicit `zh-hk.md` wins.
-- Frontmatter is a strict micro-grammar (`title`, `date` required; `summary`,
-  `tags`, `draft`, `updated` optional)—no YAML, and every refusal names the file
-  ([scripts/frontmatter.ts](scripts/frontmatter.ts)). A `draft: true` is
-  excluded unless `DRAFTS=1`.
+- Frontmatter is YAML, parsed by `Bun.YAML.parse` and then held to a strict
+  contract (`title`, `date` required; `summary`, `tags`, `draft`, `updated`
+  optional; any other key refused, duplicates refused, `2026-02-31` refused).
+  Bun owns the grammar so authors write the YAML they know from every other
+  generator; [scripts/frontmatter.ts](scripts/frontmatter.ts) owns the contract,
+  and every refusal names the file. A `draft: true` is excluded unless
+  `DRAFTS=1`.
 - Raw HTML in a source is refused by the build’s allowlist guard
   ([scripts/markdown.ts](scripts/markdown.ts)): GFM only.
 - After writing: `bun run fonts:update` (new glyphs), then `bun run preview` to
@@ -369,33 +372,30 @@ later); this site targets modern browsers only, so don’t down-level.
   needs a browser—re-measure it when the name or the display font changes.
 - **Knuth–Plass.** [src/linebreak.ts](src/linebreak.ts) runs optimal, TeX-style
   line breaking over pretext-measured boxes and glue, with `hyphen` supplying
-  syllable break points, to justify the About paragraphs and the articles. Glue
-  uses `shrink: 0` because CSS `text-align: justify` can only stretch spaces,
-  never shrink them. Keep that invariant, and keep the small target-width
-  margin, or lines will wrap. The paragraph arrives as styled **runs**
-  (`Run[]`), each box measured in its own font—a bold or monospace span is wider
-  than prose (+1.5%/+8.1% measured), and flat measurement overflows the computed
-  line. A run with `extraWidth` (inline code's padding/borders) is atomic: never
-  split, never hyphenated, charged its full width. Chinese pages get no
-  Knuth–Plass (no patterns, native justify is already near-optimal).
-- **Rich runs in the DOM.** [src/richtext.ts](src/richtext.ts) reads a
-  paragraph's runs from its text nodes (`runsFrom`, DOM half) and rebuilds it as
-  one `.kp-line` span per line with each run's inline chain reopened
-  (`buildLinesHtml`, pure half—unit-tested without a document). Composition is
-  scheduled by an `IntersectionObserver` with one screen of `rootMargin`, so a
-  40-paragraph article typesets just before each paragraph scrolls into view
-  (measured CLS: 0); a resize recomposes only paragraphs already composed.
-  Measured limitation, shared with the About path since the beginning:
-  find-in-page does not match a phrase spanning a computed line break, because
-  the spans are block-level.
+  syllable break points. It is applied to one thing today: the About paragraphs
+  (`p.kp`), re-typeset by `enhanceAboutKp` in [src/main.ts](src/main.ts) as one
+  `.kp-line` span per line. Glue uses `shrink: 0` because CSS
+  `text-align: justify` can only stretch spaces, never shrink them. Keep that
+  invariant, and keep the small target-width margin, or lines will wrap. Below
+  `KP_MIN_WIDTH_PX` (280) the paragraph stays plain—narrower than that,
+  ragged-right really is more legible—and a resize back down undoes the spans
+  rather than leaving the last layout behind. Chinese pages get no Knuth–Plass
+  (no patterns, native justify is already near-optimal).
+- **Article bodies are not re-typeset here.** They ship as the browser lays them
+  out, `.post` giving them a 65ch measure. Extending Knuth–Plass to them means
+  measuring styled **runs** rather than flat text—a bold or monospace span is
+  wider than prose, so flat measurement overflows the computed line—and
+  scheduling the work per paragraph so a long article does not typeset all at
+  once. That work exists on the `philippe-wip` branch, not on this one: do not
+  document it here until it lands, and do not expect a `src/richtext.ts` to be
+  present.
 
 ## 9. Rendering and Enhancement
 
 - **The enhancement inventory.** Each one runs after paint, and none is
   load-bearing: pretext-measured fitting of the hero name, the section titles,
   and the nav shortcuts ([src/measure.ts](src/measure.ts)); Knuth–Plass
-  re-typesetting of the About paragraphs and article bodies
-  ([src/linebreak.ts](src/linebreak.ts) + [src/richtext.ts](src/richtext.ts));
+  re-typesetting of the About paragraphs ([src/linebreak.ts](src/linebreak.ts));
   tight-wrapped chat bubbles ([src/chat.ts](src/chat.ts)); reveal-on-scroll with
   stat counters; the theme toggle; and reload-free language switching (CV page
   only—the blog pages navigate). If any one fails, the pre-rendered content
