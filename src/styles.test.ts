@@ -112,3 +112,38 @@ test("the same languages bake the gap the fitter spends first", () => {
   expect(langs).toEqual(["fr", "pt", "es"]);
   expect(Number(rule[2])).toBe(NAV_FIT.minGapPx);
 });
+
+/*
+ * The `--font` stacks decide which subsets a page downloads, and the build
+ * mirrors them in CJK_FAMILY (scripts/build.ts) to emit the matching
+ * @font-face rules. Nothing links the two but this test: naming Noto Sans SC
+ * as the Latin fallback here \u2014 which it did \u2014 had an English visitor fetch
+ * 342 KB of Chinese font to draw twenty characters, with every gate green.
+ */
+test("each language names exactly one CJK family, and it is the one the build declares", () => {
+  const stacks = [
+    ...css.matchAll(
+      /:root(?:\[data-lang='([\w-]+)'\])?\s*\{[^}]*?--font:\s*([^;]+);/g,
+    ),
+  ].map((m) => ({
+    lang: m[1] ?? "default",
+    stack: m[2]!.replace(/\s+/g, " "),
+  }));
+
+  const cjkOf = (stack: string) =>
+    ["Noto Sans CJK Inline", "Noto Sans SC", "Noto Sans TC", "Noto Sans HK"]
+      .filter((family) => stack.includes(family));
+
+  expect(Object.fromEntries(stacks.map((s) => [s.lang, cjkOf(s.stack)])))
+    .toEqual({
+      default: ["Noto Sans CJK Inline"],
+      zh: ["Noto Sans SC"],
+      "zh-hant": ["Noto Sans TC"],
+      "zh-hk": ["Noto Sans HK"],
+    });
+
+  // And every stack opens with the Latin face, which every page needs.
+  for (const { lang, stack } of stacks) {
+    expect([lang, stack.startsWith("'Noto Sans',")]).toEqual([lang, true]);
+  }
+});
