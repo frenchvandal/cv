@@ -45,12 +45,18 @@ import { $ } from "bun";
 export const SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
 /**
- * The two browser stylesheets this file points at, written beside it by
- * [scripts/sitemap-style.ts](scripts/sitemap-style.ts). Declared here, where the
- * references are emitted, so that module can generate them without importing
+ * The browser stylesheet this file points at, written beside it by
+ * [scripts/sitemap-style.ts](scripts/sitemap-style.ts). Declared here, where
+ * the reference is emitted, so that module can generate it without importing
  * back into this one.
+ *
+ * There used to be two. The other was XSLT 1.0, which drew the sitemap as a
+ * table; Chrome removes XSLT in 158, with WebKit and Gecko agreed. Carrying it
+ * meant keeping a second language in step with the site's layout for a few
+ * months of life — and it had already fallen out of step once, deducing each
+ * page's language from a file name that the move to folders had made
+ * meaningless. The CSS half is not deprecated and does the same job with less.
  */
-export const SITEMAP_XSL_FILE = "sitemap.xsl";
 export const SITEMAP_CSS_FILE = "sitemap.css";
 
 export interface SitemapEntry {
@@ -163,13 +169,12 @@ export function sitemapXml(
     return `  <url>\n    <loc>${Bun.escapeHTML(loc)}</loc>${mod}\n  </url>`;
   }).join("\n");
 
-  // 50,000 URLs / 50 MB is the per-file ceiling; eight pages will not approach
-  // it, so there is no sitemap index and no gzip variant. The stylesheet hrefs
-  // are relative, and resolve against the sitemap's own URL—the three files
-  // are written side by side, so the site can still move to any host or base
-  // path. XSL first: a browser that still has XSLT takes it and never reaches
-  // the CSS, and one that does not skips to the CSS.
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/xsl" href="${SITEMAP_XSL_FILE}"?>\n<?xml-stylesheet type="text/css" href="${SITEMAP_CSS_FILE}"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
+  // 50,000 URLs / 50 MB is the per-file ceiling; a hundred pages will not
+  // approach it, so there is no sitemap index and no gzip variant. The
+  // stylesheet href is relative and resolves against the sitemap's own URL—the
+  // two files are written side by side, so the site can still move to any host
+  // or base path.
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<?xml-stylesheet type="text/css" href="${SITEMAP_CSS_FILE}"?>\n<urlset xmlns="${SITEMAP_NS}">\n${body}\n</urlset>\n`;
 }
 
 /**

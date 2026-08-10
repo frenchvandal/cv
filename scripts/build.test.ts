@@ -15,12 +15,7 @@ import { escapeHtml } from "../src/dom.ts";
 import { pageTitle } from "../src/render.ts";
 import { headMeta, pageMeta } from "../src/meta.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
-import {
-  contentLastmod,
-  parseSitemap,
-  SITEMAP_CSS_FILE,
-  SITEMAP_XSL_FILE,
-} from "./sitemap.ts";
+import { contentLastmod, parseSitemap, SITEMAP_CSS_FILE } from "./sitemap.ts";
 import { FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
 
 const ROOT = `${import.meta.dir}/..`;
@@ -118,7 +113,6 @@ test(
     // A sitemap and a feed need absolute URLs, so without SITE_URL there is
     // neither—and nothing may advertise a file that was not written.
     expect(existsSync(`${ROOT}/dist/sitemap.xml`)).toBe(false);
-    expect(existsSync(`${ROOT}/dist/${SITEMAP_XSL_FILE}`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(false);
     expect(existsSync(`${ROOT}/dist/feed.json`)).toBe(false);
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())
@@ -340,22 +334,14 @@ test(
     // undefined) in exactly the shallow clones the gates used to run.
     if (hasHistory) expect(lastmod).toBeDefined();
 
-    /*
-     * Both browser stylesheets ship beside the sitemap that references them,
-     * and the XSLT one can name the language of every URL in it — a <loc> the
-     * transform has no case for renders a blank cell to whoever opens the file.
-     * The language is now a folder, so a URL either carries one of the six
-     * non-English folders or is English by falling through.
-     */
-    const xsl = await Bun.file(`${ROOT}/dist/${SITEMAP_XSL_FILE}`).text();
-    expect(sitemap).toContain(`href="${SITEMAP_XSL_FILE}"`);
+    // The browser stylesheet ships beside the sitemap that references it: a
+    // dangling reference is a console error on a file whose whole job is to be
+    // machine-read without incident.
     expect(sitemap).toContain(`href="${SITEMAP_CSS_FILE}"`);
     expect(existsSync(`${ROOT}/dist/${SITEMAP_CSS_FILE}`)).toBe(true);
-    for (const { loc } of entries) {
-      const folder = LANGS.filter((l) => l !== "en")
-        .find((l) => loc.includes(`/${l}/`));
-      if (folder) expect(xsl).toContain(`contains(s:loc, '/${folder}/')`);
-    }
+    // The XSLT half is gone; nothing may still advertise it.
+    expect(sitemap).not.toContain("text/xsl");
+    expect(existsSync(`${ROOT}/dist/sitemap.xsl`)).toBe(false);
 
     // robots.txt points crawlers at it, absolutely.
     expect(await Bun.file(`${ROOT}/dist/robots.txt`).text())

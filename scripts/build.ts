@@ -37,10 +37,9 @@ import {
   contentLastmod,
   postLastmod,
   SITEMAP_CSS_FILE,
-  SITEMAP_XSL_FILE,
   sitemapXml,
 } from "./sitemap.ts";
-import { sitemapCss, sitemapXsl } from "./sitemap-style.ts";
+import { sitemapCss } from "./sitemap-style.ts";
 import { FEED_MIME, feedFile, feedJson, jsonFeed } from "./feed.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
 import { missingGlyphs } from "./glyphs.ts";
@@ -429,11 +428,9 @@ if (SITE) {
   });
   await Bun.write(`${OUT}/sitemap.xml`, sitemapXml(SITE, entries));
   console.log(`  ${OUT}/sitemap.xml`);
-  // The sitemap points at both by relative name, so the three ship together or
-  // not at all—a dangling stylesheet reference is a console error on a file
-  // whose whole job is to be machine-read without incident.
-  await Bun.write(`${OUT}/${SITEMAP_XSL_FILE}`, sitemapXsl());
-  console.log(`  ${OUT}/${SITEMAP_XSL_FILE}`);
+  // The sitemap points at it by relative name, so the two ship together or not
+  // at all—a dangling stylesheet reference is a console error on a file whose
+  // whole job is to be machine-read without incident.
   await Bun.write(`${OUT}/${SITEMAP_CSS_FILE}`, sitemapCss());
   console.log(`  ${OUT}/${SITEMAP_CSS_FILE}`);
 }

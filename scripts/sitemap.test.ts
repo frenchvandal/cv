@@ -8,8 +8,7 @@
 
 import { expect, test } from "bun:test";
 import { parseSitemap, SITEMAP_NS, sitemapXml } from "./sitemap.ts";
-import { sitemapCss, sitemapXsl } from "./sitemap-style.ts";
-import { HTML_LANG, LANG_NAME, LANGS } from "../src/translations.ts";
+import { sitemapCss } from "./sitemap-style.ts";
 
 const BASE = "https://example.test/cv";
 const ENTRIES = [
@@ -53,17 +52,18 @@ test("escapes a <loc> per the protocol's entity table", async () => {
   expect(await parseSitemap(xml)).toEqual([{ loc: inner }]);
 });
 
-test("points a browser at both stylesheets without disturbing a parser", async () => {
+test("points a browser at the stylesheet without disturbing a parser", async () => {
   const xml = sitemapXml(BASE, ENTRIES);
 
-  // Where processing instructions belong: after the declaration, before the
-  // root element, and relative so the set moves to any host or base path. XSL
-  // first—a browser that still runs XSLT must take that one, and only a
-  // browser that has dropped it falls through to the CSS.
+  // Where a processing instruction belongs: after the declaration, before the
+  // root element, and relative so the pair moves to any host or base path.
   expect(xml).toMatch(
-    /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<\?xml-stylesheet type="text\/xsl" href="sitemap\.xsl"\?>\n<\?xml-stylesheet type="text\/css" href="sitemap\.css"\?>\n<urlset/,
+    /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<\?xml-stylesheet type="text\/css" href="sitemap\.css"\?>\n<urlset/,
   );
-  // And they are invisible to everything that reads the sitemap as a sitemap.
+  // The XSLT half is gone: Chrome removes XSLT in 158, and it had already
+  // fallen out of step with the layout it was reading languages from.
+  expect(xml).not.toContain("text/xsl");
+  // And it is invisible to everything that reads the sitemap as a sitemap.
   expect(await parseSitemap(xml)).toEqual(ENTRIES);
 });
 
@@ -76,32 +76,6 @@ test("the CSS fallback is bound to the sitemap namespace", () => {
   for (const selector of ["urlset", "url", "loc", "lastmod"]) {
     expect(css).toContain(`\n${selector} {`);
   }
-});
-
-test("the stylesheet names every language the site publishes", () => {
-  const xsl = sitemapXsl();
-
-  expect(xsl.startsWith('<?xml version="1.0" encoding="UTF-8"?>\n')).toBe(true);
-  // Version and namespaces are the whole contract with the browser: any other
-  // version, or a template bound to no namespace, transforms to a blank page.
-  expect(xsl).toContain('<xsl:stylesheet version="1.0"');
-  expect(xsl).toContain(`xmlns:s="${SITEMAP_NS}"`);
-
-  for (const lang of LANGS) {
-    // Every language is named, English included—it is the fallback branch
-    // rather than a test of its own, since it is the only one with no folder.
-    expect(xsl).toContain(
-      `<span lang="${HTML_LANG[lang]}">${LANG_NAME[lang]}</span>`,
-    );
-    // The folder spelled out, not derived from a URL helper a second time:
-    // this is the assertion a layout change on one side and not the other has
-    // to fail against. The trailing slash is what stops `/zh/` from also
-    // matching `/zh-hant/`.
-    if (lang !== "en") {
-      expect(xsl).toContain(`test="contains(s:loc, '/${lang}/')"`);
-    }
-  }
-  expect(xsl).not.toContain("/en/");
 });
 
 test("rejects anything the protocol would make a crawler discard", () => {
