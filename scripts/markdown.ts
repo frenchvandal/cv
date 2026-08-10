@@ -431,7 +431,11 @@ export async function renderMarkdown(
         el.setAttribute("decoding", "async");
       },
     })
-    .on("p, li, td, th, h2, h3, h4, blockquote", {
+    // Every element that can hold prose, headings included down to h6. The
+    // anchor pass above stops at h4 because that is as deep as a table of
+    // contents goes; a screen reader has no such limit, and an unmarked
+    // Chinese run in an h5 is read in the page's voice like any other.
+    .on("p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote", {
       text(chunk) {
         if (!markCjk || codeDepth > 0 || !CJK_RUN.test(chunk.text)) return;
         CJK_RUN.lastIndex = 0;

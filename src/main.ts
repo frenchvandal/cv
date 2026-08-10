@@ -505,6 +505,10 @@ function startStat(stat: HTMLElement): void {
   const ticks = 10;
   const start = performance.now();
   const frame = (now: number): void => {
+    // A language switch replaces #app while this loop is running: without the
+    // guard it would keep animating a detached node for the rest of its 900ms,
+    // writing to a document nobody is looking at.
+    if (!valueEl.isConnected) return;
     const progress = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3);
     const stepped = progress >= 1 ? 1 : Math.floor(eased * ticks) / ticks;
@@ -646,6 +650,9 @@ function bindEvents(): void {
         copyBtn.textContent = copyBtn.dataset.copiedLabel ?? idleLabel;
         copyBtn.classList.add("is-copied");
         restore = setTimeout(() => {
+          // Same reason as the stat counter: 1600ms is long enough for a
+          // language switch to have replaced this button.
+          if (!copyBtn.isConnected) return;
           copyBtn.textContent = idleLabel;
           copyBtn.classList.remove("is-copied");
         }, 1600);

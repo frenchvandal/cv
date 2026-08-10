@@ -150,8 +150,14 @@ function comparePosts(a: Post, b: Post): number {
 async function corpusExists(root: string): Promise<boolean> {
   try {
     return (await stat(join(root, "posts"))).isDirectory();
-  } catch {
-    return false;
+  } catch (error) {
+    // Absent is the legitimate case, and the only one. A permission error or
+    // an I/O error is a broken checkout, not an empty blog: swallowing it here
+    // would publish a site with every article silently missing and no failure
+    // anywhere. Let it out.
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT" || code === "ENOTDIR") return false;
+    throw error;
   }
 }
 

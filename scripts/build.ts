@@ -345,13 +345,21 @@ for (const lang of LANGS) {
       }`
       : "";
 
-    // The negotiation script goes first so a redirect is not preceded by a font
-    // preload we are about to abandon. Only the site root negotiates: a URL
-    // naming a language must always be honoured.
+    /*
+     * Only the site root negotiates: a URL that names a language must always
+     * be honoured. Its script is NOT part of the block appended below — it is
+     * inserted right after <meta charset>, ahead of everything the bundler put
+     * in the head.
+     *
+     * Appending it left it after the stylesheet link, and a classic inline
+     * script does not run until a pending stylesheet has loaded: the visitor
+     * about to be redirected to another language waited for the CSS of a page
+     * they were never going to see. Charset stays first, since it has to be
+     * inside the first 1024 bytes.
+     */
     const { preload: fontPreload, style: fontsStyle } = fontHead(prefix);
     const negotiates = ref.kind === "home" && lang === "en";
     const head = `
-    ${negotiates ? languageNegotiationScript() : ""}
     ${fontPreload}
     ${fontsStyle}
     <link rel="canonical" href="${escapeHtml(meta.url)}" />
@@ -416,6 +424,13 @@ ${alternateLocales}${articleTags}${
       })
       .on("style[data-loader]", { element: (el) => void el.remove() })
       .on("head", { element: (el) => void el.append(head, { html: true }) })
+      .on("meta[charset]", {
+        element(el) {
+          if (negotiates) {
+            el.after(languageNegotiationScript(), { html: true });
+          }
+        },
+      })
       .on("#app", {
         element: (el) => void el.setInnerContent(content, { html: true }),
       })
