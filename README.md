@@ -13,6 +13,45 @@ The regional variants are deliberate: Portuguese is European and follows the
 pre-1990 orthography, Spanish is peninsular, Traditional Chinese follows Taiwan
 usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
 
+## How a build works
+
+One command, `bun run build`, and everything below happens in it. The two
+diamonds are gates: they stop the build rather than ship something wrong.
+
+```mermaid
+flowchart TD
+  subgraph sources[Sources]
+    md["content/posts/&lt;slug&gt;/&lt;lang&gt;.md"]
+    tr["src/translations.ts<br/>UI copy + the CV, ×7"]
+    shell["index.html + src/*.ts + styles.css"]
+  end
+
+  md --> load["loadPosts()<br/>frontmatter contract, GFM allowlist,<br/>HTMLRewriter pass, zh-hk projection"]
+  shell --> bundle["Bun.build()<br/>TS + CSS + fonts → dist/assets/*<br/>content-hashed"]
+
+  load --> glyphs{"Do the font subsets<br/>cover every page?"}
+  tr --> glyphs
+  glyphs -- "no: names the glyphs" --> stop1([build fails])
+  glyphs -- yes --> render
+
+  bundle --> render["renderPage(page, lang, theme)<br/>pure, no DOM — the same function<br/>the browser re-renders the CV with"]
+
+  render --> head["per-page &lt;head&gt;<br/>title, description, canonical,<br/>hreflang, og:, JSON-LD,<br/>@font-face + preload for THIS language"]
+
+  head --> pages["101 pages in dist/<br/>en at the root, one folder per language"]
+  head --> extras["sitemap.xml + sitemap.css<br/>feed.json ×7 · robots.txt<br/>404.html · relay pages"]
+
+  shell --> tsgo{"tsgo --noEmit<br/>runs concurrently with the bundle"}
+  tsgo -- "no" --> stop1
+
+  pages --> deploy["bun run deploy<br/>differential sync to Aliyun OSS"]
+  extras --> deploy
+```
+
+Everything in `dist/` uses **relative** asset paths, so the same output serves
+from a bucket root, a sub-path, or GitHub Pages without a rebuild. Only the SEO
+URLs are absolute, and only when `SITE_URL` is set.
+
 ## Stack
 
 - **[Bun](https://bun.com)**—package manager, dev server and bundler (no
@@ -46,13 +85,24 @@ usage, and `zh-hk` carries Hong Kong / Macau vocabulary in Noto Sans HK.
   fixed width the bar leaves them, across all seven languages. Dev-only console
   audits flag any title or nav label that would overflow.
 - **Knuth–Plass justification** ([src/linebreak.ts](src/linebreak.ts))—the About
-  paragraphs are re-typeset with TeX-style optimal line breaking and syllable
-  hyphenation, over pretext-measured boxes/glue (Latin languages; Chinese wraps
-  natively). The hyphenation patterns load per language, on demand.
-- **Self-hosted fonts**—Noto Sans + Noto Sans SC/TC/HK, subset per language to
-  the glyphs actually used and imported so Bun emits them as external hashed
-  files; `unicode-range` and per-page font stacks keep each Chinese subset lazy.
-  No web-font CDN, no runtime network dependency.
+  paragraphs and every article paragraph are re-typeset with TeX-style optimal
+  line breaking and syllable hyphenation, over pretext-measured boxes and glue
+  (Latin languages; Chinese wraps natively). The paragraph arrives as styled
+  runs, each measured in its own font, and each line is rebuilt by cloning the
+  paragraph’s own elements ([src/richtext.ts](src/richtext.ts)) — so a link
+  keeps its `rel`, a Chinese run keeps its `lang`, and nothing is re-serialized.
+  An `IntersectionObserver` typesets each paragraph just before it reaches the
+  reader (measured layout shift: 0), and copying a passage gives back the prose,
+  not the column. The hyphenation patterns load per language, on demand.
+- **Self-hosted fonts, sized to what a page really draws**—Noto Sans plus Noto
+  Sans SC/TC/HK, subset to the glyphs actually used. Each page declares only the
+  family its own stack names, and the Latin languages do not name a Chinese
+  family at all: the twenty Chinese characters they render (the switcher’s
+  endonyms, 微辣 in the dialogue, whatever an article quotes) live in an 8 KB
+  subset of their own. Naming Noto Sans SC there cost an English reader 342 KB
+  of font, measured; the English home page now loads 47 KB in total. The CV,
+  which changes language without navigating, is given the new family at the
+  moment of the switch. No web-font CDN, no runtime network dependency.
 - **Language negotiation**—a visitor landing on the site root is sent to the
   page in their browser’s language (English when none matches); a language they
   pick by hand is remembered and outranks the browser from then on. URLs that
@@ -83,7 +133,8 @@ bun run build          # type-check + pre-render the whole site into dist/
 bun run preview        # build, then serve dist/ at its real URLs → http://localhost:4173
 bun run check          # tsgo --noEmit (TypeScript 7 native compiler, the type gate)
 bun test               # full suite: line breaking, render, translations, font coverage, build
-bun run fonts:update   # regenerate the Noto subsets (only when new glyphs are added)
+bun run fonts:update   # regenerate the Noto subsets (CI does this for you)
+bun run deploy         # differential sync of dist/ to Aliyun OSS (--dry-run, --smoke)
 ```
 
 ## Deploy
@@ -133,10 +184,45 @@ author’s own date, explicit, and nothing a shallow clone can empty. Which fiel
 are emitted, and why the optional ones it leaves out are left out, is documented
 at the top of [scripts/feed.ts](scripts/feed.ts).
 
-The included GitHub Actions workflow builds with Bun and publishes `dist/` to
-Pages; it sets `SITE_URL` automatically from the Pages base URL, and checks out
-the full history so `<lastmod>` can be dated. A second workflow type-checks,
-tests and builds every pull request.
+### The workflows
+
+Four, and each does one thing.
+
+| Workflow            | When                          | What                                                                          |
+| ------------------- | ----------------------------- | ----------------------------------------------------------------------------- |
+| `ci.yaml`           | every pull request            | type-check, test, build, `deno fmt`/`lint`                                    |
+| `deploy.yaml`       | push to `main`                | build with the Pages `SITE_URL`, publish to GitHub Pages                      |
+| `deploy-oss.yaml`   | push to `main`                | build, then differential sync to Aliyun OSS — inert until `OSS_BUCKET` exists |
+| `update-fonts.yaml` | push touching content or copy | re-subset the Noto files, commit them, dispatch the deploys                   |
+
+All four check out with `fetch-depth: 0`, because `<lastmod>` is read from git
+history and a shallow clone would silently drop it.
+
+### Aliyun OSS
+
+[scripts/deploy.ts](scripts/deploy.ts) uploads `dist/` with **no dependency
+added**, which three measured facts make possible: Aliyun’s `AssumeRoleWithOIDC`
+is anonymous, so trading a GitHub OIDC token for temporary credentials needs no
+signature; OSS speaks SigV4, which `Bun.S3Client` signs; and a presigned PUT
+signs `host` and nothing else, so `Cache-Control` and `Content-Type` ride along
+as ordinary headers. No access key is stored anywhere — `id-token: write` is the
+whole secret management.
+
+The sync is differential in both directions. Hashed assets are settled by their
+key, since the same key means the same bytes; everything else is compared
+against the ETag OSS returns, which is the object’s MD5. A second deploy of an
+unchanged site writes nothing. What the build no longer emits is removed — and
+removing more objects than the site contains stops the run, because that means
+the wrong bucket or the wrong prefix rather than a tidy-up.
+
+```bash
+bun run deploy --dry-run   # print the plan, no credentials needed
+bun run deploy --smoke     # one object there and back: does this bucket accept us?
+bun run deploy --prune     # yes, I read the deletion list
+```
+
+Locally it reads the Aliyun CLI’s own `~/.aliyun/config.json`, so the secret
+stays where it already lives. In Actions it never sees one.
 
 ## Editing content
 
