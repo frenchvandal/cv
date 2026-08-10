@@ -170,6 +170,63 @@ modify.
 If a comment is needed to make the code understandable, first try to simplify
 the code itself.
 
+### Prose: language and typography
+
+Everything written in this repository is written in English—comments, documents,
+and commit messages alike. The site itself is the exception that proves it: the
+seven translations under `src/translations.ts` are content, not prose about the
+code.
+
+- **Code comments and Markdown documents are written in English.** That covers
+  every `//` and `/* */` in `src/` and `scripts/`, plus `README.md`, this file,
+  and anything under `docs/`. A file whose comments drift into another language
+  reads as two files; when that happens, convert the whole file rather than the
+  paragraph you touched.
+- **Commit messages are written in English**, to
+  [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
+  `type(optional scope): description`, where the type is one of `feat`, `fix`,
+  `refactor`, `test`, `docs`, `perf`, `build`, `ci`, `chore`, or `style`. The
+  description is a lowercase imperative with no closing
+  period—`fix: give the
+  article page its text column`, not
+  `fixed the article page`. A breaking change is marked `!` before the colon and
+  explained in a `BREAKING CHANGE:` footer. Commits made before this rule are
+  French and stay that way: history is not rewritten to satisfy a convention
+  adopted after it.
+- **Everything a run prints is written in English**, to the same Chicago
+  typography: `throw new Error()` messages, `console.log`/`warn`/`error`, usage
+  lines, and test names. A build failure is read by whoever has to fix it, so
+  the sentence says which file failed and what would fix
+  it—`content/
+  posts/x/fr.md: unknown language "fr-CA"` beats `invalid input`.
+  The literals inside such a message—paths, identifiers, schemes—are quoted
+  verbatim under the ASCII exception below, while the sentence around them is
+  typeset.
+
+English prose follows the **Chicago Manual of Style**, and its typography is
+part of the contract, not a flourish. Prose is typeset, not typed:
+
+- **Curly quotation marks**, never the straight typewriter ones: “like this” and
+  ‘nested like this’.
+- **A real apostrophe** (U+2019), so it is Bun’s, the reader’s, don’t—never
+  Bun's.
+- **Em dashes** (—) for a break in thought, **en dashes** (–) for ranges, and
+  the hyphen only inside compounds.
+- **A real ellipsis** (…), not three periods.
+- **The serial comma**, per Chicago: the roles, the schools, and the
+  certifications.
+
+The one exception, and it is absolute: **anything a machine reads keeps its
+ASCII**. Code, identifiers, file paths, URLs, shell commands, and everything
+inside backticks or a fenced block are quoted verbatim—a curly quote in a code
+sample is a syntax error waiting for whoever copies it. Typography applies to
+sentences, never to what a sentence quotes.
+
+A commit subject is a sentence and obeys the same typography, with one practical
+limit: some tools still line-wrap or mangle a subject on bytes rather than
+characters, so keep the subject plain—an apostrophe when the sentence needs one,
+and nothing exotic. The body has no such limit.
+
 ## 4. Language and Syntax: Stay Erasable
 
 Bun (and Node’s native type-stripping) executes TypeScript by **erasing types**,
