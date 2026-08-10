@@ -15,24 +15,32 @@ rediscover.
 - **Runtime and tooling:** Bun (package manager, dev server, bundler). No Vite,
   no Webpack. See §2 for the commands.
 - **Language:** plain TypeScript, no framework. The whole UI is string templates
-  emitted by [src/render.ts](src/render.ts). Content lives in
+  emitted by the `src/render*` modules. Interface copy and the CV live in
   [src/translations.ts](src/translations.ts): EN, FR, pt-PT, es-ES, zh-Hans,
   zh-Hant, and zh-HK. The regional variants are deliberate; see that file’s
   header. `zh-hk` is a lexicon projection of `zh-hant`, not a hand-written
-  translation, and it is the one language absent from `SWITCHER_LANGS`. Text
-  measurement and layout are done with `@chenglou/pretext` in
-  [src/measure.ts](src/measure.ts).
+  translation, and it is the one language absent from `SWITCHER_LANGS`. Blog
+  articles live on disk in `content/posts/<slug>/<lang>.md`, loaded by
+  [scripts/content.ts](scripts/content.ts). Text measurement and layout are done
+  with `@chenglou/pretext` in [src/measure.ts](src/measure.ts).
 - **UI architecture:** an ordinary scrolling document—no deck, no scroll
-  jacking, no canvas background. [src/render.ts](src/render.ts) emits stacked
-  `<section class="section">` markup and is the **single** renderer: the static
-  build ([scripts/build.ts](scripts/build.ts)) calls it at build time to
-  pre-render one full page per language, and [src/main.ts](src/main.ts) calls
-  the same function at runtime for reload-free language switches. Keep it pure
-  (no DOM access) so both callers stay valid—it runs under Bun, outside a
-  browser, during the build.
+  jacking, no canvas background. [src/render.ts](src/render.ts) is a **facade**:
+  the chrome and URL helpers are [src/render/shell.ts](src/render/shell.ts), the
+  CV chapters [src/render/cv.ts](src/render/cv.ts), the blog pages
+  [src/render/blog.ts](src/render/blog.ts). All of it stays pure (no DOM
+  access), because the static build ([scripts/build.ts](scripts/build.ts)) and
+  the runtime ([src/main.ts](src/main.ts)) call the same `renderPage`—the build
+  pre-renders every page, the client re-renders only the CV on a reload-free
+  language switch; on home, index and article pages the switcher is plain
+  navigation.
 - **Progressive enhancement, strictly.** The pre-rendered HTML is the product;
   every module in the runtime only refines it. With JS off you get the complete,
-  readable, navigable CV. See §9 for the enhancement inventory and its rules.
+  readable, navigable site. See §9 for the enhancement inventory and its rules.
+- **Layout:** English at the root, every other language in its folder, one page
+  per article under `<lang>/blog/`. Asset paths are computed from each page’s
+  depth (`rel(depth)` in [src/urls.ts](src/urls.ts)) and stay relative—`dist/`
+  deploys to any base path. The pre-blog URLs (`fr.html`, `en.html`) are kept
+  alive by noindex relay pages ([scripts/relay.ts](scripts/relay.ts)).
 - **Output:** a fully static `dist/` with relative asset paths—it deploys to
   GitHub Pages (or any static host) at any base path. CI sets `SITE_URL` for
   absolute SEO URLs.
@@ -43,15 +51,30 @@ rediscover.
 
 - `bun run dev` → `bun ./index.html` (dev server and HMR,
   http://localhost:3000/).
-- `bun run build` → `bun scripts/build.ts` (bundle, then pre-render eight pages
-  into `dist/`—seven languages, English written twice as `index.html` and
-  `en.html`—plus `404.html`; runs `tsgo --noEmit` concurrently and gates on it).
+- `bun run build` → `bun scripts/build.ts` (bundle, then pre-render the site
+  into `dist/`—home, CV and blog index per language, one page per article, relay
+  pages for the old URLs, plus `404.html`; runs `tsgo --noEmit` concurrently and
+  gates on it).
+- `bun run preview` → build, then serve `dist/` on http://localhost:4173 with
+  the real URLs ([scripts/preview.ts](scripts/preview.ts);
+  `PORT=8080 bun run
+  preview` to change the port). The way to see an article
+  at its deployed path; `bun run dev` does not know the blog URLs.
 - `bun run check` → `tsgo --noEmit`, the type gate. `bun test` → unit tests.
 - `bun run fonts:update` → `bun scripts/update-fonts.ts`, which re-subsets the
-  vendored Noto `.woff2` files from the characters actually used in the source
-  literals. Run it after changing copy in
-  [src/translations.ts](src/translations.ts) or [src/render.ts](src/render.ts)—a
-  glyph that no subset carries renders as tofu.
+  vendored Noto `.woff2` files from the Google Fonts `&text=` endpoint. It asks
+  in **batches of 600 glyphs**, and that number is the whole point: measured on
+  2026-08-10, 800 glyphs still return one face carrying exactly those glyphs,
+  while 900 return 101 faces—the endpoint has stopped subsetting and is serving
+  the complete font split by unicode range, 13.5 MB across SC, TC and HK. A
+  family therefore spans several files (7 today, 1.1 MB), each with its own
+  `unicode-range`, so the browser still fetches only what a page needs. Run it
+  after changing copy in [src/translations.ts](src/translations.ts), the render
+  modules, or any article. **You will rarely need to remember**: the build
+  itself refuses to emit a `dist/` whose subsets do not cover the pages, and
+  names the missing glyphs. It checks offline rather than refetching— putting
+  Google on the critical path of every deploy would make two builds of one
+  commit produce different bytes.
 - `bun run og:update` → `bun scripts/og-image.ts`, which re-renders
   `public/og-image.png` (the 1200×630 link preview) from the English hero and
   the light palette, using local Chrome. The build only copies the file, so run
@@ -74,24 +97,41 @@ rediscover.
   [scripts/build.test.ts](scripts/build.test.ts) that compare the build to that
   same lookup would pass on empty against empty. That is why the gates need the
   history too, not just the deploy.
-- **Sitemap stylesheets.** [scripts/sitemap-style.ts](scripts/sitemap-style.ts)
-  writes the two browser stylesheets the sitemap names in its
-  `<?xml-stylesheet?>` instructions (`bun scripts/sitemap-style.ts [css]` prints
-  either; `xmllint` and `xsltproc` are how they get checked, and neither is a
-  repo dependency). All three files ship together or not at all. The XSLT half
-  is **1.0**, the only version browsers run, and it has an end date: Chrome
-  removes XSLT in version 158 (November 17, 2026), with Gecko and WebKit agreed
-  to the same. The CSS half is the successor, already in place—run Chrome with
-  `--disable-features=XSLT` and the file renders through it, which is the only
-  way to see the post-removal page today. When the removal lands, delete the
-  XSLT half and its instruction; do not try to keep XSLT alive.
+- **Sitemap stylesheet.** [scripts/sitemap-style.ts](scripts/sitemap-style.ts)
+  writes the CSS the sitemap names in its `<?xml-stylesheet?>` instruction
+  (`bun scripts/sitemap-style.ts` prints it; `xmllint` is how it gets checked,
+  and it is not a repo dependency). Both files ship together or not at all.
+  There used to be an XSLT 1.0 half drawing a table; it was deleted rather than
+  kept to its end date—Chrome removes XSLT in 158, and it had already fallen out
+  of step with the site, reading each page's language from a file name the move
+  to per-language folders had made meaningless. Do not bring it back. What CSS
+  cannot do is the whole cost: it cannot create a link, and no selector can read
+  element text, so the URLs are inert and there is no language column.
 - **Feeds.** [scripts/feed.ts](scripts/feed.ts) writes one JSON Feed 1.1 per
   language, also `SITE_URL`-gated. Same rule as the sitemap, and the same header
   convention: every field is justified there, and **no date is ever
-  synthesized**. The CV’s own ranges (`2019 – Present`) are localized free text,
-  so `date_published` is the `git log -S` date of the commit that first added
-  the entry’s key, and it is dropped when git cannot answer. The item set is
-  read off the translation objects, so a new role needs no second list.
+  synthesized**. The items are the language’s articles: `date_published` is the
+  frontmatter `date` (explicit, author-chosen—no git lookup, nothing a shallow
+  clone can empty), `date_modified` the optional `updated`.
+- **Relay pages.** [scripts/relay.ts](scripts/relay.ts) keeps the pre-blog URLs
+  alive (`fr.html` → `fr/`, `en.html` → the root): canonical, zero-second
+  refresh, `noindex`. Retire them once the old URLs have aged out.
+
+### Writing an article
+
+- Create `content/posts/<slug>/<lang>.md`: the folder name IS the slug
+  (`[a-z0-9-]`, reserved names refused by [src/urls.ts](src/urls.ts)), the file
+  name IS the language. An article exists in 1..n languages; an index lists only
+  what exists in it. `zh-hk` needs no file—writing `zh-hant.md` is enough, the
+  projection derives it; an explicit `zh-hk.md` wins.
+- Frontmatter is a strict micro-grammar (`title`, `date` required; `summary`,
+  `tags`, `draft`, `updated` optional)—no YAML, and every refusal names the file
+  ([scripts/frontmatter.ts](scripts/frontmatter.ts)). A `draft: true` is
+  excluded unless `DRAFTS=1`.
+- Raw HTML in a source is refused by the build’s allowlist guard
+  ([scripts/markdown.ts](scripts/markdown.ts)): GFM only.
+- After writing: `bun run fonts:update` (new glyphs), then `bun run preview` to
+  read it at its real URL.
 
 ## 3. Code Style
 
@@ -230,9 +270,10 @@ later); this site targets modern browsers only, so don’t down-level.
   change, only re-run the cheap width and layout math; never re-prepare
   identical text.
 - **A named font is required.** pretext is inaccurate with `system-ui`, so the
-  site self-hosts four faces—**Noto Sans / Noto Sans SC / Noto Sans TC / Noto
+  site self-hosts four families—**Noto Sans / Noto Sans SC / Noto Sans TC / Noto
   Sans HK** ([src/fonts.ts](src/fonts.ts))—and every measurement waits for
-  `document.fonts.ready`.
+  `document.fonts.ready`. A family may span several files: see `fonts:update` in
+  §2 for why, and never assume one family means one face.
 - **Fonts are imported, not CSS-`url()`’d.** Bun inlines CSS-referenced fonts as
   base64; importing the `.woff2` (file loader) emits a separate hashed asset and
   keeps `unicode-range` lazy-loading, so an EN visitor never fetches the CJK
@@ -264,21 +305,37 @@ later); this site targets modern browsers only, so don’t down-level.
   needs a browser—re-measure it when the name or the display font changes.
 - **Knuth–Plass.** [src/linebreak.ts](src/linebreak.ts) runs optimal, TeX-style
   line breaking over pretext-measured boxes and glue, with `hyphen` supplying
-  syllable break points, to justify the About paragraphs. Glue uses `shrink: 0`
-  because CSS `text-align: justify` can only stretch spaces, never shrink them.
-  Keep that invariant, and keep the small target-width margin, or lines will
-  wrap.
+  syllable break points, to justify the About paragraphs and the articles. Glue
+  uses `shrink: 0` because CSS `text-align: justify` can only stretch spaces,
+  never shrink them. Keep that invariant, and keep the small target-width
+  margin, or lines will wrap. The paragraph arrives as styled **runs**
+  (`Run[]`), each box measured in its own font—a bold or monospace span is wider
+  than prose (+1.5%/+8.1% measured), and flat measurement overflows the computed
+  line. A run with `extraWidth` (inline code's padding/borders) is atomic: never
+  split, never hyphenated, charged its full width. Chinese pages get no
+  Knuth–Plass (no patterns, native justify is already near-optimal).
+- **Rich runs in the DOM.** [src/richtext.ts](src/richtext.ts) reads a
+  paragraph's runs from its text nodes (`runsFrom`, DOM half) and rebuilds it as
+  one `.kp-line` span per line with each run's inline chain reopened
+  (`buildLinesHtml`, pure half—unit-tested without a document). Composition is
+  scheduled by an `IntersectionObserver` with one screen of `rootMargin`, so a
+  40-paragraph article typesets just before each paragraph scrolls into view
+  (measured CLS: 0); a resize recomposes only paragraphs already composed.
+  Measured limitation, shared with the About path since the beginning:
+  find-in-page does not match a phrase spanning a computed line break, because
+  the spans are block-level.
 
 ## 9. Rendering and Enhancement
 
 - **The enhancement inventory.** Each one runs after paint, and none is
   load-bearing: pretext-measured fitting of the hero name, the section titles,
   and the nav shortcuts ([src/measure.ts](src/measure.ts)); Knuth–Plass
-  re-typesetting of the About paragraphs ([src/linebreak.ts](src/linebreak.ts));
+  re-typesetting of the About paragraphs and article bodies
+  ([src/linebreak.ts](src/linebreak.ts) + [src/richtext.ts](src/richtext.ts));
   tight-wrapped chat bubbles ([src/chat.ts](src/chat.ts)); reveal-on-scroll with
-  stat counters; the theme toggle; and reload-free language switching. If any
-  one fails, the pre-rendered content stays on screen—write them so a failure is
-  a no-op, never a blank.
+  stat counters; the theme toggle; and reload-free language switching (CV page
+  only—the blog pages navigate). If any one fails, the pre-rendered content
+  stays on screen—write them so a failure is a no-op, never a blank.
 - **Language negotiation runs at the root only, and it redirects.** `index.html`
   carries an inline `<head>` script (generated by `languageNegotiationScript` in
   [src/render.ts](src/render.ts), injected by
@@ -286,18 +343,19 @@ later); this site targets modern browsers only, so don’t down-level.
   their language. Three rules hold it together, and each one is load-bearing. A
   URL that **names** a language is never redirected, or shared links would
   change language on the recipient—which is why the script is never injected
-  into anything but `index.html` (`outFiles` in
-  [scripts/build.ts](scripts/build.ts) marks the root, and only the root,
-  `negotiates`), rather than injected everywhere behind a runtime path check. It
-  uses `location.replace`, so the root never becomes a history entry and Back is
-  not trapped in a redirect loop. And a hand-picked language (localStorage
-  `cv-lang`, written only on an explicit switcher click, never on popstate)
-  outranks the browser list. The matching rule lives **once**, as ES5 inside
-  that generated script, because it has to run before the bundle exists; resist
-  adding a “proper” TypeScript twin, since the script is its only caller and a
-  second copy would just be one more thing to keep in step. The test in
-  [src/render.test.ts](src/render.test.ts) executes that shipped source against
-  a stubbed browser instead.
+  into anything but the English home at the site root
+  ([scripts/build.ts](scripts/build.ts) tests
+  `ref.kind === "home" && lang ===
+  "en"`), rather than injected everywhere
+  behind a runtime path check. It uses `location.replace`, so the root never
+  becomes a history entry and Back is not trapped in a redirect loop. And a
+  hand-picked language (localStorage `cv-lang`, written only on an explicit
+  switcher click, never on popstate) outranks the browser list. The matching
+  rule lives **once**, as ES5 inside that generated script, because it has to
+  run before the bundle exists; resist adding a “proper” TypeScript twin, since
+  the script is its only caller and a second copy would just be one more thing
+  to keep in step. The test in [src/render.test.ts](src/render.test.ts) executes
+  that shipped source against a stubbed browser instead.
 - **Measure only after `document.fonts.ready`.** Every pretext call goes through
   `whenFontsReady` and uses the page’s _live_ font stack
   (`getComputedStyle(document.body).fontFamily`), so CJK pages measure with the
@@ -307,7 +365,7 @@ later); this site targets modern browsers only, so don’t down-level.
   no enhancement may hold a reference across it: controllers re-query on every
   `afterPaint`, and async work re-checks
   `lang !== currentLang || !el.isConnected` before touching the DOM it started
-  from (see `enhanceAboutKp`).
+  from (see `justifyParagraph`).
 - **Hydration over re-render.** On first load, `renderApp` output already equals
   the pre-rendered markup, so `init` binds events instead of rebuilding. Keep
   the two byte-identical, or first paint will flash.
@@ -347,13 +405,13 @@ equivalence is what lets a fork drift.
 
 Ruled out so far, so that it is not rediscovered:
 
-- **rich-linebreak** (removed July 27, 2026)—a run-aware Knuth–Plass fork
-  letting a justified paragraph carry inline markup. The shipping breaker takes
-  one font and returns flat strings, so inline styles are both mis-measured
-  (+8.1% for a monospace span, against a 6px margin) and erased. Not adopted:
-  the CV’s prose is flat text, and italic—the one style it might want—measures
-  identically in Noto Sans. It also proved that `@chenglou/pretext/rich-inline`
-  is _not_ the answer: it is a greedy breaker, so it would trade the optimal
-  line breaking away to get rich text. It drifted exactly as predicted—its
-  `loadHyphenator` was still the en/fr ternary when `src/linebreak.ts` had
-  gained pt and es—because its equivalence test only ever exercised `"en"`.
+- **rich-linebreak** (removed July 27, 2026, **adopted August 9, 2026**)—the
+  run-aware Knuth–Plass fork. The blog gave it its use case: an article
+  paragraph carries `em`/`strong`/`code`/`a`, which the flat breaker both
+  mis-measured (+8.1% for a monospace span, against the 6px margin) and erased.
+  The adoption merged the contract INTO the shipping module rather than beside
+  it: `src/linebreak.ts` takes `Run[]` and returns fragments, the flat contract
+  survives as the `breakIntoLinesFlat` shim, and the equivalence test exercises
+  every hyphenated language (the fork's drift lesson: its own test only ever ran
+  `"en"`). Its other proof stands: `@chenglou/pretext/rich-inline` is a greedy
+  breaker, and trading the optimal one away for rich text was never an option.

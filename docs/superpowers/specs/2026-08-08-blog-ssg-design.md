@@ -73,6 +73,16 @@ Le système de fichiers porte la donnée : il n'y a pas de table de correspondan
 
 ### 4.2 Frontmatter
 
+> **Amendement du 2026-08-09.** Ce qui suit décrivait une grammaire maison,
+> écrite parce qu'on croyait Bun sans parseur YAML. Il en a un :
+> `Bun.YAML.parse`, natif. L'erreur d'origine n'était pas d'écrire du code,
+> c'était de **confondre parsing et validation** — seule la validation méritait
+> d'être écrite à la main, et elle reste. Un auteur écrit donc le YAML qu'il
+> connaît déjà : commentaires, listes en bloc, valeurs multi-lignes. Mesuré sur
+> les 63 titres du corpus, un seul cassait le parseur — un deux-points suivi
+> d'une espace, qui doit être cité. Les règles de validation ci-dessous
+> s'appliquent telles quelles.
+
 Sous-ensemble volontairement minuscule, sans dépendance YAML :
 
 ```markdown
@@ -141,6 +151,20 @@ nom de balise.
 refuse donc `<script`, `<iframe` et tout attribut `on…=` dans une source
 d'article. Ce n'est pas un bac à sable — c'est un cran d'arrêt contre une faute
 de frappe dans un fichier qu'on écrit soi-même.
+
+> **Amendement du 2026-08-09.** La liste noire ci-dessus a été remplacée par une
+> **liste blanche**, et pas par goût : elle a été contournée trois fois. Un
+> audit externe a trouvé sept vecteurs qu'elle ne nommait pas (`form`, `button`,
+> `svg`, `meta`…), puis une famille entière d'entités HTML (`&colon;`, `&Tab;`),
+> puis les caractères de contrôle C0 en tête d'URI — ce dernier prouvé
+> exécutable dans un vrai navigateur. Une liste noire est ouverte par
+> construction : il suffit du huitième vecteur.
+>
+> Le garde-fou analyse désormais le **HTML rendu**, pas la source, et n'y
+> autorise qu'un ensemble fini de balises et de schémas d'URI, mesuré sur ce que
+> `Bun.markdown.html()` produit réellement. Tout le reste est refusé, connu ou
+> non — y compris ce qui ressemble encore à une entité après décodage, plutôt
+> que de reproduire les ~2000 entités nommées de HTML5.
 
 ## 5. Disposition des fichiers et URLs
 
