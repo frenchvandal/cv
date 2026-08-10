@@ -46,24 +46,41 @@ const PRESIGN_TTL_SECONDS = 600;
 /** How many objects are in flight at once—OSS is fine with it, CI is not. */
 const CONCURRENCY = 16;
 
-async function localKeys(): Promise<string[]> {
-  const keys: string[] = [];
+/**
+ * Every file in `dist/`, with its digest available but not yet computed: the
+ * planner asks only for the ones whose key alone cannot settle the question,
+ * so a deploy hashes the pages and the feeds and never the megabyte of fonts.
+ */
+async function localFiles(): Promise<LocalFile[]> {
+  const files: LocalFile[] = [];
   for await (
-    const file of new Bun.Glob("**/*").scan({ cwd: OUT, onlyFiles: true })
-  ) keys.push(file);
-  return keys.sort();
+    const key of new Bun.Glob("**/*").scan({ cwd: OUT, onlyFiles: true })
+  ) {
+    files.push({
+      key,
+      md5: async () =>
+        new Bun.CryptoHasher("md5")
+          .update(await Bun.file(`${OUT}/${key}`).arrayBuffer())
+          .digest("hex"),
+    });
+  }
+  return files.sort((a, b) => (a.key < b.key ? -1 : 1));
 }
 
 /**
- * Every key already in the bucket, under the deployment prefix, with the
- * prefix stripped so both sides of the plan speak the same language.
+ * Every object already in the bucket, under the deployment prefix, with the
+ * prefix stripped so both sides of the plan speak the same language. The ETag
+ * comes along: it is the MD5, which is what makes the sync differential.
  *
  * `list` pages at 1000 keys; the site is a tenth of that today and the loop
  * costs nothing, but a bucket that has accumulated old builds would silently
  * lose its tail without it — and those are exactly the keys to delete.
  */
-async function remoteKeys(client: S3Client, prefix: string): Promise<string[]> {
-  const keys: string[] = [];
+async function remoteObjects(
+  client: S3Client,
+  prefix: string,
+): Promise<RemoteObject[]> {
+  const objects: RemoteObject[] = [];
   let continuationToken: string | undefined;
 
   do {
@@ -73,14 +90,17 @@ async function remoteKeys(client: S3Client, prefix: string): Promise<string[]> {
       maxKeys: 1000,
     });
     for (const object of page.contents ?? []) {
-      keys.push(object.key.slice(prefix.length));
+      objects.push({
+        key: object.key.slice(prefix.length),
+        etag: object.eTag ?? "",
+      });
     }
     continuationToken = page.isTruncated
       ? page.nextContinuationToken
       : undefined;
   } while (continuationToken);
 
-  return keys;
+  return objects;
 }
 
 /**
