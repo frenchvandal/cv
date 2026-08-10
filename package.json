@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "bun ./index.html",
     "build": "bun scripts/build.ts",
+    "preview": "bun run build && bun scripts/preview.ts",
     "check": "tsgo --noEmit",
     "test": "bun test",
     "fonts:update": "bun scripts/update-fonts.ts",

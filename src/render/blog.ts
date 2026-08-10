@@ -17,7 +17,6 @@ import { HTML_LANG, type Lang, type Translation } from "../translations.ts";
 import { hrefTo, type PageRef } from "../urls.ts";
 import { hero } from "./cv.ts";
 import type { LangLink } from "./shell.ts";
-import { section } from "./shell.ts";
 
 export type Page =
   | { kind: "home"; posts: readonly PostMeta[] }
@@ -114,7 +113,15 @@ export function homeBody(
       `;
 }
 
-/** The blog index: every post of the language, newest first. */
+/**
+ * The blog index: every post of the language, newest first.
+ *
+ * Its title is an `h1`, not the `h2` that `section()` emits for a CV chapter.
+ * A chapter is one heading among nine inside a document whose `h1` is the
+ * name in the hero; this page is a document of its own, and starting its
+ * outline at level two leaves a screen reader navigating by headings on a page
+ * with no top level at all.
+ */
 export function blogIndexBody(
   t: Translation,
   lang: Lang,
@@ -126,7 +133,16 @@ export function blogIndexBody(
     : `<p class="section__intro">${escapeHtml(t.blog.indexIntro)}</p>${
       postList({ kind: "blogIndex", lang }, list)
     }`;
-  return section(t, "writing", body);
+  return `
+    <section class="section" aria-labelledby="writing">
+      <div class="wrap">
+        <h1 class="section__title animate" id="writing">${
+    escapeHtml(t.nav.writing)
+  }</h1>
+        <div class="section__body animate animate--delayed-1">${body}</div>
+      </div>
+    </section>
+  `;
 }
 
 /** One article: its already-safe body, its localized dates, a way back. */
