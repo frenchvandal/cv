@@ -1,0 +1,83 @@
+# Deploy `dist/` to Aliyun OSS.
+#
+# This workflow is inert until the repository carries the four variables below:
+# `if: vars.OSS_BUCKET != ''` skips the whole job, so it can land beside the
+# GitHub Pages deploy without taking the site down while the bucket, the RAM
+# role and the OIDC provider are being set up. Once they exist, both deploys
+# run and the Pages one can be retired.
+#
+# Repository variables (Settings → Secrets and variables → Actions → Variables;
+# none of them is secret, which is the point of OIDC):
+#
+#   OSS_BUCKET             the bucket name
+#   OSS_REGION             e.g. cn-chengdu — the endpoint is derived from it
+#   OSS_ROLE_ARN           acs:ram::<account>:role/<role>
+#   OSS_OIDC_PROVIDER_ARN  acs:ram::<account>:oidc-provider/<provider>
+#   SITE_URL               the public origin, for canonical/hreflang/sitemap
+#   OSS_PREFIX             optional, if the site is not at the bucket root
+#   CDN_DOMAIN             optional
+#
+# No access key is stored anywhere: `id-token: write` lets the run mint a
+# GitHub OIDC token, and Aliyun STS trades it for an hour of credentials.
+name: Deploy to Aliyun OSS
+
+on:
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# `id-token` mints the OIDC token; nothing here writes to the repository.
+permissions:
+  contents: read
+  id-token: write
+
+# One deploy at a time, and never cancel one in flight: a half-uploaded site
+# serves pages whose assets are not there yet.
+concurrency:
+  group: "oss"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.OSS_BUCKET != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Full history: the sitemap dates each page from the last commit that
+          # touched the rendered content, and a shallow clone would ship a
+          # sitemap without <lastmod>.
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: bun run build
+
+      - name: Deploy
+        env:
+          OSS_BUCKET: ${{ vars.OSS_BUCKET }}
+          OSS_REGION: ${{ vars.OSS_REGION }}
+          OSS_ROLE_ARN: ${{ vars.OSS_ROLE_ARN }}
+          OSS_OIDC_PROVIDER_ARN: ${{ vars.OSS_OIDC_PROVIDER_ARN }}
+          OSS_PREFIX: ${{ vars.OSS_PREFIX }}
+          CDN_DOMAIN: ${{ vars.CDN_DOMAIN }}
+        run: bun run deploy

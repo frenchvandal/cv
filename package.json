@@ -13,7 +13,8 @@
     "check": "tsgo --noEmit",
     "test": "bun test",
     "fonts:update": "bun scripts/update-fonts.ts",
-    "og:update": "bun scripts/og-image.ts"
+    "og:update": "bun scripts/og-image.ts",
+    "deploy": "bun scripts/deploy.ts"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.8",
