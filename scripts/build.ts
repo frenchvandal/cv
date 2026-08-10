@@ -43,6 +43,7 @@ import {
 import { sitemapCss, sitemapXsl } from "./sitemap-style.ts";
 import { FEED_MIME, feedFile, feedJson, jsonFeed } from "./feed.ts";
 import { FONT_FACES, fontFaceCss } from "../src/fonts.ts";
+import { missingGlyphs } from "./glyphs.ts";
 import { THEME_COLOR } from "../src/config.ts";
 import {
   HTML_LANG,
@@ -76,6 +77,33 @@ function siteBase(): string {
 
 const SITE = siteBase();
 const posts = await loadPosts();
+
+/*
+ * The subsets must cover what the pages can draw, checked on every build.
+ *
+ * A missing glyph is the one defect this project cannot notice on its own: it
+ * does not throw, it does not fail a test, it falls back to a system font in
+ * the middle of a line and ships. The check is offline and cheap — it compares
+ * the corpus against the unicode-ranges already on disk — which is why it runs
+ * here rather than only in `bun test`.
+ *
+ * Refetching the subsets from Google at build time would be the wrong cure:
+ * it would put a network call on the critical path of every CI run and make
+ * two builds of the same commit produce different bytes. The build verifies;
+ * `bun run fonts:update` is what refreshes.
+ */
+const shortfall = await missingGlyphs(FONT_FACES);
+if (shortfall.length > 0) {
+  for (const { family, missing } of shortfall) {
+    console.error(
+      `✗ ${family}: ${missing.length} glyph(s) not covered — ${
+        missing.slice(0, 12).join(" ")
+      }${missing.length > 12 ? " …" : ""}`,
+    );
+  }
+  console.error("\n  Run `bun run fonts:update`, then rebuild.");
+  process.exit(1);
+}
 
 /**
  * A page's public URL. Indexes are published as directory URLs (`fr/` is the

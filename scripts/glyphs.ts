@@ -108,13 +108,29 @@ export async function glyphSets(): Promise<
       .map((post) => `${post.title}${post.summary}${post.text}`)
       .join("");
 
+  /*
+   * Chinese quoted inside a page written in another language — 微辣 in the
+   * French, English, Portuguese and Spanish CV, and anything an article
+   * quotes. `markChinese` declares those runs `lang="zh-Hans"`, so the
+   * Simplified subset is the one that has to carry them.
+   *
+   * Without this they belong to no set at all: `isLatin` rejects them, and the
+   * per-language article scan below only reaches Chinese articles. They ship
+   * today only because the same characters happen to appear on a Chinese page
+   * — an accident, not a guarantee, and the first quoted word that does not
+   * would render as tofu with every gate still green.
+   */
+  const latinPages = (["en", "fr", "pt", "es"] as const)
+    .map((lang) => JSON.stringify(translations[lang]))
+    .join("") + textIn(["en", "fr", "pt", "es"]);
+
   return {
     latin: unique(
       sources + textIn(["en", "fr", "pt", "es"]),
       (cp) => isLatin(cp),
     ),
     sc: unique(
-      JSON.stringify(translations.zh) + switcher + textIn(["zh"]),
+      JSON.stringify(translations.zh) + switcher + textIn(["zh"]) + latinPages,
       isCjk,
     ),
     tc: unique(
@@ -129,4 +145,79 @@ export async function glyphSets(): Promise<
       isCjk,
     ),
   };
+}
+
+/**
+ * Whether a `unicode-range` covers a code point.
+ *
+ * Shared by the coverage test and the build, so the two cannot disagree about
+ * what "covered" means — a second range parser is exactly the kind of near-copy
+ * this repo has been bitten by before.
+ */
+function coveredBy(range: string): (cp: number) => boolean {
+  const intervals = range.split(",").map((part) => {
+    const m = part.trim().match(/^U\+([0-9a-f]+)(?:-([0-9a-f]+))?$/i);
+    if (!m) throw new Error(`Unparseable unicode-range part: "${part}"`);
+    const lo = parseInt(m[1]!, 16);
+    return [lo, m[2] ? parseInt(m[2], 16) : lo] as const;
+  });
+  return (cp) => intervals.some(([lo, hi]) => cp >= lo && cp <= hi);
+}
+
+/** The characters of `text` the range does NOT cover, readably labelled. */
+export function uncovered(text: string, range: string): string[] {
+  const covered = coveredBy(range);
+  return [...new Set(text)]
+    .filter((ch) => !covered(ch.codePointAt(0)!))
+    .map((ch) => `${ch} (U+${ch.codePointAt(0)!.toString(16).toUpperCase()})`);
+}
+
+/**
+ * A family's ranges, joined. One family spans several files: the generator
+ * asks Google in batches, because the endpoint stops text-subsetting above
+ * roughly 800 glyphs. Keying by family without joining would silently keep one
+ * batch and check a fraction of the coverage.
+ */
+export function rangesByFamily(
+  faces: readonly { family: string; range: string }[],
+): Map<string, string> {
+  const ranges = new Map<string, string>();
+  for (const face of faces) {
+    const previous = ranges.get(face.family);
+    ranges.set(
+      face.family,
+      previous ? `${previous},${face.range}` : face.range,
+    );
+  }
+  return ranges;
+}
+
+/**
+ * Every glyph the pages can render, against every subset that ships. Returns
+ * only the families that fall short, so a caller can name them.
+ *
+ * The build runs this on every invocation because a missing glyph breaks
+ * nothing it could otherwise notice: the character falls back to a system font
+ * mid-line, and no exit code ever says so.
+ */
+export async function missingGlyphs(
+  faces: readonly { family: string; range: string }[],
+): Promise<{ family: string; missing: string[] }[]> {
+  const ranges = rangesByFamily(faces);
+  const sets = await glyphSets();
+
+  return ([
+    ["Noto Sans", sets.latin],
+    ["Noto Sans SC", sets.sc],
+    ["Noto Sans TC", sets.tc],
+    ["Noto Sans HK", sets.hk],
+  ] as const)
+    .map(([family, glyphs]) => {
+      const range = ranges.get(family);
+      return {
+        family,
+        missing: range ? uncovered(glyphs, range) : ["(no subset at all)"],
+      };
+    })
+    .filter((result) => result.missing.length > 0);
 }

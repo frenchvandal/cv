@@ -12,28 +12,11 @@ import { expect, test } from "bun:test";
 import { FONT_FACES } from "../src/fonts.ts";
 import { renderApp } from "../src/render.ts";
 import { LANGS } from "../src/translations.ts";
-import { glyphSets } from "./glyphs.ts";
+import { glyphSets, rangesByFamily, uncovered } from "./glyphs.ts";
 
-/** Parse a CSS unicode-range value into a membership test. */
-function coveredBy(range: string): (cp: number) => boolean {
-  const intervals = range.split(",").map((part) => {
-    const m = part.trim().match(/^U\+([0-9a-f]+)(?:-([0-9a-f]+))?$/i);
-    if (!m) throw new Error(`Unparseable unicode-range part: "${part}"`);
-    const lo = parseInt(m[1]!, 16);
-    return [lo, m[2] ? parseInt(m[2], 16) : lo] as const;
-  });
-  return (cp) => intervals.some(([lo, hi]) => cp >= lo && cp <= hi);
-}
-
-/** The characters of `text` the range does NOT cover, readably labelled. */
-function uncovered(text: string, range: string): string[] {
-  const covered = coveredBy(range);
-  return [...new Set(text)]
-    .filter((ch) => !covered(ch.codePointAt(0)!))
-    .map((ch) => `${ch} (U+${ch.codePointAt(0)!.toString(16).toUpperCase()})`);
-}
-
-const RANGE = new Map(FONT_FACES.map((face) => [face.family, face.range]));
+// The range parser and the family join live with `glyphSets`, so the build's
+// gate and this test cannot disagree about what "covered" means.
+const RANGE = rangesByFamily(FONT_FACES);
 const sets = await glyphSets();
 
 test.each(
@@ -79,7 +62,9 @@ test.each(
  */
 const FALLBACK_GLYPHS = new Set("☾☀");
 
-const COVERED_BY_SOME_FACE = FONT_FACES.map((face) => coveredBy(face.range));
+/** Whether any shipped face claims this character. */
+const coveredBySomeFace = (ch: string): boolean =>
+  FONT_FACES.some((face) => uncovered(ch, face.range).length === 0);
 
 /**
  * The text a page actually shows: markup and its attributes stripped, entities
@@ -117,7 +102,7 @@ test.each([...LANGS])(
         const cp = ch.codePointAt(0)!;
         if (cp <= 0x7e) return false;
         if (FALLBACK_GLYPHS.has(ch)) return false;
-        return !COVERED_BY_SOME_FACE.some((covers) => covers(cp));
+        return !coveredBySomeFace(ch);
       })
       .map((ch) =>
         `${ch} (U+${ch.codePointAt(0)!.toString(16).toUpperCase()})`

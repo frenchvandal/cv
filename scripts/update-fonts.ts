@@ -15,6 +15,7 @@
  * TC = Taiwan MOE).
  */
 
+import { rm } from "node:fs/promises";
 import { glyphSets } from "./glyphs.ts";
 
 const UA =
@@ -43,29 +44,83 @@ console.log(
   `Glyphs — Latin: ${latin.length}, SC: ${sc.length}, TC: ${tc.length}, HK: ${hk.length}`,
 );
 
-async function subset(
+/*
+ * How many glyphs one request may carry.
+ *
+ * Google's css2 endpoint text-subsets a family only while the request stays
+ * small. Measured on 2026-08-10: 800 glyphs still returns ONE face carrying
+ * exactly those glyphs; 900 returns 101 faces — the endpoint has given up on
+ * subsetting and fallen back to serving the complete font split by unicode
+ * range, which is 13.5 MB across SC, TC and HK.
+ *
+ * Batching below the cliff keeps every file a real subset. 600 leaves room for
+ * the corpus to grow before anyone has to think about this again.
+ */
+const BATCH = 600;
+
+/**
+ * One family's subsets, one per batch. Each returned face carries its own
+ * `unicode-range`, so the browser fetches only the batches a page's text
+ * actually needs — the same mechanism that already kept the CJK files lazy,
+ * now at a finer grain.
+ *
+ * The `@font-face` blocks are read with a global match: a single-match parse
+ * silently kept the first block and dropped the rest, which is how a 4 KB
+ * "subset" carrying 1% of the glyphs was once written to disk.
+ */
+async function subsets(
   family: string,
   text: string,
-): Promise<{ url: string; range: string }> {
-  const cssUrl =
-    `https://fonts.googleapis.com/css2?family=${family}:wght@400..800` +
-    `&text=${encodeURIComponent(text)}&display=swap`;
-  const response = await fetchOk(cssUrl, `Fetching CSS for ${family}`);
-  const css = await response.text();
-  const url = css.match(/url\((https:\/\/[^)]+)\)/)?.[1];
-  const range = css.match(/unicode-range:\s*([^;]+);/)?.[1]?.trim();
-  if (!url || !range) {
-    throw new Error(`Could not parse @font-face for ${family}`);
+): Promise<{ url: string; range: string }[]> {
+  const chars = [...text];
+  const batches: string[] = [];
+  for (let i = 0; i < chars.length; i += BATCH) {
+    batches.push(chars.slice(i, i + BATCH).join(""));
   }
-  return { url, range };
+
+  return await Promise.all(batches.map(async (batch, index) => {
+    const cssUrl =
+      `https://fonts.googleapis.com/css2?family=${family}:wght@400..800` +
+      `&text=${encodeURIComponent(batch)}&display=swap`;
+    const response = await fetchOk(cssUrl, `Fetching CSS for ${family}`);
+    const css = await response.text();
+    const faces = [...css.matchAll(/url\((https:\/\/[^)]+)\)/g)];
+    const ranges = [...css.matchAll(/unicode-range:\s*([^;]+);/g)];
+    if (faces.length !== 1 || ranges.length !== 1) {
+      throw new Error(
+        `${family} batch ${index + 1}: expected one @font-face, got ` +
+          `${faces.length}. The batch is above the endpoint's subsetting ` +
+          `cliff — lower BATCH.`,
+      );
+    }
+    return { url: faces[0]![1]!, range: ranges[0]![1]!.trim() };
+  }));
 }
 
-const [latinFont, scFont, tcFont, hkFont] = await Promise.all([
-  subset("Noto+Sans", latin),
-  subset("Noto+Sans+SC", sc),
-  subset("Noto+Sans+TC", tc),
-  subset("Noto+Sans+HK", hk),
-]);
+/** The four faces, each as one or more batched subsets. */
+const FAMILIES = [
+  { family: "Noto Sans", api: "Noto+Sans", slug: "latin", text: latin },
+  { family: "Noto Sans SC", api: "Noto+Sans+SC", slug: "sc", text: sc },
+  { family: "Noto Sans TC", api: "Noto+Sans+TC", slug: "tc", text: tc },
+  { family: "Noto Sans HK", api: "Noto+Sans+HK", slug: "hk", text: hk },
+] as const;
+
+const fetched = await Promise.all(
+  FAMILIES.map(async (entry) => ({
+    ...entry,
+    parts: await subsets(entry.api, entry.text),
+  })),
+);
+
+/** Every emitted file, in the order the generated module will import them. */
+const files = fetched.flatMap((entry) =>
+  entry.parts.map((part, index) => ({
+    family: entry.family,
+    ident: `${entry.slug}${index + 1}`,
+    path: `src/fonts/noto-sans-${entry.slug}-${index + 1}.woff2`,
+    ...part,
+  }))
+);
 
 /*
  * Every subset is fetched before any of them is written. Downloading and
@@ -75,24 +130,36 @@ const [latinFont, scFont, tcFont, hkFont] = await Promise.all([
  * coverage guard would eventually catch that, but the fix is to not create it—
  * once this array resolves, the write phase does no I/O that can fail partway.
  */
-const subsets = await Promise.all(
-  (
-    [
-      ["src/fonts/noto-sans-latin.woff2", latinFont],
-      ["src/fonts/noto-sans-sc.woff2", scFont],
-      ["src/fonts/noto-sans-tc.woff2", tcFont],
-      ["src/fonts/noto-sans-hk.woff2", hkFont],
-    ] as const
-  ).map(async ([path, font]) => {
-    const response = await fetchOk(font.url, `Downloading ${font.url}`);
-    return { path, bytes: await response.arrayBuffer() };
-  }),
+const downloaded = await Promise.all(
+  files.map(async (file) => ({
+    ...file,
+    bytes: await (await fetchOk(file.url, `Downloading ${file.url}`))
+      .arrayBuffer(),
+  })),
 );
 
-for (const { path, bytes } of subsets) {
+/*
+ * Stale files from a previous run are removed first. The batch count follows
+ * the corpus, so a run that needs two subsets where the last needed three
+ * would otherwise leave the third on disk — imported by nothing, shipped by
+ * nothing, and quietly wrong the day someone reads the directory.
+ */
+for await (const stale of new Bun.Glob("noto-sans-*.woff2").scan("src/fonts")) {
+  if (!downloaded.some((file) => file.path === `src/fonts/${stale}`)) {
+    await rm(`src/fonts/${stale}`);
+    console.log(`  removed src/fonts/${stale} (no longer needed)`);
+  }
+}
+
+let total = 0;
+for (const { path, bytes } of downloaded) {
   await Bun.write(path, bytes);
+  total += bytes.byteLength;
   console.log(`  wrote ${path} (${Math.round(bytes.byteLength / 1024)} KB)`);
 }
+console.log(
+  `  ${downloaded.length} files, ${Math.round(total / 1024)} KB total`,
+);
 
 const fontsTs = `/*
  * Self-hosted Noto Sans (Latin) + Noto Sans SC/TC/HK (subset to the glyphs used).
@@ -113,26 +180,28 @@ const fontsTs = `/*
  * A named font (not \`system-ui\`) is required for accurate pretext measurement.
  */
 
-import latinUrl from "./fonts/noto-sans-latin.woff2";
-import scUrl from "./fonts/noto-sans-sc.woff2";
-import tcUrl from "./fonts/noto-sans-tc.woff2";
-import hkUrl from "./fonts/noto-sans-hk.woff2";
+${
+  files.map((f) => `import ${f.ident}Url from "./fonts/${f.path.slice(10)}";`)
+    .join("\n")
+}
 
-const LATIN_RANGE =
-  "${latinFont.range}";
-const SC_RANGE =
-  "${scFont.range}";
-const TC_RANGE =
-  "${tcFont.range}";
-const HK_RANGE =
-  "${hkFont.range}";
-
-/** The four subsets with their build-emitted URLs and unicode ranges. */
+/**
+ * Every subset, with its build-emitted URL and the unicode range it covers.
+ *
+ * A family can span several files: Google's endpoint stops text-subsetting
+ * above roughly 800 glyphs, so the generator asks in batches and each batch
+ * comes back with its own range. The browser then fetches only the batches a
+ * page's text needs, which is the same laziness the single files had, at a
+ * finer grain.
+ */
 export const FONT_FACES = [
-  { family: "Noto Sans", url: latinUrl, range: LATIN_RANGE },
-  { family: "Noto Sans SC", url: scUrl, range: SC_RANGE },
-  { family: "Noto Sans TC", url: tcUrl, range: TC_RANGE },
-  { family: "Noto Sans HK", url: hkUrl, range: HK_RANGE },
+${
+  files.map((f) =>
+    `  { family: ${
+      JSON.stringify(f.family)
+    }, url: ${f.ident}Url, range:\n    "${f.range}" },`
+  ).join("\n")
+}
 ] as const;
 
 /** @font-face rules for the given subset URLs (SSG passes its own hashed paths). */

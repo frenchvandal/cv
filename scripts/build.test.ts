@@ -276,14 +276,19 @@ test(
      */
     const sitemap = await Bun.file(`${ROOT}/dist/sitemap.xml`).text();
     const entries = await parseSitemap(sitemap);
-    const expected = LANGS.flatMap((lang) =>
-      lang === "en" ? [`${SITE}/`, `${SITE}/cv.html`, `${SITE}/blog/`] : [
-        `${SITE}/${lang}/`,
-        `${SITE}/${lang}/cv.html`,
-        `${SITE}/${lang}/blog/`,
-      ]
-    );
-    expect(entries.map((e) => e.loc)).toEqual(expected);
+    const locs = new Set(entries.map((e) => e.loc));
+
+    // The three fixed pages every language always has. Article URLs are not
+    // listed here: they follow the corpus, and the canonical cross-check below
+    // is what proves none of them is missing.
+    for (const lang of LANGS) {
+      const base = lang === "en" ? SITE : `${SITE}/${lang}`;
+      expect(locs).toContain(`${base}/`);
+      expect(locs).toContain(`${base}/cv.html`);
+      expect(locs).toContain(`${base}/blog/`);
+    }
+    // Once each: a duplicate entry is a page a crawler would have to discard.
+    expect(locs.size).toBe(entries.length);
 
     /*
      * Every canonical the pages declare is in the sitemap, and nothing in the
@@ -305,11 +310,27 @@ test(
     }
     expect(new Set(entries.map((e) => e.loc))).toEqual(canonicals);
 
-    // lastmod is the content's date from git, not the build's—the whole
-    // point of the field. Compared against the same source the build read, so
-    // a checkout that cannot answer (shallow clone) expects no field at all.
+    /*
+     * lastmod is the content's date from git, not the build's — the whole
+     * point of the field. The fixed pages share the site's own date; an
+     * article carries the date of its own source file, so that editing one
+     * post does not re-date the other ninety-five.
+     *
+     * A date can legitimately be absent: a shallow clone cannot answer, and
+     * neither can git for a file that is not committed yet. Absent is the
+     * honest answer, and far better than the build's own clock.
+     */
     const lastmod = await contentLastmod();
-    for (const entry of entries) expect(entry.lastmod).toBe(lastmod);
+    const fixed = LANGS.flatMap((lang) => {
+      const base = lang === "en" ? SITE : `${SITE}/${lang}`;
+      return [`${base}/`, `${base}/cv.html`, `${base}/blog/`];
+    });
+    for (const entry of entries) {
+      if (fixed.includes(entry.loc)) expect(entry.lastmod).toBe(lastmod);
+      if (entry.lastmod) {
+        expect(Date.parse(entry.lastmod)).toBeLessThanOrEqual(Date.now());
+      }
+    }
     if (lastmod) {
       expect(Date.parse(lastmod)).toBeLessThanOrEqual(Date.now());
     }
