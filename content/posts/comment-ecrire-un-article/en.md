@@ -22,10 +22,10 @@ reading; `fr.md` next to it is the French version. No mapping table, no
 registry: translating a post means dropping a file next to the others; removing
 a language means deleting a file. The rule — a post exists in one to n
 languages, each index lists only what exists in it — cannot be violated by
-omission. This article proves it: it exists in French and English only — a
-Spanish reader won’t see it in their index, and the switcher leads to the
-translation where one exists, otherwise to that language’s index, never to a
-dead link.
+omission. `shanghai-note` is the demonstration: it exists in Chinese and nowhere
+else, so a Spanish reader never sees it in their index, and from the Chinese
+page the switcher leads to each other language’s index rather than to a dead
+link. This article, by contrast, exists in all seven.
 
 ## Rendering with no dependency
 
