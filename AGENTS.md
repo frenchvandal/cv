@@ -182,7 +182,9 @@ negotiate file by file.
   in `src/` and `scripts/`, plus `README.md`, this file, and anything under
   `docs/`. A file whose comments drift into another language reads as two files;
   when that happens, convert the whole file rather than the paragraph you
-  touched.
+  touched. `docs/superpowers/` is outside this: a dated spec or plan is the
+  record of one session’s thinking, not documentation the repo maintains, and
+  translating a finished journal would only make it less faithful.
 - **Commit messages**, to
   [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/):
   `type(scope): description`, the type being one of `feat`, `fix`, `refactor`,
