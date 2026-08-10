@@ -8,6 +8,17 @@
  *   - box/glue widths measured with pretext (accurate, no DOM reflow), and
  *   - optional break points inside words from Liang hyphenation patterns (`hyphen`).
  *
+ * The paragraph arrives as styled RUNS, not as one string: every box is
+ * measured in the font of the run it came from, because a bold or monospace
+ * span is wider than the prose around it (measured in Chrome: +1.5% for bold,
+ * +8.1% for monospace—enough for a line to overflow, at which point the browser
+ * re-wraps it and destroys the justification just computed), and its markup
+ * comes back out through the returned fragments. A run may carry
+ * `extraWidth`—the horizontal padding and borders text measurement ignores, as
+ * inline `<code>` has; such a run is kept atomic, never split and never
+ * hyphenated, and charged its full extra width, so padding drawn at its edges
+ * can never overflow the computed line.
+ *
  * The result is rendered justified, one <span> per line, with a real hyphen where
  * a word was split. Runs on the client only (pretext needs a canvas) as an
  * enhancement over the plain, pre-rendered paragraph. The hyphenation patterns
@@ -26,8 +37,22 @@ const INF = 10000;
 /** Width of `text` in px when rendered with the CSS `font` shorthand. */
 export type MeasureFn = (text: string, font: string) => number;
 
+/**
+ * One styled span of the paragraph. `font` is the CSS shorthand the run is
+ * measured in; `extraWidth` is the horizontal space text measurement misses
+ * (padding, borders—inline code), and it makes the run atomic.
+ */
+export interface Run {
+  text: string;
+  font: string;
+  extraWidth?: number;
+}
+
+/** A laid-out line, as the styled pieces it is made of. `run` indexes the runs. */
+export type RichLine = { fragments: { text: string; run: number }[] };
+
 type BreakItem =
-  | { type: "box"; width: number; text: string }
+  | { type: "box"; width: number; text: string; run: number }
   | { type: "glue"; width: number; stretch: number; shrink: number }
   | { type: "penalty"; width: number; penalty: number; flagged: boolean };
 
