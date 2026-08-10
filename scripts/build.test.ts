@@ -16,6 +16,8 @@ import { headMeta, pageMeta } from "../src/meta.ts";
 import { extractSocialTags, previewCard } from "./social-meta.ts";
 import { contentLastmod, parseSitemap, SITEMAP_CSS_FILE } from "./sitemap.ts";
 import { FEED_MIME, FEED_VERSION, feedFile } from "./feed.ts";
+import { loadPosts } from "./content.ts";
+import { byLang } from "../src/post.ts";
 
 const ROOT = `${import.meta.dir}/..`;
 
@@ -369,10 +371,12 @@ test(
      *
      * A language with no article gets an empty feed, which is valid and
      * honest: it says there is nothing rather than pointing at another
-     * language’s writing. The corpus is empty in this checkout, so that is the
-     * shape asserted here; the assertion still catches a feed that invented
-     * items from somewhere.
+     * language’s writing. Rather than assert one shape or the other, each
+     * feed is compared against the corpus the build itself read — titles and
+     * order included — so an empty feed passes only where the corpus is
+     * empty, and a feed that invented an item fails everywhere.
      */
+    const corpus = await loadPosts();
     for (const lang of LANGS) {
       const feed = await Bun.file(`${ROOT}/dist/${feedFile(lang)}`).json();
       expect(feed.version).toBe(FEED_VERSION);
@@ -383,6 +387,9 @@ test(
         lang === "en" ? `${SITE}/` : `${SITE}/${lang}/`,
       );
       expect(Array.isArray(feed.items)).toBe(true);
+      expect(feed.items.map((item: { title: string }) => item.title)).toEqual(
+        byLang(corpus, lang).map((post) => post.title),
+      );
       // Every item carries a date, and it is the article’s own — never
       // synthesized, never absent.
       for (const item of feed.items) {

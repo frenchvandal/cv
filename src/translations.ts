@@ -141,11 +141,8 @@ const en = {
     writing: "Writing",
   },
   blog: {
-    indexTitle: "Writing",
     indexIntro: "Notes on measurement, interfaces and the languages I work in.",
     latest: "Latest writing",
-    all: "All writing",
-    readMore: "Read",
     published: "Published",
     updated: "Updated",
     backToIndex: "Back to all writing",
@@ -433,12 +430,9 @@ const fr: Translation = {
     writing: "Écrits",
   },
   blog: {
-    indexTitle: "Écrits",
     indexIntro:
       "Notes sur la mesure, les interfaces et les langues que je pratique.",
     latest: "Derniers écrits",
-    all: "Tous les écrits",
-    readMore: "Lire",
     published: "Publié le",
     updated: "Mis à jour le",
     backToIndex: "Retour aux écrits",
@@ -733,11 +727,8 @@ const pt: Translation = {
     writing: "Escritos",
   },
   blog: {
-    indexTitle: "Escritos",
     indexIntro: "Notas sobre medição, interfaces e as línguas em que trabalho.",
     latest: "Últimos escritos",
-    all: "Todos os escritos",
-    readMore: "Ler",
     published: "Publicado a",
     updated: "Actualizado a",
     backToIndex: "Voltar aos escritos",
@@ -1025,12 +1016,9 @@ const es: Translation = {
     writing: "Escritos",
   },
   blog: {
-    indexTitle: "Escritos",
     indexIntro:
       "Notas sobre medición, interfaces y los idiomas en los que trabajo.",
     latest: "Últimos escritos",
-    all: "Todos los escritos",
-    readMore: "Leer",
     published: "Publicado el",
     updated: "Actualizado el",
     backToIndex: "Volver a los escritos",
@@ -1311,11 +1299,8 @@ const zh: Translation = {
     writing: "文章",
   },
   blog: {
-    indexTitle: "文章",
     indexIntro: "关于测量、界面，以及我使用的几种语言的笔记。",
     latest: "最新文章",
-    all: "全部文章",
-    readMore: "阅读",
     published: "发布于",
     updated: "更新于",
     backToIndex: "返回文章列表",
@@ -1581,11 +1566,8 @@ const zhHant: Translation = {
     writing: "文章",
   },
   blog: {
-    indexTitle: "文章",
     indexIntro: "關於測量、介面，以及我使用的幾種語言的筆記。",
     latest: "最新文章",
-    all: "全部文章",
-    readMore: "閱讀",
     published: "發佈於",
     updated: "更新於",
     backToIndex: "返回文章列表",

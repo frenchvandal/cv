@@ -14,7 +14,7 @@
  *
  * As a CLI it prints that card for each page given:
  *
- *   bun scripts/social-meta.ts dist/index.html dist/fr.html
+ *   bun scripts/social-meta.ts dist/index.html dist/fr/blog/index.html
  */
 
 /** Raw tags found in a page, keyed without their `og:` / `twitter:` prefix. */

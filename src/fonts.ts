@@ -5,8 +5,8 @@
  * The woff2 files are imported (not referenced via CSS `url()`): Bun inlines
  * CSS-referenced fonts as base64, but a JS import goes through the `file` loader
  * and is emitted as a separate hashed asset. `unicode-range` keeps the CJK files
- * lazy, and each page’s `--font` stack names only its own CJK family (SC or TC),
- * so a visitor never downloads a Chinese subset they don’t read.
+ * lazy, and each page’s `--font` stack names only its own CJK family (SC, TC or
+ * HK), so a visitor never downloads a Chinese subset they don’t read.
  *
  * The @font-face rules exist in two places, on purpose:
  *   - the SSG build ([scripts/build.ts](scripts/build.ts)) inlines them into each
