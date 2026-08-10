@@ -29,7 +29,7 @@ import { pageMeta } from "../src/meta.ts";
 // The same escaper the renderer uses—one implementation, so the two can’t
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
-import { byLang, langsOf } from "../src/post.ts";
+import { byLang, deriveSummary, langsOf } from "../src/post.ts";
 import { pageDepth, pagePath, type PageRef, rel } from "../src/urls.ts";
 import { loadPosts } from "./content.ts";
 import { relayHtml, relayPages, relayTarget } from "./relay.ts";
@@ -108,10 +108,18 @@ if (shortfall.length > 0) {
  * A page’s public URL. Indexes are published as directory URLs (`fr/` is the
  * French home) so the canonical never carries a file name a reader would have
  * to type; articles keep theirs.
+ *
+ * Without `SITE_URL` the URL is relative, and relative to `from`—the page the
+ * link is being written into, which defaults to the page itself. Writing `./`
+ * plus the root-relative path instead was correct only at depth 0: on
+ * `/fr/cv.html` the canonical read `./fr/cv.html` and resolved to
+ * `/fr/fr/cv.html`, a page that does not exist. Six of seven languages
+ * therefore shipped a wrong canonical and a wrong set of hreflang alternates
+ * in every local build.
  */
-function pageUrl(ref: PageRef): string {
+function pageUrl(ref: PageRef, from: PageRef = ref): string {
   const path = pagePath(ref).replace(/(^|\/)index\.html$/, "$1");
-  return SITE ? `${SITE}/${path}` : `./${path}`;
+  return SITE ? `${SITE}/${path}` : `${rel(pageDepth(from))}${path}`;
 }
 
 /** The same page in another language, for the alternates and x-default. */
@@ -220,14 +228,11 @@ function pagesFor(lang: Lang): { ref: PageRef; page: Page }[] {
   ];
 }
 
-/** The first sentence of a text, as a description a search result can show. */
-function firstSentence(text: string, max = 160): string {
-  const clean = text.replace(/\s+/g, " ").trim();
-  if (clean.length <= max) return clean;
-  const head = clean.slice(0, max);
-  const stop = Math.max(head.lastIndexOf(". "), head.lastIndexOf("。"));
-  return stop > max / 3 ? clean.slice(0, stop + 1).trim() : `${head.trim()}…`;
-}
+/**
+ * What search engines display of a description before cutting it off. Shorter
+ * than a post summary, which is why deriveSummary takes a budget.
+ */
+const META_DESCRIPTION_MAX = 160;
 
 /**
  * What a page says about itself in the `<head>`.
@@ -252,7 +257,7 @@ function metaFor(
     case "cv":
       return {
         title: `${t.nav.cv} — ${t.name.display}`,
-        description: firstSentence(t.about.p1),
+        description: deriveSummary(t.about.p1, META_DESCRIPTION_MAX),
       };
     case "blogIndex":
       return {
@@ -288,14 +293,14 @@ for (const lang of LANGS) {
       : [...LANGS];
     const alternates = alternateLangs.map((l) =>
       `<link rel="alternate" hreflang="${HTML_LANG[l]}" href="${
-        escapeHtml(pageUrl(refIn(ref, l)))
+        escapeHtml(pageUrl(refIn(ref, l), ref))
       }" />`
     ).join("\n    ");
     // x-default is the English page of the same kind, or the English index
     // when the article was never written in English.
     const xDefault = page.kind === "post" && !alternateLangs.includes("en")
-      ? pageUrl({ kind: "blogIndex", lang: "en" })
-      : pageUrl(refIn(ref, "en"));
+      ? pageUrl({ kind: "blogIndex", lang: "en" }, ref)
+      : pageUrl(refIn(ref, "en"), ref);
 
     // The negotiation script goes first so a redirect is not preceded by a font
     // preload we are about to abandon. Only the site root negotiates: a URL

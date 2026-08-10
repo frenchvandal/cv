@@ -17,10 +17,11 @@
  *   <changefreq> omitted—no honest value exists here. The protocol itself
  *                calls it a hint that "may not correlate exactly to how often
  *                they crawl the page", and the major engines dropped it.
- *   <priority>   omitted—it ranks URLs *within* the site, and these eight
- *                pages are one CV in seven languages with nothing to rank
- *                between them. The protocol is explicit that it "is not likely
- *                to influence the position of your URLs".
+ *   <priority>   omitted—it ranks URLs *within* the site, and nothing here
+ *                outranks anything else: a home page, a CV, an index and a
+ *                run of articles, in each language. The protocol is explicit
+ *                that it "is not likely to influence the position of your
+ *                URLs".
  *
  * hreflang alternates (the `xhtml:link` extension) are not repeated here: every
  * page already carries the full set in its <head>, generated from the same
@@ -84,18 +85,25 @@ const MAX_LOC = 2048;
 
 /*
  * The paths whose content reaches a visitor: the shell, the app sources
- * (renderer, copy, styles, fonts), the hand-copied public assets, and the
- * generator that assembles the <head>. Docs, workflows and this file are not
- * here—none of them changes a byte the page delivers, and a lastmod that
- * moves for a README edit is exactly the inaccuracy that gets the whole signal
- * ignored. Tests are excluded by pathspec, written as `*.test.ts` because a
- * plain `*` crosses `/` in a git pathspec while a doubled one does not (that
- * needs `:(glob)`)—the directory-prefixed spelling silently matches nothing.
+ * (renderer, copy, styles, fonts), the hand-copied public assets, the article
+ * corpus, and the generator that assembles the <head>. Docs, workflows and
+ * this file are not here—none of them changes a byte the page delivers, and a
+ * lastmod that moves for a README edit is exactly the inaccuracy that gets the
+ * whole signal ignored. Tests are excluded by pathspec, written as `*.test.ts`
+ * because a plain `*` crosses `/` in a git pathspec while a doubled one does
+ * not (that needs `:(glob)`)—the directory-prefixed spelling silently matches
+ * nothing.
+ *
+ * `content/` is here because the pages this date is used for are the ones that
+ * list articles: publishing a post changes the home page and the writing index
+ * of that language, and dating them from the renderer alone would leave both
+ * claiming they had not moved since the last code change.
  */
 const CONTENT_PATHS = [
   "index.html",
   "src",
   "public",
+  "content",
   "scripts/build.ts",
   ":(exclude)*.test.ts",
 ];

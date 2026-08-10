@@ -61,8 +61,15 @@ export function langsOf(posts: readonly PostMeta[], slug: string): Lang[] {
 /**
  * A summary when the frontmatter gives none. Prefer ending on a full
  * sentence; failing that, truncate on a word, never in the middle of one.
+ *
+ * `max` is a budget in grapheme clusters, and the two callers want different
+ * ones: a post summary runs to {@link SUMMARY_MAX}, while a `<meta
+ * description>` is cut off by search engines around 160. The build used to
+ * carry its own 160-character version of this function, which cut by UTF-16
+ * code unit and left `…públi…` mid-word on the Spanish and Portuguese CV
+ * pages. One implementation, one budget argument.
  */
-export function deriveSummary(text: string): string {
+export function deriveSummary(text: string, max = SUMMARY_MAX): string {
   const clean = text.replace(/\s+/g, " ").trim();
 
   /*
@@ -83,9 +90,9 @@ export function deriveSummary(text: string): string {
     ...new Intl.Segmenter(undefined, { granularity: "grapheme" })
       .segment(clean),
   ].map((entry) => entry.segment);
-  if (graphemes.length <= SUMMARY_MAX) return clean;
+  if (graphemes.length <= max) return clean;
 
-  const head = graphemes.slice(0, SUMMARY_MAX).join("");
+  const head = graphemes.slice(0, max).join("");
   const sentence = Math.max(
     head.lastIndexOf(". "),
     head.lastIndexOf("。"),
@@ -95,7 +102,7 @@ export function deriveSummary(text: string): string {
   );
   // Require the sentence to clear a third of the budget, or a stray early
   // period (an abbreviation, an initial) would produce a near-empty summary.
-  if (sentence > SUMMARY_MAX / 3) return clean.slice(0, sentence + 1).trim();
+  if (sentence > max / 3) return clean.slice(0, sentence + 1).trim();
 
   // Chinese has no whitespace between words, so this fallback degrades to a
   // hard cut at the budget for CJK text — there is no word boundary to miss.
