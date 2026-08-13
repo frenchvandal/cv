@@ -5,7 +5,11 @@
  */
 
 import { expect, test } from "bun:test";
-import { breakIntoLinesFlat, type MeasureFn } from "./linebreak.ts";
+import {
+  breakIntoLines,
+  breakIntoLinesFlat,
+  type MeasureFn,
+} from "./linebreak.ts";
 
 /** Every character 10px wide, whatever the font. */
 const CHAR = 10;
@@ -110,4 +114,66 @@ test("returns null when no feasible layout exists (unbreakable word wider than t
   // One syllable, so hyphenation cannot save it: 9 chars = 90px in a 50px column.
   expect(await breakIntoLinesFlat("strengths", FONT, 50, "en", mono))
     .toBeNull();
+});
+
+/*
+ * A line can end inside a word for two different reasons, and only one of them
+ * needs a hyphen drawn. Conflating them pasted `cross- company`: the break at
+ * the author's own hyphen was flagged neither way, so the clipboard rejoined
+ * the halves with a space.
+ */
+test("a break at an authored hyphen is a word break, not a drawn hyphen", async () => {
+  const lines = await breakIntoLines(
+    [{ text: "alpha cross-company beta gamma delta", font: FONT }],
+    13 * CHAR,
+    "en",
+    mono,
+  );
+
+  const first = lines![0]!;
+  expect(first.fragments.map((f) => f.text).join("")).toBe("alpha cross-");
+  // The hyphen is already in the text, so nothing must be drawn…
+  expect(first.hyphenated).toBeUndefined();
+  // …but the next line continues the word, so rejoining adds nothing.
+  expect(first.midWord).toBe(true);
+});
+
+test("a hyphenated break is both drawn and rejoined without a space", async () => {
+  const lines = await breakIntoLines(
+    [{ text: "alpha communication beta", font: FONT }],
+    10 * CHAR,
+    "en",
+    mono,
+  );
+
+  const broken = lines!.find((line) => line.hyphenated);
+  expect(broken?.midWord).toBe(true);
+});
+
+/*
+ * Inline code is atomic because its padding and borders are charged to it
+ * whole. A space merged into that run is painted inside the `<code>`: the grey
+ * field runs past the word and the space is drawn in monospace after being
+ * measured in prose, which is how a line ends up wider than the column it was
+ * computed for.
+ */
+test("a space beside an atomic run takes the prose run, not the code one", async () => {
+  const lines = await breakIntoLines(
+    [
+      { text: "before ", font: "prose" },
+      { text: "code", font: "mono", extraWidth: 12 },
+      { text: " after words here", font: "prose" },
+    ],
+    20 * CHAR,
+    "en",
+    mono,
+  );
+
+  const withCode = lines!.find((line) =>
+    line.fragments.some((f) => f.run === 1)
+  )!;
+  const codeFragment = withCode.fragments.find((f) => f.run === 1)!;
+
+  expect(codeFragment.text).toBe("code");
+  expect(withCode.fragments.find((f) => f.text.startsWith(" "))?.run).toBe(2);
 });

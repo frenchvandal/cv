@@ -25,11 +25,16 @@ import {
 } from "../src/render.ts";
 // The per-page <head>, shared with the runtime so a reload-free language
 // switch rewrites exactly what this file bakes in.
-import { type MetaOverride, OG_LOCALE, pageMeta } from "../src/meta.ts";
+import {
+  cvOverride,
+  type MetaOverride,
+  OG_LOCALE,
+  pageMeta,
+} from "../src/meta.ts";
 // The same escaper the renderer uses—one implementation, so the two can’t
 // drift (this file used to carry a near-copy that missed the apostrophe).
 import { escapeHtml } from "../src/dom.ts";
-import { byLang, deriveSummary, langsOf } from "../src/post.ts";
+import { byLang, langsOf } from "../src/post.ts";
 import {
   pageDepth,
   pageHref,
@@ -272,7 +277,6 @@ function pagesFor(lang: Lang): { ref: PageRef; page: Page }[] {
  * What search engines display of a description before cutting it off. Shorter
  * than a post summary, which is why deriveSummary takes a budget.
  */
-const META_DESCRIPTION_MAX = 160;
 
 /**
  * What a page says about itself in the `<head>`.
@@ -297,10 +301,7 @@ function metaFor(
     case "home":
       return undefined;
     case "cv":
-      return {
-        title: `${t.nav.cv} — ${t.name.display}`,
-        description: deriveSummary(t.about.p1, META_DESCRIPTION_MAX),
-      };
+      return cvOverride(t);
     case "blogIndex":
       return {
         title: `${t.nav.writing} — ${t.name.display}`,

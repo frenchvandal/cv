@@ -28,7 +28,7 @@ import {
   STORAGE_LANG_KEY,
   type Theme,
 } from "./render.ts";
-import { headMeta, pageMeta, pageUrl } from "./meta.ts";
+import { cvOverride, headMeta, pageMeta, pageUrl } from "./meta.ts";
 import { reducedMotion } from "./dom.ts";
 import {
   auditNavLinks,
@@ -87,8 +87,23 @@ function ensureCjkFace(lang: Lang): void {
   const style = document.createElement("style");
   style.id = id;
   style.dataset.fonts = "switch";
+  /*
+   * The URLs must be absolutized against the BUNDLE, not left as they come.
+   * Bun compiles an imported `.woff2` to a path relative to the chunk that
+   * imports it (`./noto-sans-sc-1-….woff2`, the chunk living in `/assets/`),
+   * and a relative URL inside an inline `<style>` resolves against the
+   * DOCUMENT: from `/fr/cv.html` the browser asked for
+   * `/fr/noto-sans-sc-1-….woff2` and got a 404, so the Chinese CV rendered in
+   * a system font and pretext measured a family that never loaded — the exact
+   * failure this function was written to prevent, reintroduced by its own fix.
+   */
   style.textContent = fontFaceCss(
-    FONT_FACES.filter((face) => face.family === family),
+    FONT_FACES
+      .filter((face) => face.family === family)
+      .map((face) => ({
+        ...face,
+        url: new URL(face.url, import.meta.url).href,
+      })),
   );
   document.head.appendChild(style);
 }
@@ -183,9 +198,13 @@ function applyTheme(next: Theme, persist: boolean): void {
  * SITE_URL build, and the dev shell has no canonical at all.
  */
 function syncDocumentMeta(): void {
+  // The in-place switch only ever happens on the CV (`canSwitchInPlace`), so
+  // the head it rewrites is the CV’s — override included, or the page would
+  // take back the home’s title and description under a `cv.html` URL.
   const meta = pageMeta(
     currentLang,
     pageUrl(currentLang, currentLang, location.href),
+    cvOverride(translations[currentLang]),
   );
   for (const { selector, attr, value } of headMeta(meta)) {
     const el = document.querySelector(selector);

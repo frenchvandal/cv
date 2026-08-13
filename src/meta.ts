@@ -18,8 +18,15 @@
  */
 
 import { pageTitle } from "./render.ts";
+import { deriveSummary } from "./post.ts";
 import { hrefTo } from "./urls.ts";
-import { type Lang, PROFILE, SAME_AS, translations } from "./translations.ts";
+import {
+  type Lang,
+  PROFILE,
+  SAME_AS,
+  type Translation,
+  translations,
+} from "./translations.ts";
 
 /**
  * Open Graph wants underscore locales, not BCP-47 tags. Exported because the
@@ -107,6 +114,26 @@ function asDateTime(date: string): string {
  * The `Person` JSON-LD is deliberately kept on every page: it describes the
  * site’s author, who is the same whichever page is being read.
  */
+/** Where search engines cut a description; the budget `cvOverride` writes to. */
+export const META_DESCRIPTION_MAX = 160;
+
+/**
+ * The CV page’s own identity, shared by the two heads that must agree on it.
+ *
+ * The build bakes this into `cv.html`; the runtime rewrites the head when the
+ * visitor switches language in place, which happens on the CV and nowhere
+ * else. When only the build knew about it, that switch put the HOME’s title
+ * and description back on a page whose URL said `fr/cv.html` — the drift this
+ * module exists to make impossible, reintroduced by adding the override on one
+ * side only.
+ */
+export function cvOverride(t: Translation): MetaOverride {
+  return {
+    title: `${t.nav.cv} — ${t.name.display}`,
+    description: deriveSummary(t.about.p1, META_DESCRIPTION_MAX),
+  };
+}
+
 export function pageMeta(
   lang: Lang,
   url: string,

@@ -120,10 +120,12 @@ export function renderLines(
   for (const line of lines) {
     const lineEl = doc.createElement("span");
     lineEl.className = "kp-line";
-    // The hyphen of a mid-word break is drawn by CSS from this attribute, not
-    // written into the text: it belongs to the line, not to the word, and a
-    // reader copying the paragraph must get `document`, never `do-\ncument`.
+    // Two attributes, two facts. `data-hyphen` DRAWS a hyphen the text does
+    // not contain; `data-word-break` says the next line continues this word,
+    // which is also true when the word already carried its own hyphen
+    // (`cross-` / `company`). Copying reads the second, CSS the first.
     if (line.hyphenated) lineEl.dataset.hyphen = "";
+    if (line.midWord) lineEl.dataset.wordBreak = "";
 
     // The chain currently open, as source elements and as their clones—the
     // first says what may be reused, the second is where text goes.
@@ -229,7 +231,12 @@ function groupByParagraph(lines: readonly Element[]): Element[][] {
   return groups;
 }
 
-/** The breaker’s own rule: nothing after a mid-word break, a space otherwise. */
+/**
+ * The breaker’s own rule: nothing after a break inside a word, a space
+ * otherwise. `data-word-break` and not `data-hyphen`—a line ending on a
+ * hyphen the author wrote carries the first and not the second, and reading
+ * the wrong one pasted `cross- company`.
+ */
 function joinLines(
   lines: readonly Element[],
   read: (line: Element) => string,
@@ -238,7 +245,7 @@ function joinLines(
     .map((line, i) => {
       const previous = lines[i - 1];
       if (!previous) return read(line);
-      return (previous.hasAttribute("data-hyphen") ? "" : " ") + read(line);
+      return (previous.hasAttribute("data-word-break") ? "" : " ") + read(line);
     })
     .join("");
 }

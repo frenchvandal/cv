@@ -59,13 +59,23 @@ export interface Run {
  */
 export type RichLine = {
   fragments: { text: string; run: number }[];
+  /** The line ends mid-word and needs a hyphen DRAWN (CSS, not text). */
   hyphenated?: boolean;
+  /** The next line continues the same word: rejoin with nothing between. */
+  midWord?: boolean;
 };
 
 type BreakItem =
   | { type: "box"; width: number; text: string; run: number }
   | { type: "glue"; width: number; stretch: number; shrink: number }
-  | { type: "penalty"; width: number; penalty: number; flagged: boolean };
+  | {
+    type: "penalty";
+    width: number;
+    penalty: number;
+    flagged: boolean;
+    /** The next line continues this word: rejoining them inserts nothing. */
+    midWord?: boolean;
+  };
 
 const widthCache = new Map<string, number>();
 
@@ -287,6 +297,7 @@ function buildItems(
               width: 0,
               penalty: 25,
               flagged: false,
+              midWord: true,
             });
           }
           hyphenate(segment).split(SOFT_HYPHEN).forEach(
@@ -297,6 +308,7 @@ function buildItems(
                   width: hyphenWidth,
                   penalty: 50,
                   flagged: true,
+                  midWord: true,
                 });
               }
               items.push({
@@ -501,12 +513,26 @@ function optimalBreaks(
 }
 
 /**
- * Turn chosen breakpoints back into lines, adding a hyphen where a word was
- * split. Consecutive boxes from the same run coalesce into one fragment, so a
- * line that crosses no style boundary comes back as a single piece and the
- * renderer only has to open an element where the style actually changes.
+ * Turn chosen breakpoints back into lines. Consecutive boxes from the same run
+ * coalesce into one fragment, so a line that crosses no style boundary comes
+ * back as a single piece and the renderer only opens an element where the
+ * style actually changes.
+ *
+ * Two different facts about the end of a line, and conflating them was a bug:
+ *
+ *   - `hyphenated` \u2014 the breaker split a word carrying no hyphen of its
+ *     own, so one has to be DRAWN. Only a flagged penalty does this.
+ *   - `midWord` \u2014 the next line continues the same word, so rejoining them
+ *     must insert nothing. True for a drawn hyphen AND for a break at a hyphen
+ *     the word already had (`cross-company`), which is unflagged: that case
+ *     was marked neither way, and copying the paragraph yielded
+ *     `cross- company`.
  */
-function toLines(items: BreakItem[], breaks: number[]): RichLine[] {
+function toLines(
+  items: BreakItem[],
+  breaks: number[],
+  runs: readonly Run[],
+): RichLine[] {
   const lines: RichLine[] = [];
   let start = 0;
 
@@ -521,15 +547,32 @@ function toLines(items: BreakItem[], breaks: number[]): RichLine[] {
 
     for (let i = start; i < breakIndex; i++) {
       const item = items[i]!;
-      if (item.type === "box") push(item.text, item.run);
-      else if (item.type === "glue" && fragments.length > 0) {
-        // The space belongs to the run on its left, which is what decides the
-        // style the stretched space is painted in.
-        push(" ", fragments[fragments.length - 1]!.run);
+      if (item.type === "box") {
+        push(item.text, item.run);
+        continue;
       }
+      if (item.type !== "glue" || fragments.length === 0) continue;
+
+      /*
+       * A space takes the style of a neighbour, and never that of an atomic
+       * run. Inline code is atomic because its padding and borders are charged
+       * to it whole; a space merged into that run is painted INSIDE the
+       * `<code>` \u2014 the grey field runs on past the word, and the space is
+       * drawn in monospace (~8.4px) after being measured in prose (~4.4px).
+       * Two of those on one line beat the 6px safety margin and the browser
+       * re-wraps, which is the very failure the run-aware breaker exists to
+       * prevent. So when the run on the left is atomic, the space joins the
+       * one on the right.
+       */
+      const left = fragments[fragments.length - 1]!.run;
+      const next = items.slice(i + 1, breakIndex).find((it) =>
+        it.type === "box"
+      );
+      const right = next?.type === "box" ? next.run : left;
+      push(" ", runs[left]?.extraWidth ? right : left);
     }
 
-    // Trim the line’s outer whitespace without losing fragment boundaries.
+    // Trim the line's outer whitespace without losing fragment boundaries.
     if (fragments.length > 0) {
       fragments[0]!.text = fragments[0]!.text.replace(/^\s+/u, "");
       const last = fragments[fragments.length - 1]!;
@@ -538,10 +581,12 @@ function toLines(items: BreakItem[], breaks: number[]): RichLine[] {
 
     const breakItem = items[breakIndex]!;
     const hyphenated = breakItem.type === "penalty" && breakItem.flagged;
+    const midWord = breakItem.type === "penalty" && breakItem.midWord === true;
 
     lines.push({
       fragments: fragments.filter((f) => f.text !== ""),
       ...(hyphenated ? { hyphenated: true } : {}),
+      ...(midWord ? { midWord: true } : {}),
     });
 
     start = breakIndex + 1;
@@ -575,7 +620,7 @@ export async function breakIntoLines(
   const breaks = optimalBreaks(items, lineWidth, 3) ??
     optimalBreaks(items, lineWidth, 12);
   if (!breaks || breaks.length === 0) return null;
-  return toLines(items, breaks);
+  return toLines(items, breaks, runs);
 }
 
 /**
