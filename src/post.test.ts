@@ -141,3 +141,22 @@ test("byLang breaks same-date ties by slug, independent of input order", () => {
     expect(byLang(corpus, "fr").map((p) => p.slug)).toEqual(["a", "b", "c"]);
   }
 });
+
+/*
+ * The full-width marks were all recognized while ASCII `!` was not, so an
+ * English or French summary ending on an exclamation fell through to a
+ * mid-text word cut. Both spellings of every mark, or neither.
+ */
+test.each([
+  [".", "."],
+  ["!", "!"],
+  ["?", "?"],
+])("deriveSummary cuts on a sentence ending in %s", (mark, expected) => {
+  const first =
+    `This first sentence runs on long enough to clear a third of the budget and then ends${mark}`;
+  const rest =
+    " Then a second sentence carries the text well past two hundred characters so that something has to be cut somewhere.";
+
+  expect(deriveSummary(first + rest)).toBe(first);
+  expect(deriveSummary(first + rest).endsWith(expected)).toBe(true);
+});

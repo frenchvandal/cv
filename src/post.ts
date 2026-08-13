@@ -93,12 +93,18 @@ export function deriveSummary(text: string, max = SUMMARY_MAX): string {
   if (graphemes.length <= max) return clean;
 
   const head = graphemes.slice(0, max).join("");
+  /*
+   * Where a sentence ends. The CJK marks need no trailing space—they are
+   * full-width and carry their own—while the ASCII ones do, or every
+   * abbreviation and every decimal would end a sentence.
+   *
+   * `!` used to be missing while `！` was there, so a French or English
+   * summary ending on an exclamation fell through to a mid-text word cut
+   * while the same sentence ending on a period cut cleanly. Whatever is added
+   * here, add both spellings.
+   */
   const sentence = Math.max(
-    head.lastIndexOf(". "),
-    head.lastIndexOf("。"),
-    head.lastIndexOf("！"),
-    head.lastIndexOf("？"),
-    head.lastIndexOf("? "),
+    ...[". ", "! ", "? ", "。", "！", "？"].map((end) => head.lastIndexOf(end)),
   );
   // Require the sentence to clear a third of the budget, or a stray early
   // period (an abbreviation, an initial) would produce a near-empty summary.
