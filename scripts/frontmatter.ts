@@ -14,7 +14,24 @@
  * already did; only the validation was ever worth writing.
  */
 
-const FENCE = "---";
+/**
+ * A fence, and only at column 0.
+ *
+ * `line.trim() === "---"` accepted an INDENTED `---`, which is exactly what a
+ * block scalar contains when it quotes one:
+ *
+ *     summary: |
+ *       First line.
+ *       ---            ← closed the frontmatter here
+ *       Still summary.
+ *     tags: [a]
+ *
+ * The build did not fail. It published a page whose summary stopped at the
+ * first line, whose `tags` had silently become empty, and whose body opened
+ * with the leftover YAML as prose. YAML puts its document markers at column 0
+ * for this reason; so does this.
+ */
+const FENCE = /^---[ \t]*$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const KNOWN = ["title", "date", "summary", "tags", "draft", "updated"] as const;
 
@@ -113,9 +130,9 @@ export function parseFrontmatter(
   path: string,
 ): { data: Frontmatter; body: string } {
   const lines = source.split("\n");
-  if (lines[0]?.trim() !== FENCE) fail(path, "no frontmatter block");
+  if (!FENCE.test(lines[0] ?? "")) fail(path, "no frontmatter block");
 
-  const end = lines.findIndex((line, i) => i > 0 && line.trim() === FENCE);
+  const end = lines.findIndex((line, i) => i > 0 && FENCE.test(line));
   if (end === -1) fail(path, "unterminated frontmatter block");
 
   const block = lines.slice(1, end).join("\n");

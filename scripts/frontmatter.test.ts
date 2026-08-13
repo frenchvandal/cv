@@ -175,3 +175,39 @@ test.each([
 ])("refuses: %s", (_label, source) => {
   expect(() => parseFrontmatter(source, PATH)).toThrow(PATH);
 });
+
+/*
+ * A fence is a fence only at column 0. An indented one lives inside a block
+ * scalar, and treating it as the close did not fail the build — it published a
+ * page whose summary stopped early, whose tags had silently become empty, and
+ * whose body opened with the leftover YAML as prose.
+ */
+test("an indented --- inside a block scalar does not close the block", () => {
+  const { data, body } = parseFrontmatter(
+    [
+      "---",
+      "title: A note",
+      "date: 2026-01-01",
+      "summary: |",
+      "  First line of the summary.",
+      "  ---",
+      "  Still the summary.",
+      "tags: [a]",
+      "---",
+      "",
+      "The real body.",
+    ].join("\n"),
+    "x.md",
+  );
+
+  expect(data.summary).toBe(
+    "First line of the summary.\n---\nStill the summary.",
+  );
+  expect(data.tags).toEqual(["a"]);
+  expect(body).toBe("The real body.");
+});
+
+test("an indented opening fence is not a frontmatter block at all", () => {
+  expect(() => parseFrontmatter("  ---\ntitle: T\n  ---\n", "x.md"))
+    .toThrow("no frontmatter block");
+});

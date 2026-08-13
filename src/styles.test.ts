@@ -16,7 +16,7 @@
  */
 
 import { expect, test } from "bun:test";
-import { HERO_FIT, NAV_FIT } from "./config.ts";
+import { CJK_FAMILY, HERO_FIT, NAV_FIT } from "./config.ts";
 import { MEASURE_SAFETY } from "./measure.ts";
 
 /**
@@ -130,17 +130,33 @@ test("each language names exactly one CJK family, and it is the one the build de
     stack: m[2]!.replace(/\s+/g, " "),
   }));
 
+  /*
+   * The expectation is DERIVED from CJK_FAMILY, not written out beside it.
+   * Spelling the families here made the guard assert that the CSS matches a
+   * copy of the map rather than the map itself: changing CJK_FAMILY without
+   * touching styles.css passed green, which is the one drift this test is
+   * supposed to be the only thing preventing.
+   *
+   * `default` is the stack every Latin language uses, so it is checked against
+   * the family they all share; each Chinese page names its own.
+   */
+  const families = [...new Set(Object.values(CJK_FAMILY))];
   const cjkOf = (stack: string) =>
-    ["Noto Sans CJK Inline", "Noto Sans SC", "Noto Sans TC", "Noto Sans HK"]
-      .filter((family) => stack.includes(family));
+    families.filter((family) => stack.includes(family));
 
   expect(Object.fromEntries(stacks.map((s) => [s.lang, cjkOf(s.stack)])))
     .toEqual({
-      default: ["Noto Sans CJK Inline"],
-      zh: ["Noto Sans SC"],
-      "zh-hant": ["Noto Sans TC"],
-      "zh-hk": ["Noto Sans HK"],
+      default: [CJK_FAMILY.en],
+      zh: [CJK_FAMILY.zh],
+      "zh-hant": [CJK_FAMILY["zh-hant"]],
+      "zh-hk": [CJK_FAMILY["zh-hk"]],
     });
+
+  // The Latin languages must agree with each other, or "default" would be
+  // right for English and wrong for the three that share its rule.
+  for (const lang of ["fr", "pt", "es"] as const) {
+    expect([lang, CJK_FAMILY[lang]]).toEqual([lang, CJK_FAMILY.en]);
+  }
 
   // And every stack opens with the Latin face, which every page needs.
   for (const { lang, stack } of stacks) {
