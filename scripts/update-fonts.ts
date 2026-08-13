@@ -27,15 +27,54 @@ const UA =
  */
 const FETCH_TIMEOUT_MS = 30_000;
 
+/**
+ * How many times a request is worth repeating, and how long to wait between.
+ *
+ * Google drops sockets. Measured on 2026-08-10: three `ECONNRESET`s over six
+ * runs, always on one of the nine requests this script fires at once, and
+ * always transient — the next attempt succeeded every time. Without a retry
+ * one dropped socket discards the eight downloads that worked, and in CI
+ * ([.github/workflows/update-fonts.yaml](../.github/workflows/update-fonts.yaml))
+ * it turns roughly one article push in three into a red job for no reason.
+ */
+const ATTEMPTS = 4;
+const BACKOFF_MS = [400, 1200, 3000];
+
+/** A status worth trying again: the server is busy or broken, not refusing. */
+function isTransient(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
 async function fetchOk(url: string, what: string): Promise<Response> {
-  const response = await fetch(url, {
-    headers: { "User-Agent": UA },
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
-  if (!response.ok) {
-    throw new Error(`${what} failed: HTTP ${response.status}`);
+  let last = "";
+
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: { "User-Agent": UA },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (response.ok) return response;
+      // A 404 or a 400 is an answer, not an accident: repeating it wastes
+      // three more round trips to be told the same thing.
+      if (!isTransient(response.status)) {
+        throw new Error(`${what} failed: HTTP ${response.status}`);
+      }
+      last = `HTTP ${response.status}`;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("failed: HTTP")) {
+        throw error;
+      }
+      last = error instanceof Error ? error.message : String(error);
+    }
+
+    const pause = BACKOFF_MS[attempt - 1];
+    if (pause === undefined) break;
+    console.warn(`  ${what}: ${last} — retrying in ${pause}ms`);
+    await Bun.sleep(pause);
   }
-  return response;
+
+  throw new Error(`${what} failed after ${ATTEMPTS} attempts: ${last}`);
 }
 
 const { latin, inline, sc, tc, hk } = await glyphSets();
