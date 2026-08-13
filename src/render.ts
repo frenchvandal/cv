@@ -179,7 +179,10 @@ export function languageNegotiationScript(): string {
     var pick = null;
     try {
       var saved = localStorage.getItem(${JSON.stringify(STORAGE_LANG_KEY)});
-      if (saved && urls[saved]) pick = saved;
+      // typeof, not truthiness: urls is a plain object, so a stored
+      // "__proto__" or "constructor" resolves up the prototype chain to
+      // something truthy and the redirect lands on "[object Object]".
+      if (saved && typeof urls[saved] === "string") pick = saved;
     } catch (e) {}
     if (!pick) {
       var list = navigator.languages || [navigator.language || ""];
@@ -196,7 +199,7 @@ export function languageNegotiationScript(): string {
             : "zh";
         } else if (primary === "yue") {
           if (parts.indexOf("hk") > 0 || parts.indexOf("mo") > 0) pick = "zh-hk";
-        } else if (urls[primary]) {
+        } else if (typeof urls[primary] === "string") {
           pick = primary;
         }
       }

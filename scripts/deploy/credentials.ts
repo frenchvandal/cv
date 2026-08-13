@@ -61,8 +61,10 @@ export function readConfig(
   const prefix = (env.OSS_PREFIX ?? "").replace(/^\/+|\/+$/g, "");
 
   return {
-    bucket: required.OSS_BUCKET!,
-    region: required.OSS_REGION!,
+    // Trimmed, not merely validated trimmed: a trailing space survived into
+    // the endpoint and failed DNS resolution with nothing naming the cause.
+    bucket: required.OSS_BUCKET!.trim(),
+    region: required.OSS_REGION!.trim(),
     roleArn: env.OSS_ROLE_ARN?.trim() || undefined,
     providerArn: env.OSS_OIDC_PROVIDER_ARN?.trim() || undefined,
     prefix: prefix ? `${prefix}/` : "",

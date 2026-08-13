@@ -148,8 +148,18 @@ function comparePosts(a: Post, b: Post): number {
  * directory that is right there, so it would report every corpus as missing.
  */
 async function corpusExists(root: string): Promise<boolean> {
+  const path = join(root, "posts");
   try {
-    return (await stat(join(root, "posts"))).isDirectory();
+    const entry = await stat(path);
+    // A FILE where the corpus should be is a broken checkout, not a site
+    // without articles: saying "no posts" there would publish an empty blog
+    // and call it success.
+    if (!entry.isDirectory()) {
+      throw new Error(
+        `${path}: expected a directory of articles, found a file`,
+      );
+    }
+    return true;
   } catch (error) {
     // Absent is the legitimate case, and the only one. A permission error or
     // an I/O error is a broken checkout, not an empty blog: swallowing it here

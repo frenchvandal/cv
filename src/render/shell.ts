@@ -203,8 +203,16 @@ export function phoneChrome(t: Translation): { status: string; bar: string } {
   };
 }
 
-/** CJK ideographs and CJK punctuation—the runs that need a declared language. */
-const CJK_RUN = /[　-〿㐀-䶿一-鿿豈-﫿]+/g;
+/*
+ * CJK ideographs and CJK punctuation—the runs that need a declared language.
+ *
+ * Escapes, not literals. Written as characters, the last range read
+ * `豈-﫿`, and the 豈 a keyboard produces is U+8C48 (unified) rather than the
+ * U+F900 (compatibility) that was meant: the class ran from U+8C48 to U+FAFF
+ * and swallowed Hangul, Yi and the private use area, so Korean in an article
+ * would have been announced as Chinese to a screen reader.
+ */
+const CJK_RUN = /[\u3000-\u303F\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]+/g;
 
 /**
  * RGAA 8.7: a run of Chinese inside a page written in another language has to

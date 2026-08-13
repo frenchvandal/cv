@@ -63,7 +63,13 @@ const CONCURRENCY = 16;
 async function localFiles(): Promise<LocalFile[]> {
   const files: LocalFile[] = [];
   for await (
-    const key of new Bun.Glob("**/*").scan({ cwd: OUT, onlyFiles: true })
+    const key of new Bun.Glob("**/*").scan({
+      cwd: OUT,
+      onlyFiles: true,
+      // Without this a dot-directory (.well-known) or a .nojekyll is built
+      // and never uploaded: Bun.Glob skips dotfiles unless told otherwise.
+      dot: true,
+    })
   ) {
     files.push({
       key,

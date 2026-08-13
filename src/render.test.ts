@@ -249,3 +249,16 @@ test.each([...LANGS])(
     expect(html).toContain(escapeHtml(t.contact.footer));
   },
 );
+
+/*
+ * `urls` is a plain object and the stored language is an arbitrary string, so
+ * truthiness alone accepted "__proto__" and "constructor": both resolve up the
+ * prototype chain to something truthy, and the redirect then landed on
+ * "[object Object]". The script tests the TYPE now.
+ */
+test.each(["__proto__", "constructor", "toString", "valueOf"])(
+  "a stored %s is not a language and redirects nowhere",
+  (saved) => {
+    expect(negotiationTarget(["en-US"], saved)).toBeNull();
+  },
+);
