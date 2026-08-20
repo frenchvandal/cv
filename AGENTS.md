@@ -79,6 +79,22 @@ rediscover.
   `public/og-image.png` (the 1200×630 link preview) from the English hero and
   the light palette, using local Chrome. The build only copies the file, so run
   this after changing the English hero and commit the PNG.
+- `bun run deploy` → `bun scripts/deploy.ts`, a differential sync of `dist/` to
+  Aliyun OSS with **no dependency added**—`AssumeRoleWithOIDC` is anonymous, so
+  an Actions run trades its OIDC token for an hour of credentials without
+  signing anything, and `Bun.S3Client` signs the SigV4 the upload itself needs.
+  An unchanged file is not re-uploaded (the ETag OSS returns is the object’s
+  MD5), and what the build no longer emits is removed. Three flags, each for a
+  different question: `--dry-run` prints the plan and needs no credentials at
+  all, `--smoke` puts one object there and back to ask whether a new bucket
+  accepts the signature, and `--prune` is how someone who has read the deletion
+  list says they meant it. **The deletions are guarded**: a plan that would
+  remove more objects than the whole site contains refuses to run, because that
+  means the wrong bucket—or the right one at the wrong `OSS_PREFIX`—rather than
+  a sync. Locally it reads the Aliyun CLI’s own `~/.aliyun/config.json`, so no
+  key is ever copied into the repo; in Actions
+  ([deploy-oss.yaml](.github/workflows/deploy-oss.yaml)) nothing is stored at
+  all, and the job skips itself until the `OSS_BUCKET` variable exists.
 
 ### Generated Files
 
@@ -92,7 +108,7 @@ rediscover.
   build imports it under `SITE_URL`); its header records which protocol fields
   are emitted and why the other two are not—read it before adding one.
   `<lastmod>` comes from `git log` over the paths that reach a visitor, so **all
-  four workflows** check out with `fetch-depth: 0`. Without history the field is
+  five workflows** check out with `fetch-depth: 0`. Without history the field is
   omitted rather than guessed, and the assertions in
   [scripts/build.test.ts](scripts/build.test.ts) that compare the build to that
   same lookup would pass on empty against empty. That is why the gates need the
@@ -523,8 +539,13 @@ Ruled out so far, so that it is not rediscovered:
   paragraph carries `em`/`strong`/`code`/`a`, which the flat breaker both
   mis-measured (+8.1% for a monospace span, against the 6px margin) and erased.
   The adoption merged the contract INTO the shipping module rather than beside
-  it: `src/linebreak.ts` takes `Run[]` and returns fragments, the flat contract
-  survives as the `breakIntoLinesFlat` shim, and the equivalence test exercises
-  every hyphenated language (the fork's drift lesson: its own test only ever ran
-  `"en"`). Its other proof stands: `@chenglou/pretext/rich-inline` is a greedy
-  breaker, and trading the optimal one away for rich text was never an option.
+  it: `src/linebreak.ts` takes `Run[]` and returns fragments, and the flat
+  contract survives as the `breakIntoLinesFlat` shim—one run in, joined strings
+  out, over that very same breaker. So there is no equivalence test, and none is
+  owed: the merge left no second implementation, and a fork that does not exist
+  cannot drift. What the unit tests cover is narrower than it looks, though—`en`
+  and `fr`, never `pt` or `es`—and a hyphenation pattern that fails to load is
+  deliberately swallowed, so a broken `hyphen/pt` would cost the Portuguese
+  pages their hyphenation in silence rather than loudly. Its other proof stands:
+  `@chenglou/pretext/rich-inline` is a greedy breaker, and trading the optimal
+  one away for rich text was never an option.

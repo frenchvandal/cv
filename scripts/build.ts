@@ -274,11 +274,6 @@ function pagesFor(lang: Lang): { ref: PageRef; page: Page }[] {
 }
 
 /**
- * What search engines display of a description before cutting it off. Shorter
- * than a post summary, which is why deriveSummary takes a budget.
- */
-
-/**
  * What a page says about itself in the `<head>`.
  *
  * Every page used to carry the CV’s title and description — the site name for
