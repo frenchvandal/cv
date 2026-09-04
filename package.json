@@ -21,7 +21,7 @@
     "hyphen": "^1.14.1"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.0",
+    "@types/bun": "^1.4.1",
     "@typescript/native-preview": "^7.0.0-dev.20260707.2"
   }
 }
