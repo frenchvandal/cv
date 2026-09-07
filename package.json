@@ -17,7 +17,7 @@
     "deploy": "bun scripts/deploy.ts"
   },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.8",
+    "@chenglou/pretext": "^0.0.9",
     "hyphen": "^1.14.1"
   },
   "devDependencies": {
